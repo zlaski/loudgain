@@ -38,6 +38,11 @@ See the [man page](http://ghedo.github.io/loudgain/) for more information.
  * `libebur128`
  * `libtag`
 
+ On Ubuntu 18.04/Linux Mint 19.1, you can usually install CMake and the needed libraries using
+ ```bash
+ sudo apt-get install cmake libavcodec-dev libavformat-dev libavutil-dev libebur128-dev libtag1-dev
+ ```
+
 ## BUILDING
 
 loudgain is distributed as source code. Install with:
