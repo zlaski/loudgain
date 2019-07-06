@@ -5,10 +5,11 @@ loudgain
 loudness-normalized gain and loudness peak values according to the EBU R128
 standard, and can optionally write ReplayGain-compatible metadata.
 
-[EBU R128] [EBU] is a set of recommendations regarding loudness normalisation
-based on the algorithms to measure audio loudness and true-peak audio level
-defined in the [ITU BS.1770] [ITU] standard, and is used in the (currently under
-construction) ReplayGain 2.0 specification.
+[EBU R128](https://tech.ebu.ch/loudness) is a set of recommendations regarding
+loudness normalisation based on the algorithms to measure audio loudness and
+true-peak audio level defined in the
+[ITU BS.1770](http://www.itu.int/rec/R-REC-BS.1770/en) standard, and is used in
+the (currently under construction) ReplayGain 2.0 specification.
 
 loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.
@@ -17,8 +18,18 @@ it can be used as a drop-in replacement in some situations.
 write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (_Hint:_ In some players, you need to enable this feature.)
 
-[EBU]: https://tech.ebu.ch/loudness
-[ITU]: http://www.itu.int/rec/R-REC-BS.1770/en
+**Note:** loudgain can be used instead of `mp3gain`, `vorbisgain` and `metaflac`
+in order to write ReplayGain 2.0 compatible loudness tags into MP3, Ogg Vorbis
+and FLAC files, respectively.
+
+**Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
+and uses _LU_ and _LUFS_ units. The proposed ReplayGain 2.0 standard tries to
+stay compatible with older software and thus uses EBU R128 loudness measuring
+_but_ at a target of -18 LUFS (estimated to be equal to the old "89 dB" reference
+loudness). The generated tags also still use the "dB" suffix (1 dB = 1 LU).
+
+loudgain defaults to the ReplayGain 2.0 standard (-18 LUFS, "dB" units). Peak
+values are measured using the True Peak algorithm.
 
 ## GETTING STARTED
 

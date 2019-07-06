@@ -299,11 +299,10 @@ static inline void help(void) {
 	printf("%s%s%s ", COLOR_GREEN, progname, COLOR_OFF);
 	puts("[OPTIONS] FILES...\n");
 
-	printf("%s currently supports writing tags to the following file types:\n", progname);
+	printf("%s %s supports writing tags to the following file types:\n", progname, VERSION);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3)\n");
-	puts("");
 
-	puts(COLOR_RED " Options:" COLOR_OFF);
+	puts(COLOR_RED "Options:" COLOR_OFF);
 
 	CMD_HELP("--help",     "-?", "Show this help");
 	CMD_HELP("--version",  "-V", "Show version number");
