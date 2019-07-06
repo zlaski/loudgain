@@ -3,6 +3,10 @@
  *
  * Copyright (c) 2014, Alessandro Ghedini
  * All rights reserved.
+ * 2019-06-30 - Matthias C. Hormann
+ *   - Tag format in accordance with ReplayGain 2.0 spec
+ *     https://wiki.hydrogenaud.io/index.php?title=ReplayGain_2.0_specification
+ *   - Add Ogg Vorbis file handling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,6 +40,7 @@
 #include <id3v2tag.h>
 
 #include <flacfile.h>
+#include <vorbisfile.h>
 #include <xiphcomment.h>
 
 #include "scan.h"
@@ -58,16 +63,16 @@ void tag_write_mp3(scan_result *scan) {
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	snprintf(value, sizeof(value), "%f dB", scan -> track_gain);
+	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
 	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_GAIN"), value);
 
-	snprintf(value, sizeof(value), "%f", scan -> track_peak);
+	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
 	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_PEAK"), value);
 
-	snprintf(value, sizeof(value), "%f dB", scan -> album_gain);
+	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
 	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_GAIN"), value);
 
-	snprintf(value, sizeof(value), "%f", scan -> album_peak);
+	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
 	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_PEAK"), value);
 
 	f.save(TagLib::MPEG::File::ID3v2, false);
@@ -87,10 +92,12 @@ void tag_clear_mp3(scan_result *scan) {
 		if (frame && frame -> fieldList().size() >= 2) {
 			TagLib::String desc = frame -> description().upper();
 
+			// also remove (old) reference loudness, it might be wrong after recalc
 			if ((desc == "REPLAYGAIN_TRACK_GAIN") ||
 			    (desc == "REPLAYGAIN_TRACK_PEAK") ||
 			    (desc == "REPLAYGAIN_ALBUM_GAIN") ||
-			    (desc == "REPLAYGAIN_ALBUM_PEAK"))
+			    (desc == "REPLAYGAIN_ALBUM_PEAK") ||
+			    (desc == "REPLAYGAIN_REFERENCE_LOUDNESS"))
 				tag -> removeFrame(frame);
 		}
 	}
@@ -104,16 +111,16 @@ void tag_write_flac(scan_result *scan) {
 	TagLib::FLAC::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
-	snprintf(value, sizeof(value), "%f dB", scan -> track_gain);
+	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
 	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
 
-	snprintf(value, sizeof(value), "%f", scan -> track_peak);
+	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
 	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
 
-	snprintf(value, sizeof(value), "%f dB", scan -> album_gain);
+	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
 	tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
 
-	snprintf(value, sizeof(value), "%f", scan -> album_peak);
+	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
 	tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
 
 	f.save();
@@ -127,6 +134,41 @@ void tag_clear_flac(scan_result *scan) {
 	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
 	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
 	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+
+	f.save();
+}
+
+void tag_write_vorbis(scan_result *scan) {
+	char value[2048];
+
+	TagLib::Ogg::Vorbis::File f(scan -> file);
+	TagLib::Ogg::XiphComment *tag = f.tag();
+
+	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
+	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
+
+	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
+
+	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+	tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
+
+	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+	tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+
+	f.save();
+}
+
+void tag_clear_vorbis(scan_result *scan) {
+	TagLib::Ogg::Vorbis::File f(scan -> file);
+	TagLib::Ogg::XiphComment *tag = f.tag();
+
+	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
+	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
+	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
+	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
 
 	f.save();
 }

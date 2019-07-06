@@ -16,6 +16,16 @@ it can be used as a drop-in replacement in some situations.
 
 ## OPTIONS
 
+`-?, --help`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Show this help.
+
+`-V, --version`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Show version number.
+
 `-r, --track`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -49,7 +59,7 @@ Delete ReplayGain tags from files.
 `-s i, --tag-mode i`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain tags to files. ID3v2 for MP3, Vorbis Comments for FLAC.
+Write ReplayGain tags to files. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis.
 
 `-s s, --tag-mode s`
 
@@ -68,10 +78,12 @@ Don't print status messages.
 
 ## AUTHOR ##
 
-Alessandro Ghedini <alessandro@ghedini.me>
+Alessandro Ghedini <alessandro@ghedini.me>  
+Modifications: Matthias C. Hormann <mhormann@gmx.de>
 
 ## COPYRIGHT ##
 
-Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>
+Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>  
+Modifications: Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 
 This program is released under the 2 clause BSD license.

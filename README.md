@@ -28,7 +28,7 @@ $ loudgain -d 13 -k *.mp3   # add a pre-amp gain and prevent clipping
 $ loudgain -s r *.mp3       # remove ReplayGain tags from the files
 ```
 
-See the [man page](http://ghedo.github.io/loudgain/) for more information.
+See the [man page](docs/loudgain.1.html) for more information.
 
 ## DEPENDENCIES
 

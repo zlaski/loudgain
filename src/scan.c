@@ -4,6 +4,10 @@
  * Copyright (c) 2014, Alessandro Ghedini
  * All rights reserved.
  *
+ * 2019-06-30 - Matthias C. Hormann
+ *  calculate correct album peak
+ *  TODO: This still sucks because albums are handled track-by-track.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -279,7 +283,9 @@ void scan_set_album_result(scan_result *result, double pre_gain) {
 		range = 0.0;
 
 	result -> album_gain           = LUFS_TO_RG(global) + pre_gain;
-	result -> album_peak           = result -> track_peak;
+	// Calculate correct album peak (v0.2.1)
+	// result -> album_peak           = result -> track_peak;
+	result -> album_peak           = FFMAX(result -> album_peak, result -> track_peak);
 	result -> album_loudness       = global;
 	result -> album_loudness_range = range;
 }

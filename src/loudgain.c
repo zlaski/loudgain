@@ -4,6 +4,12 @@
  * Copyright (c) 2014, Alessandro Ghedini
  * All rights reserved.
  *
+ * 2019-06-30 - Matthias C. Hormann
+ * 	- Added version
+ *      - Added writing tags to Ogg Vorbis files (now supports MP3, FLAC, Ogg Vorbis)
+ *      - Added notice in help on which file types can be written
+ *      - Added album summary
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -42,7 +48,10 @@
 #include "tag.h"
 #include "printf.h"
 
-const char *short_opts = "rackd:oqs:h?";
+const char *progname = "loudgain";
+const char *VERSION = "0.2.1";
+
+const char *short_opts = "rackd:oqs:h?V";
 
 static struct option long_opts[] = {
 	{ "track",     no_argument,       NULL, 'r' },
@@ -59,10 +68,12 @@ static struct option long_opts[] = {
 	{ "tag-mode",  required_argument, NULL, 's' },
 
 	{ "help",      no_argument,       NULL, 'h' },
+	{ "version",   no_argument,       NULL, 'V' },
 	{ 0, 0, 0, 0 }
 };
 
 static inline void help(void);
+static inline void version(void);
 
 int main(int argc, char *argv[]) {
 	int rc, i;
@@ -122,6 +133,10 @@ int main(int argc, char *argv[]) {
 			case 'h':
 				help();
 				return 0;
+
+			case 'V':
+				version();
+				return 0;
 		}
 	}
 
@@ -179,6 +194,10 @@ int main(int argc, char *argv[]) {
 						tag_clear_flac(scan);
 						break;
 
+					case AV_CODEC_ID_VORBIS:
+						tag_clear_vorbis(scan);
+						break;
+
 					default:
 						err_printf("File type not supported");
 						break;
@@ -195,6 +214,11 @@ int main(int argc, char *argv[]) {
 					case AV_CODEC_ID_FLAC:
 						tag_clear_flac(scan);
 						tag_write_flac(scan);
+						break;
+
+					case AV_CODEC_ID_VORBIS:
+						tag_clear_vorbis(scan);
+						tag_write_vorbis(scan);
 						break;
 
 					default:
@@ -225,26 +249,35 @@ int main(int argc, char *argv[]) {
 		if (tab_output) {
 			printf("%s\t", scan -> file);
 			printf("%d\t", 0);
-			printf("%f\t", scan -> track_gain);
-			printf("%f\t", scan -> track_peak * 32768.0);
+			printf("%.2f\t", scan -> track_gain);
+			printf("%.6f\t", scan -> track_peak * 32768.0);
 			printf("%d\t", 0);
 			printf("%d\n", 0);
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("%s\t", "Album");
 				printf("%d\t", 0);
-				printf("%f\t", scan -> album_gain);
-				printf("%f\t", scan -> album_peak * 32768.0);
+				printf("%.2f\t", scan -> album_gain);
+				printf("%.6f\t", scan -> album_peak * 32768.0);
 				printf("%d\t", 0);
 				printf("%d\n", 0);
 			}
 		} else {
 			printf("\nTrack: %s\n", scan -> file);
 
-			printf(" Loudness: %5.1f LUFS\n", scan -> track_loudness);
-			printf(" Range:    %5.1f LU\n", scan -> track_loudness_range);
-			printf(" Gain:     %5.1f dB\n", scan -> track_gain);
-			printf(" Peak:     %5.1f\n", scan -> track_peak);
+			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
+			printf(" Range:    %8.2f LU\n", scan -> track_loudness_range);
+			printf(" Gain:     %8.2f dB\n", scan -> track_gain);
+			printf(" Peak:     %8.6f\n", scan -> track_peak);
+
+			if ((i == (nb_files - 1)) && do_album) {
+				printf("\nAlbum:\n");
+
+				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
+				printf(" Range:    %8.2f LU\n", scan -> album_loudness_range);
+				printf(" Gain:     %8.2f dB\n", scan -> album_gain);
+				printf(" Peak:     %8.6f\n", scan -> album_peak);
+			}
 		}
 
 		if (warn_clip && will_clip)
@@ -262,10 +295,20 @@ static inline void help(void) {
 	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %-15s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
 
 	printf(COLOR_RED "Usage: " COLOR_OFF);
-	printf(COLOR_GREEN "loudgain " COLOR_OFF);
+	// printf(COLOR_GREEN "loudgain " COLOR_OFF);
+	printf("%s%s%s ", COLOR_GREEN, progname, COLOR_OFF);
 	puts("[OPTIONS] FILES...\n");
 
+	printf("%s currently supports writing tags to the following file types:\n", progname);
+	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3)\n");
+	puts("");
+
 	puts(COLOR_RED " Options:" COLOR_OFF);
+
+	CMD_HELP("--help",     "-?", "Show this help");
+	CMD_HELP("--version",  "-V", "Show version number");
+
+	puts("");
 
 	CMD_HELP("--track",  "-r", "Calculate track gain (default)");
 	CMD_HELP("--album",  "-a", "Calculate album gain");
@@ -289,4 +332,8 @@ static inline void help(void) {
 	CMD_HELP("--quiet",  "-q",  "Don't print status messages");
 
 	puts("");
+}
+
+static inline void version(void) {
+	printf("%s %s\n", progname, VERSION);
 }
