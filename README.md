@@ -13,6 +13,10 @@ construction) ReplayGain 2.0 specification.
 loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.
 
+**Note:** loudgain will _not_ modify the actual audio data, but instead just
+write ReplayGain _tags_ if so requested. It is up to the player to interpret
+these. (_Hint:_ In some players, you need to enable this feature.)
+
 [EBU]: https://tech.ebu.ch/loudness
 [ITU]: http://www.itu.int/rec/R-REC-BS.1770/en
 
