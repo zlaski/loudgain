@@ -9,7 +9,7 @@ standard, and can optionally write ReplayGain-compatible metadata.
 loudness normalisation based on the algorithms to measure audio loudness and
 true-peak audio level defined in the
 [ITU BS.1770](http://www.itu.int/rec/R-REC-BS.1770/en) standard, and is used in
-the (currently under construction) ReplayGain 2.0 specification.
+the (currently under construction) [ReplayGain 2.0 specification](https://wiki.hydrogenaud.io/index.php?title=ReplayGain_2.0_specification).
 
 loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.
