@@ -56,7 +56,7 @@ $ [sudo] make install
 
 ## COPYRIGHT
 
-Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>
+Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>  
 Modifications Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 
 See COPYING for the license.
