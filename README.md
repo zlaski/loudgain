@@ -28,7 +28,7 @@ $ loudgain -d 13 -k *.mp3   # add a pre-amp gain and prevent clipping
 $ loudgain -s r *.mp3       # remove ReplayGain tags from the files
 ```
 
-See the [man page](docs/loudgain.1.html) for more information.
+See the [man page](docs/loudgain.1.md) for more information.
 
 ## DEPENDENCIES
 
@@ -57,5 +57,6 @@ $ [sudo] make install
 ## COPYRIGHT
 
 Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>
+Modifications Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 
 See COPYING for the license.
