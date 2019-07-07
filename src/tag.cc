@@ -7,6 +7,8 @@
  *   - Tag format in accordance with ReplayGain 2.0 spec
  *     https://wiki.hydrogenaud.io/index.php?title=ReplayGain_2.0_specification
  *   - Add Ogg Vorbis file handling
+ * 2019-07-07 - v0.2.3 - Matthias C. Hormann
+ *   - Write lowercase REPLAYGAIN_* tags to MP3 ID3v2, for incompatible players
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -57,23 +59,29 @@ static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 	tag -> addFrame(frame);
 }
 
-void tag_write_mp3(scan_result *scan) {
+// Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
+// unfortunately some players only respect the lowercase variant (still).
+// So for the time being, we write non-standard lowercase tags to ID3v2.
+void tag_write_mp3(scan_result *scan, bool do_album) {
 	char value[2048];
 
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
 	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
-	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_GAIN"), value);
+	tag_add_txxx(tag, const_cast<char *>("replaygain_track_gain"), value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_PEAK"), value);
+	tag_add_txxx(tag, const_cast<char *>("replaygain_track_peak"), value);
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
-	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_GAIN"), value);
+	// Only write album tags if in album mode (would be zero otherwise)
+	if (do_album) {
+		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_album_gain"), value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-	tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_PEAK"), value);
+		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_album_peak"), value);
+	}
 
 	f.save(TagLib::MPEG::File::ID3v2, false);
 }
@@ -105,7 +113,7 @@ void tag_clear_mp3(scan_result *scan) {
 	f.save(TagLib::MPEG::File::ID3v2, false);
 }
 
-void tag_write_flac(scan_result *scan) {
+void tag_write_flac(scan_result *scan, bool do_album) {
 	char value[2048];
 
 	TagLib::FLAC::File f(scan -> file);
@@ -117,11 +125,14 @@ void tag_write_flac(scan_result *scan) {
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
 	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
-	tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
+	// Only write album tags if in album mode (would be zero otherwise)
+	if (do_album) {
+		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-	tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+	}
 
 	f.save();
 }
@@ -139,7 +150,7 @@ void tag_clear_flac(scan_result *scan) {
 	f.save();
 }
 
-void tag_write_vorbis(scan_result *scan) {
+void tag_write_vorbis(scan_result *scan, bool do_album) {
 	char value[2048];
 
 	TagLib::Ogg::Vorbis::File f(scan -> file);
@@ -151,11 +162,14 @@ void tag_write_vorbis(scan_result *scan) {
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
 	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
-	tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
+	// Only write album tags if in album mode (would be zero otherwise)
+	if (do_album) {
+		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-	tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+	}
 
 	f.save();
 }

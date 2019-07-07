@@ -269,6 +269,27 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 	return result;
 }
 
+double scan_get_album_peak() {
+  double peak = 0.0;
+  int i;
+  unsigned ch;
+  ebur128_state *ebur128 = NULL;
+
+  for (i = 0; i < scan_nb_files; i++) {
+    ebur128 = scan_states[i];
+
+    for (ch = 0; ch < ebur128 -> channels; ch++) {
+  		double tmp;
+
+  		if (ebur128_true_peak(ebur128, ch, &tmp) != EBUR128_SUCCESS)
+  			continue;
+
+  		peak = FFMAX(peak, tmp);
+  	}
+  }
+  return peak;
+}
+
 void scan_set_album_result(scan_result *result, double pre_gain) {
 	double global, range;
 
@@ -284,8 +305,7 @@ void scan_set_album_result(scan_result *result, double pre_gain) {
 
 	result -> album_gain           = LUFS_TO_RG(global) + pre_gain;
 	// Calculate correct album peak (v0.2.1)
-	// result -> album_peak           = result -> track_peak;
-	result -> album_peak           = FFMAX(result -> album_peak, result -> track_peak);
+	result -> album_peak           = scan_get_album_peak();
 	result -> album_loudness       = global;
 	result -> album_loudness_range = range;
 }

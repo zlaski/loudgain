@@ -4,11 +4,17 @@
  * Copyright (c) 2014, Alessandro Ghedini
  * All rights reserved.
  *
- * 2019-06-30 - Matthias C. Hormann
- * 	- Added version
- *      - Added writing tags to Ogg Vorbis files (now supports MP3, FLAC, Ogg Vorbis)
- *      - Added notice in help on which file types can be written
- *      - Added album summary
+ * 2019-06-30 - v0.2.1 - Matthias C. Hormann
+ *  - Added version
+ *  - Added writing tags to Ogg Vorbis files (now supports MP3, FLAC, Ogg Vorbis)
+ *  - Always remove REPLAYGAIN_REFERENCE_LOUDNESS, wrong value might confuse players
+ *  - Added notice in help on which file types can be written
+ *  - Added album summary
+ * 2019-07-07 - v0.2.2 - Matthias C. Hormann
+ *  - Fixed album peak calculation.
+ *  - Write REPLAYGAIN_ALBUM_* tags only if in album mode
+ *  - Better versioning (CMakeLists.txt → config.h)
+ *  - TODO: clipping calculation still wrong
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,12 +50,10 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/common.h>
 
+#include "config.h"
 #include "scan.h"
 #include "tag.h"
 #include "printf.h"
-
-const char *progname = "loudgain";
-const char *VERSION = "0.2.1";
 
 const char *short_opts = "rackd:oqs:h?V";
 
@@ -164,6 +168,9 @@ int main(int argc, char *argv[]) {
 		if (do_album)
 			scan_set_album_result(scan, pre_gain);
 
+		// TODO: clipping calculations still suck
+		// printf("tgain=%.2f, tpeak=%.6f, again=%.2f, apeak=%.6f\n",
+	 	// 	scan -> track_gain, scan -> track_peak, scan -> album_gain, scan -> album_peak);
 		if ((scan -> track_gain > (1.f / scan -> track_peak)) ||
 		    (scan -> album_gain > (1.f / scan -> album_peak)))
 			will_clip = true;
@@ -208,17 +215,17 @@ int main(int argc, char *argv[]) {
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
 						tag_clear_mp3(scan);
-						tag_write_mp3(scan);
+						tag_write_mp3(scan, do_album);
 						break;
 
 					case AV_CODEC_ID_FLAC:
 						tag_clear_flac(scan);
-						tag_write_flac(scan);
+						tag_write_flac(scan, do_album);
 						break;
 
 					case AV_CODEC_ID_VORBIS:
 						tag_clear_vorbis(scan);
-						tag_write_vorbis(scan);
+						tag_write_vorbis(scan, do_album);
 						break;
 
 					default:
@@ -268,7 +275,7 @@ int main(int argc, char *argv[]) {
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
 			printf(" Range:    %8.2f LU\n", scan -> track_loudness_range);
 			printf(" Gain:     %8.2f dB\n", scan -> track_gain);
-			printf(" Peak:     %8.6f\n", scan -> track_peak);
+			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("\nAlbum:\n");
@@ -276,7 +283,7 @@ int main(int argc, char *argv[]) {
 				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
 				printf(" Range:    %8.2f LU\n", scan -> album_loudness_range);
 				printf(" Gain:     %8.2f dB\n", scan -> album_gain);
-				printf(" Peak:     %8.6f\n", scan -> album_peak);
+				printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
 			}
 		}
 
@@ -295,11 +302,10 @@ static inline void help(void) {
 	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %-15s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
 
 	printf(COLOR_RED "Usage: " COLOR_OFF);
-	// printf(COLOR_GREEN "loudgain " COLOR_OFF);
-	printf("%s%s%s ", COLOR_GREEN, progname, COLOR_OFF);
+	printf("%s%s%s ", COLOR_GREEN, PROJECT_NAME, COLOR_OFF);
 	puts("[OPTIONS] FILES...\n");
 
-	printf("%s %s supports writing tags to the following file types:\n", progname, VERSION);
+	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3)\n");
 
 	puts(COLOR_RED "Options:" COLOR_OFF);
@@ -334,5 +340,5 @@ static inline void help(void) {
 }
 
 static inline void version(void) {
-	printf("%s %s\n", progname, VERSION);
+	printf("%s %s\n", PROJECT_NAME, PROJECT_VER);
 }

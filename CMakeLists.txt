@@ -1,5 +1,6 @@
 # loudgain CMakeLists.txt
 # Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>
+# Modifications Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 # This file is released under the 2 clause BSD license, see COPYING
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
@@ -9,8 +10,9 @@ SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/" ${CMAKE_MODULE_PATH})
 
 SET(VERSION_MAJOR 0)
 SET(VERSION_MINOR 2)
+SET(VERSION_PATCH 3)
 
-SET(loudgain_VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+SET(loudgain_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 SET(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
@@ -31,6 +33,8 @@ ENDIF (NOT EBUR128_FOUND)
 FILE(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cc" "src/*.c")
 
 ADD_EXECUTABLE(loudgain ${SOURCES})
+
+CONFIGURE_FILE("config.h.in" "config.h")
 
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}/src
