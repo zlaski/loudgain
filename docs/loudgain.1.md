@@ -16,12 +16,12 @@ it can be used as a drop-in replacement in some situations.
 
 ## OPTIONS
 
-`-?, --help`
+`-h, --help`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Show this help.
 
-`-V, --version`
+`-v, --version`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Show version number.

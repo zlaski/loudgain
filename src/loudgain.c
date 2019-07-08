@@ -322,8 +322,8 @@ static inline void help(void) {
 
 	puts(COLOR_RED "Options:" COLOR_OFF);
 
-	CMD_HELP("--help",     "-?", "Show this help");
-	CMD_HELP("--version",  "-V", "Show version number");
+	CMD_HELP("--help",     "-h", "Show this help");
+	CMD_HELP("--version",  "-v", "Show version number");
 
 	puts("");
 
