@@ -16,9 +16,11 @@
  *  - Better versioning (CMakeLists.txt → config.h)
  *  - TODO: clipping calculation still wrong
  * 2019-07-08 - v0.2.4 - Matthias C. Hormann
- *   - add "-s e" mode, writes extra tags (REPLAYGAIN_REFERENCE_LOUDNESS,
- *     REPLAYGAIN_TRACK_RANGE and REPLAYGAIN_ALBUM_RANGE)
- *   - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
+ *  - add "-s e" mode, writes extra tags (REPLAYGAIN_REFERENCE_LOUDNESS,
+ *    REPLAYGAIN_TRACK_RANGE and REPLAYGAIN_ALBUM_RANGE)
+ *  - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
+ * 2019-07-08 - v0.2.5 - Matthias C. Hormann
+ *  - Clipping warning & prevention (-k) now works correctly, both track & album
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -169,6 +171,12 @@ int main(int argc, char *argv[]) {
 
 	for (i = 0; i < nb_files; i++) {
 		bool will_clip = false;
+		double tgain = 1.0;
+		double tpeak = 1.0;
+		double again = 1.0;
+		double apeak = 1.0;
+		bool tclip = false;
+		bool aclip = false;
 
 		scan_result *scan = scan_get_track_result(i, pre_gain);
 
@@ -178,23 +186,43 @@ int main(int argc, char *argv[]) {
 		if (do_album)
 			scan_set_album_result(scan, pre_gain);
 
-		// TODO: clipping calculations still suck
-		// printf("tgain=%.2f, tpeak=%.6f, again=%.2f, apeak=%.6f\n",
-	 	// 	scan -> track_gain, scan -> track_peak, scan -> album_gain, scan -> album_peak);
-		if ((scan -> track_gain > (1.f / scan -> track_peak)) ||
-		    (scan -> album_gain > (1.f / scan -> album_peak)))
+		// Check if track or album will clip, and correct if so requested (-k)
+
+		// dB/LU to scaling factor: 10 ^ (gain/20)
+		// peak scaling factor (so as not to exceed digital full scale = 1.0): 1/peak
+		tgain = pow(10.0, scan -> track_gain / 20.0);
+		tpeak = 1.f / scan -> track_peak;
+		if (do_album) {
+			again = pow(10.0, scan -> album_gain / 20.0);
+			apeak = 1.f / scan -> album_peak;
+		}
+
+		if ((tgain > tpeak) || (do_album && (again > apeak)))
 			will_clip = true;
 
+		// printf("\ntrack: %.2f LU, peak %.6f; album: %.2f LU, peak %.6f\ntrack: %.6f, %.6f; album: %.6f, %.6f; Clip: %s\n",
+		// 	scan -> track_gain, scan -> track_peak, scan -> album_gain, scan -> album_peak,
+		// 	tgain, tpeak, again, apeak, will_clip ? "Yes" : "No");
+
 		if (will_clip && no_clip) {
-			double gain, peak;
+			// scaling factor → dB/LU: 20 * log10(factor)
+			if (tgain > tpeak) {
+				scan -> track_gain = 20.0 * log10(tpeak);
+				tgain = pow(10.0, scan -> track_gain / 20.0);
+				tclip = true;
+			}
 
-			gain = scan -> track_gain; peak = scan -> track_peak;
-			scan -> track_gain = FFMIN(gain, 1.0 / peak);
-
-			gain = scan -> album_gain; peak = scan -> album_peak;
-			scan -> album_gain = FFMIN(gain, 1.0 / peak);
+			if (do_album && (again > apeak)) {
+				scan -> album_gain = 20.0 * log10(apeak);
+				again = pow(10.0, scan -> album_gain / 20.0);
+				aclip = true;
+			}
 
 			will_clip = false;
+
+			// printf("\nAfter clipping prevention:\ntrack: %.2f LU, peak %.6f; album: %.2f LU, peak %.6f\ntrack: %.6f, %.6f; album: %.6f, %.6f; Clip: %s\n",
+			// 	scan -> track_gain, scan -> track_peak, scan -> album_gain, scan -> album_peak,
+			// 	tgain, tpeak, again, apeak, will_clip ? "Yes" : "No");
 		}
 
 		switch (mode) {
@@ -273,6 +301,9 @@ int main(int argc, char *argv[]) {
 			printf("%d\t", 0);
 			printf("%d\n", 0);
 
+			if (warn_clip && will_clip)
+				err_printf("The track will clip");
+
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("%s\t", "Album");
 				printf("%d\t", 0);
@@ -286,21 +317,21 @@ int main(int argc, char *argv[]) {
 
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
 			printf(" Range:    %8.2f %s\n", scan -> track_loudness_range, unit);
-			printf(" Gain:     %8.2f %s\n", scan -> track_gain, unit);
+			printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit, tclip ? " (corrected to prevent clipping)" : "");
 			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
+
+			if (warn_clip && will_clip)
+				err_printf("The track will clip");
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("\nAlbum:\n");
 
 				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
 				printf(" Range:    %8.2f %s\n", scan -> album_loudness_range, unit);
-				printf(" Gain:     %8.2f %s\n", scan -> album_gain, unit);
+				printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit, aclip ? " (corrected to prevent clipping)" : "");
 				printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
 			}
 		}
-
-		if (warn_clip && will_clip)
-			err_printf("The track will clip");
 
 		free(scan);
 	}
@@ -327,15 +358,15 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--track",  "-r", "Calculate track gain (default)");
-	CMD_HELP("--album",  "-a", "Calculate album gain");
+	CMD_HELP("--track",  "-r", "Calculate track gain only (default)");
+	CMD_HELP("--album",  "-a", "Calculate album gain (and track gain)");
 
 	puts("");
 
 	CMD_HELP("--clip",   "-c", "Ignore clipping warning");
-	CMD_HELP("--noclip", "-k", "Lower track and album gain to avoid clipping");
+	CMD_HELP("--noclip", "-k", "Lower track and/or album gain to avoid clipping");
 
-	CMD_HELP("--db-gain",  "-d",  "Apply the given pre-amp value (in dB)");
+	CMD_HELP("--db-gain",  "-d",  "Apply the given pre-gain value (in dB/LU)");
 
 	puts("");
 

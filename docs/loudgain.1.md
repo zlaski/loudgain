@@ -29,12 +29,12 @@ Show version number.
 `-r, --track`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate track gain (default).
+Calculate track gain only (default).
 
 `-a, --album`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate album gain.
+Calculate album gain (and track gain).
 
 `-c, --clip`
 
@@ -44,12 +44,12 @@ Ignore clipping warnings.
 `-k, --noclip`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Lower track and album gain to avoid clipping.
+Lower track and/or album gain to avoid clipping.
 
 `-d, --db-gain`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Apply the given pre-amp value (in dB).
+Apply the given pre-gain value (in dB/LU).
 
 `-s d, --tag-mode d`
 
