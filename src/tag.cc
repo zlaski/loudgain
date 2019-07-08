@@ -9,6 +9,10 @@
  *   - Add Ogg Vorbis file handling
  * 2019-07-07 - v0.2.3 - Matthias C. Hormann
  *   - Write lowercase REPLAYGAIN_* tags to MP3 ID3v2, for incompatible players
+ * 2019-07-08 - v0.2.4 - Matthias C. Hormann
+ *   - add -s e mode, writes extra tags (REPLAYGAIN_REFERENCE_LOUDNESS,
+ *     REPLAYGAIN_TRACK_RANGE and REPLAYGAIN_ALBUM_RANGE)
+ *   - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -62,13 +66,13 @@ static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
 // So for the time being, we write non-standard lowercase tags to ID3v2.
-void tag_write_mp3(scan_result *scan, bool do_album) {
+void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit) {
 	char value[2048];
 
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
+	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
 	tag_add_txxx(tag, const_cast<char *>("replaygain_track_gain"), value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
@@ -76,11 +80,25 @@ void tag_write_mp3(scan_result *scan, bool do_album) {
 
 	// Only write album tags if in album mode (would be zero otherwise)
 	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
 		tag_add_txxx(tag, const_cast<char *>("replaygain_album_gain"), value);
 
 		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
 		tag_add_txxx(tag, const_cast<char *>("replaygain_album_peak"), value);
+	}
+
+	// extra tags mode -s e or -s l
+	if (mode == 'e' || mode == 'l') {
+		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_reference_loudness"), value);
+
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_track_range"), value);
+
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+			tag_add_txxx(tag, const_cast<char *>("replaygain_album_range"), value);
+		}
 	}
 
 	f.save(TagLib::MPEG::File::ID3v2, false);
@@ -103,8 +121,10 @@ void tag_clear_mp3(scan_result *scan) {
 			// also remove (old) reference loudness, it might be wrong after recalc
 			if ((desc == "REPLAYGAIN_TRACK_GAIN") ||
 			    (desc == "REPLAYGAIN_TRACK_PEAK") ||
+					(desc == "REPLAYGAIN_TRACK_RANGE") ||
 			    (desc == "REPLAYGAIN_ALBUM_GAIN") ||
 			    (desc == "REPLAYGAIN_ALBUM_PEAK") ||
+					(desc == "REPLAYGAIN_ALBUM_RANGE") ||
 			    (desc == "REPLAYGAIN_REFERENCE_LOUDNESS"))
 				tag -> removeFrame(frame);
 		}
@@ -113,13 +133,13 @@ void tag_clear_mp3(scan_result *scan) {
 	f.save(TagLib::MPEG::File::ID3v2, false);
 }
 
-void tag_write_flac(scan_result *scan, bool do_album) {
+void tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
 	char value[2048];
 
 	TagLib::FLAC::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
+	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
 	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
@@ -127,11 +147,25 @@ void tag_write_flac(scan_result *scan, bool do_album) {
 
 	// Only write album tags if in album mode (would be zero otherwise)
 	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
 		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
 
 		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
 		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+	}
+
+	// extra tags mode -s e or -s l
+	if (mode == 'e' || mode == 'l') {
+		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+		tag -> addField("REPLAYGAIN_REFERENCE_LOUDNESS", value);
+
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+		tag -> addField("REPLAYGAIN_TRACK_RANGE", value);
+
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+			tag -> addField("REPLAYGAIN_ALBUM_RANGE", value);
+		}
 	}
 
 	f.save();
@@ -143,20 +177,22 @@ void tag_clear_flac(scan_result *scan) {
 
 	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
 	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
+	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
 	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
 	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
 	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
 
 	f.save();
 }
 
-void tag_write_vorbis(scan_result *scan, bool do_album) {
+void tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
 	char value[2048];
 
 	TagLib::Ogg::Vorbis::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.tag();
 
-	snprintf(value, sizeof(value), "%.2f dB", scan -> track_gain);
+	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
 	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
@@ -164,11 +200,25 @@ void tag_write_vorbis(scan_result *scan, bool do_album) {
 
 	// Only write album tags if in album mode (would be zero otherwise)
 	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f dB", scan -> album_gain);
+		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
 		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
 
 		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
 		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+	}
+
+	// extra tags mode -s e or -s l
+	if (mode == 'e' || mode == 'l') {
+		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+		tag -> addField("REPLAYGAIN_REFERENCE_LOUDNESS", value);
+
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+		tag -> addField("REPLAYGAIN_TRACK_RANGE", value);
+
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+			tag -> addField("REPLAYGAIN_ALBUM_RANGE", value);
+		}
 	}
 
 	f.save();
@@ -180,8 +230,10 @@ void tag_clear_vorbis(scan_result *scan) {
 
 	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
 	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
+	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
 	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
 	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
 	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
 
 	f.save();

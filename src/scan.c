@@ -266,6 +266,8 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 	result -> album_loudness       = 0.f;
 	result -> album_loudness_range = 0.f;
 
+  result -> loudness_reference   = LUFS_TO_RG(-pre_gain);
+
 	return result;
 }
 

@@ -47,6 +47,8 @@ typedef struct {
 
 	double album_loudness;
 	double album_loudness_range;
+
+	double loudness_reference;
 } scan_result;
 
 int scan_init(unsigned nb_files);

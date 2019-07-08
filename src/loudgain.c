@@ -15,6 +15,10 @@
  *  - Write REPLAYGAIN_ALBUM_* tags only if in album mode
  *  - Better versioning (CMakeLists.txt → config.h)
  *  - TODO: clipping calculation still wrong
+ * 2019-07-08 - v0.2.4 - Matthias C. Hormann
+ *   - add "-s e" mode, writes extra tags (REPLAYGAIN_REFERENCE_LOUDNESS,
+ *     REPLAYGAIN_TRACK_RANGE and REPLAYGAIN_ALBUM_RANGE)
+ *   - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -43,6 +47,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <math.h>
 #include <getopt.h>
@@ -55,7 +60,7 @@
 #include "tag.h"
 #include "printf.h"
 
-const char *short_opts = "rackd:oqs:h?V";
+const char *short_opts = "rackd:oqs:h?v";
 
 static struct option long_opts[] = {
 	{ "track",     no_argument,       NULL, 'r' },
@@ -72,7 +77,7 @@ static struct option long_opts[] = {
 	{ "tag-mode",  required_argument, NULL, 's' },
 
 	{ "help",      no_argument,       NULL, 'h' },
-	{ "version",   no_argument,       NULL, 'V' },
+	{ "version",   no_argument,       NULL, 'v' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -83,6 +88,8 @@ int main(int argc, char *argv[]) {
 	int rc, i;
 
 	char mode = 's';
+	char unit[3] = "dB";
+
 	unsigned nb_files = 0;
 
 	double pre_gain = 0.f;
@@ -131,6 +138,9 @@ int main(int argc, char *argv[]) {
 
 			case 's':
 				mode = optarg[0];
+				if (mode == 'l') {
+					strcpy(unit, "LU");
+				}
 				break;
 
 			case '?':
@@ -138,7 +148,7 @@ int main(int argc, char *argv[]) {
 				help();
 				return 0;
 
-			case 'V':
+			case 'v':
 				version();
 				return 0;
 		}
@@ -149,7 +159,7 @@ int main(int argc, char *argv[]) {
 	scan_init(nb_files);
 
 	for (i = optind; i < argc; i++) {
-		ok_printf("Scanning '%s'...", argv[i]);
+		ok_printf("Scanning '%s' ...", argv[i]);
 
 		scan_file(argv[i], i - optind);
 	}
@@ -212,20 +222,22 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'i': /* ID3v2 tags */
+			case 'e': /* same as 'i' plus extra tags */
+			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
 						tag_clear_mp3(scan);
-						tag_write_mp3(scan, do_album);
+						tag_write_mp3(scan, do_album, mode, unit);
 						break;
 
 					case AV_CODEC_ID_FLAC:
 						tag_clear_flac(scan);
-						tag_write_flac(scan, do_album);
+						tag_write_flac(scan, do_album, mode, unit);
 						break;
 
 					case AV_CODEC_ID_VORBIS:
 						tag_clear_vorbis(scan);
-						tag_write_vorbis(scan, do_album);
+						tag_write_vorbis(scan, do_album, mode, unit);
 						break;
 
 					default:
@@ -273,16 +285,16 @@ int main(int argc, char *argv[]) {
 			printf("\nTrack: %s\n", scan -> file);
 
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
-			printf(" Range:    %8.2f LU\n", scan -> track_loudness_range);
-			printf(" Gain:     %8.2f dB\n", scan -> track_gain);
+			printf(" Range:    %8.2f %s\n", scan -> track_loudness_range, unit);
+			printf(" Gain:     %8.2f %s\n", scan -> track_gain, unit);
 			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("\nAlbum:\n");
 
 				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
-				printf(" Range:    %8.2f LU\n", scan -> album_loudness_range);
-				printf(" Gain:     %8.2f dB\n", scan -> album_gain);
+				printf(" Range:    %8.2f %s\n", scan -> album_loudness_range, unit);
+				printf(" Gain:     %8.2f %s\n", scan -> album_gain, unit);
 				printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
 			}
 		}
@@ -328,7 +340,10 @@ static inline void help(void) {
 	puts("");
 
 	CMD_HELP("--tag-mode d", "-s d",  "Delete ReplayGain tags from files");
-	CMD_HELP("--tag-mode i", "-s i",  "Write ReplayGain tags to files");
+	CMD_HELP("--tag-mode i", "-s i",  "Write ReplayGain 2.0 tags to files");
+	CMD_HELP("--tag-mode e", "-s e",  "like '-s i', plus extra tags (reference, ranges)");
+	CMD_HELP("--tag-mode l", "-s l",  "like '-s e', but LU units instead of dB");
+
 	CMD_HELP("--tag-mode s", "-s s",  "Don't write ReplayGain tags (default)");
 
 	puts("");

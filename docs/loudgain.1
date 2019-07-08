@@ -67,7 +67,19 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 \fB\-s i, \-\-tag\-mode i\fR
 .
 .P
-\~\~\~\~\~\~ Write ReplayGain tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis\.
+\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis\.
+.
+.P
+\fB\-s e, \-\-tag\-mode e\fR
+.
+.P
+\~\~\~\~\~\~ like \'\-s i\', plus extra tags (reference, ranges)\.
+.
+.P
+\fB\-s l, \-\-tag\-mode l\fR
+.
+.P
+\~\~\~\~\~\~ like \'\-s e\', but LU units instead of dB\.
 .
 .P
 \fB\-s s, \-\-tag\-mode s\fR
