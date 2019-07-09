@@ -54,8 +54,10 @@
 #include <math.h>
 #include <getopt.h>
 
+#include <ebur128.h>
 #include <libavcodec/avcodec.h>
 #include <libavutil/common.h>
+
 
 #include "config.h"
 #include "scan.h"
@@ -83,6 +85,12 @@ static struct option long_opts[] = {
 	{ 0, 0, 0, 0 }
 };
 
+bool warn_ebu            = false;
+int  ebur128_v_major     = 0;
+int  ebur128_v_minor     = 0;
+int  ebur128_v_patch     = 0;
+char ebur128_version[15] = "";
+
 static inline void help(void);
 static inline void version(void);
 
@@ -96,10 +104,17 @@ int main(int argc, char *argv[]) {
 
 	double pre_gain = 0.f;
 
-	bool no_clip    = false,
-	     warn_clip  = true,
-	     do_album   = false,
-	     tab_output = false;
+	bool no_clip    = false;
+	bool warn_clip  = true;
+	bool do_album   = false;
+	bool tab_output = false;
+
+	// libebur128 version check -- versions before 1.2.4 aren’t recommended
+	ebur128_get_version(&ebur128_v_major, &ebur128_v_minor, &ebur128_v_patch);
+	snprintf(ebur128_version, sizeof(ebur128_version), "%d.%d.%d",
+		ebur128_v_major, ebur128_v_minor, ebur128_v_patch);
+	if (ebur128_v_major <= 1 && ebur128_v_minor <= 2 && ebur128_v_patch < 4)
+		warn_ebu = true;
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -351,6 +366,11 @@ static inline void help(void) {
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3)\n");
 
+	if (warn_ebu) {
+		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
+		puts("This is an old version and might cause problems.\n");
+	}
+
 	puts(COLOR_RED "Options:" COLOR_OFF);
 
 	CMD_HELP("--help",     "-h", "Show this help");
@@ -387,4 +407,5 @@ static inline void help(void) {
 
 static inline void version(void) {
 	printf("%s %s\n", PROJECT_NAME, PROJECT_VER);
+	printf("%s %s\n", "libebur128", ebur128_version);
 }

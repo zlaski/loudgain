@@ -344,7 +344,7 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 		avr, &out_data, out_linesize, frame -> nb_samples,
 		frame -> data, frame -> linesize[0], frame -> nb_samples
 	) < 0)
-		fail_printf("Cannor convert");
+		fail_printf("Cannot convert");
 
 	rc = ebur128_add_frames_short(
 		ebur128, (short *) out_data, frame -> nb_samples

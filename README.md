@@ -54,7 +54,7 @@ See the [man page](docs/loudgain.1.md) for more information.
  * `libavcodec`
  * `libavformat`
  * `libavutil`
- * `libebur128`
+ * `libebur128` (v1.2.4+ recommended)
  * `libtag`
 
  On Ubuntu 18.04/Linux Mint 19.1, you can usually install CMake and the needed libraries using
