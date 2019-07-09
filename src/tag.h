@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit);
+void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit, bool lowercase);
 void tag_clear_mp3(scan_result *scan);
 
 void tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit);

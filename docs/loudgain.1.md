@@ -76,6 +76,11 @@ like '-s e', but LU units instead of dB.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Don't write ReplayGain tags (default).
 
+`-L, --lowercase`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Force lowercase 'REPLAYGAIN_*' tags (MP3/ID3v2 only; non-standard)
+
 `-o, --output`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

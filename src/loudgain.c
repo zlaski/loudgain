@@ -64,7 +64,7 @@
 #include "tag.h"
 #include "printf.h"
 
-const char *short_opts = "rackd:oqs:h?v";
+const char *short_opts = "rackd:oqs:Lh?v";
 
 static struct option long_opts[] = {
 	{ "track",     no_argument,       NULL, 'r' },
@@ -79,6 +79,7 @@ static struct option long_opts[] = {
 	{ "quiet",     no_argument,       NULL, 'q' },
 
 	{ "tag-mode",  required_argument, NULL, 's' },
+	{ "lowercase", no_argument,       NULL, 'L' },
 
 	{ "help",      no_argument,       NULL, 'h' },
 	{ "version",   no_argument,       NULL, 'v' },
@@ -108,6 +109,7 @@ int main(int argc, char *argv[]) {
 	bool warn_clip  = true;
 	bool do_album   = false;
 	bool tab_output = false;
+	bool lowercase  = false; // force MP3 ID3v2 tags to lowercase?
 
 	// libebur128 version check -- versions before 1.2.4 aren’t recommended
 	ebur128_get_version(&ebur128_v_major, &ebur128_v_minor, &ebur128_v_patch);
@@ -158,6 +160,10 @@ int main(int argc, char *argv[]) {
 				if (mode == 'l') {
 					strcpy(unit, "LU");
 				}
+				break;
+
+			case 'L':
+				lowercase = true;
 				break;
 
 			case '?':
@@ -270,7 +276,7 @@ int main(int argc, char *argv[]) {
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
 						tag_clear_mp3(scan);
-						tag_write_mp3(scan, do_album, mode, unit);
+						tag_write_mp3(scan, do_album, mode, unit, lowercase);
 						break;
 
 					case AV_CODEC_ID_FLAC:
@@ -396,6 +402,10 @@ static inline void help(void) {
 	CMD_HELP("--tag-mode l", "-s l",  "like '-s e', but LU units instead of dB");
 
 	CMD_HELP("--tag-mode s", "-s s",  "Don't write ReplayGain tags (default)");
+
+	puts("");
+
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/ID3v2 only; non-standard)");
 
 	puts("");
 

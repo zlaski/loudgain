@@ -66,38 +66,74 @@ static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
 // So for the time being, we write non-standard lowercase tags to ID3v2.
-void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit) {
+void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit, bool lowercase) {
 	char value[2048];
 
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag_add_txxx(tag, const_cast<char *>("replaygain_track_gain"), value);
+	if (lowercase) {
+		// use lowercase replaygain tags
+		// (non-standard but used by foobar2000 and needed by some players like IDJC)
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_track_gain"), value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag_add_txxx(tag, const_cast<char *>("replaygain_track_peak"), value);
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag_add_txxx(tag, const_cast<char *>("replaygain_track_peak"), value);
 
-	// Only write album tags if in album mode (would be zero otherwise)
-	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_album_gain"), value);
-
-		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_album_peak"), value);
-	}
-
-	// extra tags mode -s e or -s l
-	if (mode == 'e' || mode == 'l') {
-		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_reference_loudness"), value);
-
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_track_range"), value);
-
+		// Only write album tags if in album mode (would be zero otherwise)
 		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag_add_txxx(tag, const_cast<char *>("replaygain_album_range"), value);
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag_add_txxx(tag, const_cast<char *>("replaygain_album_gain"), value);
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag_add_txxx(tag, const_cast<char *>("replaygain_album_peak"), value);
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag_add_txxx(tag, const_cast<char *>("replaygain_reference_loudness"), value);
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag_add_txxx(tag, const_cast<char *>("replaygain_track_range"), value);
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag_add_txxx(tag, const_cast<char *>("replaygain_album_range"), value);
+			}
+		}
+	} else {
+		// use standard-compliant uppercase replaygain tags (default)
+		// required, for instance, by VLC
+		// unforunately not respected by others, like IDJC
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_GAIN"), value);
+
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_PEAK"), value);
+
+		// Only write album tags if in album mode (would be zero otherwise)
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_GAIN"), value);
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_PEAK"), value);
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_REFERENCE_LOUDNESS"), value);
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_RANGE"), value);
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_RANGE"), value);
+			}
 		}
 	}
 
@@ -115,6 +151,7 @@ void tag_clear_mp3(scan_result *scan) {
 		TagLib::ID3v2::UserTextIdentificationFrame *frame =
 		 dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
 
+		 // this removes all variants of upper-/lower-/mixed-case tags
 		if (frame && frame -> fieldList().size() >= 2) {
 			TagLib::String desc = frame -> description().upper();
 
