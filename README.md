@@ -178,9 +178,28 @@ This is due to the fact that loudgain uses _true peak_ (not RMS peak) values, wh
 loudgain uses the `libebur128` [library](https://github.com/jiixyj/libebur128) for this. It currently (v1.2.4) provides a true peak calculated using a custom polyphase FIR interpolator that will oversample 4x for sample rates < 96000 Hz, 2x for sample rates < 192000 Hz and leave the signal unchanged for 192000 Hz.
 
 
+### MP3 ID3v2.3, ID3v2.4, and APE tags
+
+MP3 files can come with lots of tagging versions: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _ID3v2.3_ and _ID3v2.4_. If people have been using `mp3gain` on the files, they might even contain an additional _APE_ set of tags. It’s a mess, really.
+
+Fortunately, nowadays, all older standards are obsolete and _ID3v2.3_ and _ID3v2.4_ are almost universally used.
+
+Older players usually don’t understand ID3v2.4, and ID3v2.3 doesn’t know about _UTF-8 encoding_. Important frames like TYER, TDAT, and TDRC have also changed. A mess again.
+
+My current solution to this works as follows:
+
+1. The overall philosophy is: "The user might know what he is doing. So try not to touch more than needed."
+
+2. loudgain will try to read important information from all of the above mentioned tag types, preferring ID3v2 variants.
+
+3. Upon saving, loudgain will preserve ID3v1/ID3v1.1 and APE tags, but upgrade IDv2.x tags to version _ID3v2.4_.
+
+I realize that a) people might _need_ ID3v2.3 and b) some of us _want_ to strip unneccessary ID3v1 and APE tags from MP3 files. So in a future version I will offer a means to force writing ID3v2.3 tags instead, and maybe even strip ID3v1 and APE tags. (In MP3 files, these have mostly been used for `mp3gain` data anyway.)
+
+
 ## COPYRIGHT
 
 Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>  
-Modifications and enhancements Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
+Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 
 See COPYING for the license.

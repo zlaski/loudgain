@@ -21,6 +21,8 @@
  *  - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
  * 2019-07-08 - v0.2.5 - Matthias C. Hormann
  *  - Clipping warning & prevention (-k) now works correctly, both track & album
+ * 2019-07-09 - v0.2.6 - Matthias C. Hormann
+ *  - Add "-L" mode to force lowercase tags in MP3/ID3v2.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
