@@ -15,6 +15,9 @@
  *   - add "-s l" mode (like "-s e" but uses LU/LUFS instead of dB)
  * 2019-07-09 - v0.2.6 - Matthias C. Hormann
  *  - Add "-L" mode to force lowercase tags in MP3/ID3v2.
+ * 2019-07-10 - v0.2.7 - Matthias C. Hormann
+ *  - Add "-S" mode to strip ID3v1/APEv2 tags from MP3 files.
+ *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -68,7 +71,8 @@ static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
 // So for the time being, we write non-standard lowercase tags to ID3v2.
-void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit, bool lowercase) {
+void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
+	bool lowercase, bool strip, int id3v2version) {
 	char value[2048];
 
 	TagLib::MPEG::File f(scan -> file);
@@ -139,7 +143,7 @@ void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit, bool
 		}
 	}
 
-	f.save(TagLib::MPEG::File::ID3v2, false);
+	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
 void tag_clear_mp3(scan_result *scan) {

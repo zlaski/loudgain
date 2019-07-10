@@ -81,10 +81,30 @@ Don't write ReplayGain tags (default).
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Force lowercase 'REPLAYGAIN_*' tags (MP3/ID3v2 only; non-standard)
 
+`-S, --striptags`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Strip tag types other than ID3v2 from MP3 files (i.e. ID3v1, APEv2).
+
+`-I 3, --id3v2version 3`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Write ID3v2.3 tags to MP3 files.
+
+`-I 4, --id3v2version 4`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Write ID3v2.4 tags to MP3 files (default).
+
 `-o, --output`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Database-friendly tab-delimited list output.
+Database-friendly tab-delimited list output (mp3gain-compatible).
+
+`-O, --output-new`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Database-friendly new format tab-delimited list output.
 
 `-q, --quiet`
 
@@ -99,6 +119,6 @@ Modifications: Matthias C. Hormann <mhormann@gmx.de>
 ## COPYRIGHT ##
 
 Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>  
-Modifications: Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
+Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
 
 This program is released under the 2 clause BSD license.

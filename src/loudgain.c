@@ -23,6 +23,10 @@
  *  - Clipping warning & prevention (-k) now works correctly, both track & album
  * 2019-07-09 - v0.2.6 - Matthias C. Hormann
  *  - Add "-L" mode to force lowercase tags in MP3/ID3v2.
+ * 2019-07-10 - v0.2.7 - Matthias C. Hormann
+ *  - Add "-S" mode to strip ID3v1/APEv2 tags from MP3 files.
+ *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
+ *  - First step to implement a new tab-delimited list format: "-O" mode.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -66,25 +70,28 @@
 #include "tag.h"
 #include "printf.h"
 
-const char *short_opts = "rackd:oqs:Lh?v";
+const char *short_opts = "rackd:oOqs:LSI:h?v";
 
 static struct option long_opts[] = {
-	{ "track",     no_argument,       NULL, 'r' },
-	{ "album",     no_argument,       NULL, 'a' },
+	{ "track",        no_argument,       NULL, 'r' },
+	{ "album",        no_argument,       NULL, 'a' },
 
-	{ "clip",      no_argument,       NULL, 'c' },
-	{ "noclip",    no_argument,       NULL, 'k' },
+	{ "clip",         no_argument,       NULL, 'c' },
+	{ "noclip",       no_argument,       NULL, 'k' },
 
-	{ "db-gain",   required_argument, NULL, 'd' },
+	{ "db-gain",      required_argument, NULL, 'd' },
 
-	{ "output",    no_argument,       NULL, 'o' },
-	{ "quiet",     no_argument,       NULL, 'q' },
+	{ "output",       no_argument,       NULL, 'o' },
+	{ "output-new",   no_argument,       NULL, 'O' },
+	{ "quiet",        no_argument,       NULL, 'q' },
 
-	{ "tag-mode",  required_argument, NULL, 's' },
-	{ "lowercase", no_argument,       NULL, 'L' },
+	{ "tag-mode",     required_argument, NULL, 's' },
+	{ "lowercase",    no_argument,       NULL, 'L' },
+	{ "striptags",    no_argument,       NULL, 'S' },
+	{ "id3v2version", required_argument, NULL, 'I' },
 
-	{ "help",      no_argument,       NULL, 'h' },
-	{ "version",   no_argument,       NULL, 'v' },
+	{ "help",         no_argument,       NULL, 'h' },
+	{ "version",      no_argument,       NULL, 'v' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -100,18 +107,21 @@ static inline void version(void);
 int main(int argc, char *argv[]) {
 	int rc, i;
 
-	char mode = 's';
-	char unit[3] = "dB";
+	char mode           = 's';
+	char unit[3]        = "dB";
 
-	unsigned nb_files = 0;
+	unsigned nb_files   = 0;
 
-	double pre_gain = 0.f;
+	double pre_gain     = 0.f;
 
-	bool no_clip    = false;
-	bool warn_clip  = true;
-	bool do_album   = false;
-	bool tab_output = false;
-	bool lowercase  = false; // force MP3 ID3v2 tags to lowercase?
+	bool no_clip        = false;
+	bool warn_clip      = true;
+	bool do_album       = false;
+	bool tab_output     = false;
+	bool tab_output_new = false;
+	bool lowercase      = false; // force MP3 ID3v2 tags to lowercase?
+	bool strip          = false; // MP3 ID3v2: strip other tag types?
+	int  id3v2version   = 4;     // MP3 ID3v2 version to write; can be 3 or 4
 
 	// libebur128 version check -- versions before 1.2.4 aren’t recommended
 	ebur128_get_version(&ebur128_v_major, &ebur128_v_minor, &ebur128_v_patch);
@@ -153,19 +163,38 @@ int main(int argc, char *argv[]) {
 				tab_output = true;
 				break;
 
+			case 'O':
+				tab_output_new = true;
+				break;
+
 			case 'q':
 				quiet = 1;
 				break;
 
-			case 's':
+			case 's': {
+				// for mp3gain compatibilty, include modes that do nothing
+				char *valid_modes = "cdielavsr";
 				mode = optarg[0];
+				if (strchr(valid_modes, mode) == NULL)
+					fail_printf("Invalid tag mode: '%c'", mode);
 				if (mode == 'l') {
 					strcpy(unit, "LU");
 				}
 				break;
+			}
 
 			case 'L':
 				lowercase = true;
+				break;
+
+			case 'S':
+				strip = true;
+				break;
+
+			case 'I':
+				id3v2version = atoi(optarg);
+				if (!(id3v2version == 3) && !(id3v2version == 4))
+					fail_printf("Invalid ID3v2 version; only 3 and 4 are supported.");
 				break;
 
 			case '?':
@@ -278,7 +307,7 @@ int main(int argc, char *argv[]) {
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
 						tag_clear_mp3(scan);
-						tag_write_mp3(scan, do_album, mode, unit, lowercase);
+						tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version);
 						break;
 
 					case AV_CODEC_ID_FLAC:
@@ -365,7 +394,7 @@ int main(int argc, char *argv[]) {
 }
 
 static inline void help(void) {
-	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %-15s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
+	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s%-5s %-16s%s  %s.\n", COLOR_YELLOW, CMDS ",", CMDL, COLOR_OFF, MSG);
 
 	printf(COLOR_RED "Usage: " COLOR_OFF);
 	printf("%s%s%s ", COLOR_GREEN, PROJECT_NAME, COLOR_OFF);
@@ -408,11 +437,15 @@ static inline void help(void) {
 	puts("");
 
 	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/ID3v2 only; non-standard)");
+	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP3");
+	CMD_HELP("--id3v2version 3", "-I 3", "Write ID3v2.3 tags to MP3 files");
+	CMD_HELP("--id3v2version 4", "-I 4", "Write ID3v2.4 tags to MP3 files (default)");
 
 	puts("");
 
-	CMD_HELP("--output", "-o",  "Database-friendly tab-delimited list output");
-	CMD_HELP("--quiet",  "-q",  "Don't print status messages");
+	CMD_HELP("--output",     "-o",  "Database-friendly tab-delimited list output");
+	CMD_HELP("--output-new", "-O",  "New format tab-delimited list output");
+	CMD_HELP("--quiet",      "-q",  "Don't print status messages");
 
 	puts("");
 }

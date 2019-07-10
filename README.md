@@ -73,7 +73,11 @@ $ make
 $ [sudo] make install
 ```
 
-## SPECIALTIES AND EXTRAS
+## TECHNICAL DETAILS (advanced users stuff)
+
+Not an expert? **Don’t worry, loudgain comes with sensible default settings.** You might never need the "special options".
+
+But _if_ you do, you might need them badly. Welcome to the expert sessions—read on!
 
 ### Uppercase or lowercase 'REPLAYGAIN_*' tags?
 
@@ -180,13 +184,13 @@ loudgain uses the `libebur128` [library](https://github.com/jiixyj/libebur128) f
 
 ### MP3 ID3v2.3, ID3v2.4, and APE tags
 
-MP3 files can come with lots of tagging versions: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _ID3v2.3_ and _ID3v2.4_. If people have been using `mp3gain` on the files, they might even contain an additional _APE_ set of tags. It’s a mess, really.
+MP3 files can come with lots of tagging versions: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _ID3v2.3_ and _ID3v2.4_. If people have been using `mp3gain` on the files, they might even contain an additional _APEv2_ set of tags. It’s a mess, really.
 
 Fortunately, nowadays, all older standards are obsolete and _ID3v2.3_ and _ID3v2.4_ are almost universally used.
 
 Older players usually don’t understand ID3v2.4, and ID3v2.3 doesn’t know about _UTF-8 encoding_. Important frames like TYER, TDAT, and TDRC have also changed. A mess again.
 
-My current solution to this works as follows:
+My current solution to this (and loudgain’s default behaviour) is as follows:
 
 1. The overall philosophy is: "The user might know what he is doing. So try not to touch more than needed."
 
@@ -194,7 +198,23 @@ My current solution to this works as follows:
 
 3. Upon saving, loudgain will preserve ID3v1/ID3v1.1 and APE tags, but upgrade IDv2.x tags to version _ID3v2.4_.
 
-I realize that a) people might _need_ ID3v2.3 and b) some of us _want_ to strip unneccessary ID3v1 and APE tags from MP3 files. So in a future version I will offer a means to force writing ID3v2.3 tags instead, and maybe even strip ID3v1 and APE tags. (In MP3 files, these have mostly been used for `mp3gain` data anyway.)
+I realize that a) people might _need_ ID3v2.3 and b) some of us _want_ to strip unneccessary ID3v1 and APE tags from MP3 files. There is a solution to that:
+
+#### Force writing ID3v2.3 or ID3v2.4 tags
+
+The default tag type loudgain writes to MP3 files is _ID3v2.4_ which is the most modern and UTF-8-capable version. There might be reasons to _force_ loudgain to write ID3v2.3 tags instead (maybe for an older audio player that doesn’t handle ID3v2.4).
+
+Using the options `-I 3` (`--id3v2version 3`) or `-I 4` (`--id3v2version 4`), you can force loudgain to write ID3v2.3 or ID3v2.4 tags, respectively.
+
+This option has no effect on FLAC or Ogg vorbis files.
+
+#### Strip unwanted ID3v1/APEv2 tags `-S` (`--striptags`)
+
+More than one kind of tags in an MP3 file is generally a bad idea. It might confuse other tagging software and audio players. Historically, `mp3gain` used _APEv2_ tags to "hide" ReplayGain data from normal ID3 taggers—a bad idea. ID3v1, ID3v1.1 and ID3v2.2 are obsolete due to their restricted possibilities and lack of support.
+
+Using loudgain’s `-S` (`--striptags`) option, these other tag types can be removed from MP3 files when writing new ReplayGain tags, and a clean ID3v2-only file is left. In this process, loudgain will try to keep content from other tag types as far as possible (like 'MP3GAIN_MINMAX', for instance) and transport it over into appropriate ID3v2 tags. For tags that are a duplicate of existing ID3v2 tags, the ID3v2 tag content is preferred.
+
+This option has no effect on FLAC or Ogg Vorbis files.
 
 
 ## COPYRIGHT
