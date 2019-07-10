@@ -78,6 +78,13 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-07-10** — **Warning:**
+* There seems to be an open [bug](https://github.com/taglib/taglib/issues/864) in `taglib` (which loudgain uses) that also affects lots of other programs: Upon writing _Ogg Vorbis_ files, they can possibly get corrupted.
+
+  **I advise _not_ to save tags to Ogg Vorbis files right now, until this issue is resolved upstream and you can compile a bugfree taglib or the distros provide one!**
+
+  Analyzing Ogg files is fine, as well as analyzing and saving to MP3 and FLAC.
+
 **2019-07-10** — **v0.2.7** released:
 * Add option to strip ID3v1/APEv2 tags from MP3 files: `-S` (`--striptags`).
 * Add option to select between ID3v2.3 & ID3v2.4 for MP3 files: `-I 3` (`--id3v2version 3`).
