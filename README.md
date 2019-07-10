@@ -1,5 +1,41 @@
-loudgain
-========
+# loudgain
+
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3 audio files. It uses the well-known `mp3gain` commandline syntax.
+
+Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
+
+---
+
+## Table of Contents
+
+<!-- MDTOC maxdepth:6 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Table of Contents](#table-of-contents)   
+- [MAIN FEATURES](#main-features)   
+- [NEWS, CHANGELOG](#news-changelog)   
+- [GETTING STARTED](#getting-started)   
+- [DEPENDENCIES](#dependencies)   
+- [BUILDING](#building)   
+- [TECHNICAL DETAILS (advanced users stuff)](#technical-details-advanced-users-stuff)   
+   - [Things in the `bin`folder](#things-in-the-binfolder)   
+      - [rgbpm.sh – Folder-based loudness and BPM scanning](#rgbpmsh-–-folder-based-loudness-and-bpm-scanning)   
+      - [loudgain.static](#loudgainstatic)   
+   - [Uppercase or lowercase 'REPLAYGAIN_*' tags?](#uppercase-or-lowercase-replaygain_-tags)   
+   - [Tags written (and/or deleted)](#tags-written-andor-deleted)   
+      - [Default mode `-s i` (`--tag-mode i`)](#default-mode-s-i-tag-mode-i)   
+      - [Enhanced mode `-s e` (`--tag-mode e`)](#enhanced-mode-s-e-tag-mode-e)   
+      - ["LU" units mode `-s l` (`--tag-mode l`)](#lu-units-mode-s-l-tag-mode-l)   
+   - [Track and Album Peak](#track-and-album-peak)   
+   - [MP3 ID3v2.3, ID3v2.4, and APE tags](#mp3-id3v23-id3v24-and-ape-tags)   
+      - [Force writing ID3v2.3 or ID3v2.4 tags](#force-writing-id3v23-or-id3v24-tags)   
+      - [Strip unwanted ID3v1/APEv2 tags `-S` (`--striptags`)](#strip-unwanted-id3v1apev2-tags-s-striptags)   
+- [COPYRIGHT](#copyright)   
+
+<!-- /MDTOC -->
+
+---
+
+## MAIN FEATURES
 
 **loudgain** is a loudness normalizer that scans music files and calculates
 loudness-normalized gain and loudness peak values according to the EBU R128
@@ -32,6 +68,54 @@ tag-mode which uses "LU"; 1 dB = 1 LU).
 loudgain defaults to the ReplayGain 2.0 standard (-18 LUFS, "dB" units,
 uppercase tags). Peak values are measured using the True Peak algorithm.
 
+**Standing on the shoulders of giants:** loudgain wouldn’t be possible without Linux and the fantastic [`taglib`](https://github.com/taglib/taglib) and [`libebur128`](https://github.com/jiixyj/libebur128) libraries. Thank you!
+
+Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back in 2014 and gave us his [v0.1 repo](https://github.com/ghedo/loudgain) from which I forked. (Want a PR?)
+
+---
+
+## NEWS, CHANGELOG
+
+**Current** — v0.2.7 in progress:
+* Add option to strip ID3v1/APEv2 tags from MP3 files: `-S` (`--striptags`).
+* Add option to select between ID3v2.3 & ID3v2.4 for MP3 files: `-I 3` (`--id3v2version 3`).
+* Much more technical documentation here.
+* Working on a new tab-delimited list output format: `-O` (`--output-new`).
+
+**2019-07-09** — **v0.2.6** released:
+* Reverted back to default uppercase `REPLAYGAIN_*` tags in MP3 files. The ReplayGain 2.0 spec requires this.
+* Added `-L` (`--lowercase`) option for those who _need_ lowercase `replaygain_*` tags (MP3/IDv2 _only_; doesn’t affect FLAC/Ogg). Read [Uppercase or lowercase 'REPLAYGAIN_*' tags?](#uppercase-or-lowercase-replaygain_-tags).
+
+**2019-07-08** — **v0.2.5** released:
+* Clipping warning & clipping prevention (`-k`) now work correctly, for both track and album.
+
+**2019-07-08** — **v0.2.4** and **v0.2.4-1** released:
+* Add "extra tags" mode `-s e` (`--tag-mode e`). Writes `REPLAYGAIN_REFERENCE_LOUDNESS`, `REPLAYGAIN_TRACK_RANGE` and `REPLAYGAIN_ALBUM_RANGE` tags (same that [`bs1770gain`](https://github.com/petterreinholdtsen/bs1770gain) uses).
+* Add "LU" units mode `ss l` (`--tag-mode l`). Like above but uses "LU" instead of "dB" units in the tags.
+* Update README.md and program help.
+
+**2019-07-07** — **v0.2.3** released:
+*  Fix broken album peak (again).
+* MP3/ID3v2 now get _lowercase_ `replaygain_*` tags.
+* Better versioning.
+
+**2019-07-07** — **v0.2.2** released:
+* Fixed album peak calculation.
+* Write `REPLAYGAIN_ALBUM_*` tags only when in album mode.
+* Better versioning (`CMakeLists.txt` → `config.h`).
+* **TODO:** Clipping calculations still wrong.
+
+**2019-06-30** — **v0.2.1** released:
+* Added version and `-v` (`--version`) option.
+* Added writing tags to Ogg Vorbis files (now supports MP3, FLAC, Ogg Vorbis).
+* Always remove `REPLAYGAIN_REFERENCE_LOUDNESS`, wrong value might confuse players.
+* Added notice in help on which file types can be written.
+* Added album summary in output.
+
+**2019-06** – v0.1 (2014-06-13) forked from https://github.com/ghedo/loudgain.
+
+---
+
 ## GETTING STARTED
 
 loudgain is (mostly) compatible with mp3gain's command-line arguments (the `-r`
@@ -49,6 +133,8 @@ $ loudgain -d -5 -a -s l *.flac  # apply -5 LU pregain to reach -23 LUFS target 
 
 See the [man page](docs/loudgain.1.md) for more information.
 
+---
+
 ## DEPENDENCIES
 
  * `libavcodec`
@@ -62,6 +148,8 @@ See the [man page](docs/loudgain.1.md) for more information.
  sudo apt-get install cmake libavcodec-dev libavformat-dev libavutil-dev libebur128-dev libtag1-dev
  ```
 
+---
+
 ## BUILDING
 
 loudgain is distributed as source code. Install with:
@@ -72,6 +160,27 @@ $ cmake ..
 $ make
 $ [sudo] make install
 ```
+
+If you modified [docs/loudgain.1.md](docs/loudgain.1.md) (the man page source), get `ronn`, move to the `docs/` folder and type:
+
+```bash
+$ ronn loudgain.1.md
+```
+
+This will generate new `loudgain.1` and `loudgain.1.html` files (man page and readable HTML, respectively).
+
+If you need to recreate `bin/loudgain.static`, get [staticx](https://github.com/JonathonReinhart/staticx), install loudgain on your system, move to the `bin/` folder and type:
+
+```bash
+$ staticx --strip `which loudgain` loudgain.static
+$ ln -s loudgain.static loudgain
+```
+
+You can then move `loudgain` and `loudgain.static` to your target user’s `~/bin` folder.
+
+Beware this is a kludge only to be used if all else fails. (For example, you _can_ build on Ubuntu 18.04/Linux Mint 19 but really _need_ loudgain to work on Ubuntu 14.04/Linux Mint 17.3. That’s what I used it for.)
+
+---
 
 ## TECHNICAL DETAILS (advanced users stuff)
 
@@ -249,6 +358,7 @@ Using loudgain’s `-S` (`--striptags`) option, these other tag types can be rem
 
 This option has no effect on FLAC or Ogg Vorbis files.
 
+---
 
 ## COPYRIGHT
 
