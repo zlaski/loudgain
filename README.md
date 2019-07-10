@@ -412,8 +412,8 @@ $ loudgain -a -k -s e *.flac
 
 ## AUTHORS
 
-Alessandro Ghedini <alessandro@ghedini.me>
-Matthias C. Hormann <mhormann@gmx.de>
+Alessandro Ghedini <alessandro@ghedini.me>  
+Matthias C. Hormann <mhormann@gmx.de>  
 
 ## COPYRIGHT
 
