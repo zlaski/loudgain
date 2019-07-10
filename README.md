@@ -79,6 +79,39 @@ Not an expert? **Don’t worry, loudgain comes with sensible default settings.**
 
 But _if_ you do, you might need them badly. Welcome to the expert sessions—read on!
 
+### Things in the `bin`folder
+
+These are meant for testing, and to get you going FAST.
+You can simply copy these files into your user’s `$HOME/bin` folder and make them executable. On most Linuxes, they should be available as commands in the path when opening the next shell. Maybe you need to log off and back on again to make it work.
+
+#### rgbpm.sh – Folder-based loudness and BPM scanning
+
+This is a little bash script to invoke loudgain (well, and a BPM scanner) and have it scan album folders, starting from a top folder, recursively. I use this almost every day.
+
+```bash
+$ rgbpm.sh folder [...]
+```
+
+Please study the code and adapt as needed for _your_ situation.
+
+#### loudgain.static
+
+This is a horrible kludge, really. A prebuilt statically-linked runnable version of loudgain _only_ to be used if you really really have no other option (i.e., needed libraries uncompilable under older Linuxes).
+
+It’s a 64-bit ELF made using [staticx](https://github.com/JonathonReinhart/staticx) that brings the needed libraries with it. I tested it with Ubuntu versions 14.04–18.04, and Linux Mint 17.3–19.1. It works but it’s _slooow_.
+
+If you don’t have a "real" `loudgain`, you can create a symlink to it in your `~/bin` directory as follows (assuming you have copied `loudgain.static` to there):
+```bash
+$ cd ~/bin
+$ ln -s loudgain.static loudgain
+```
+
+Verify that it’s available as a normal command by trying either of the following:
+```bash
+$ which loudgain
+$ loudgain -h
+```
+
 ### Uppercase or lowercase 'REPLAYGAIN_*' tags?
 
 This has been a problem ever since, most notably in MP3 ID3v2 tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
