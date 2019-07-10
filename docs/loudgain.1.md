@@ -111,10 +111,10 @@ Database-friendly new format tab-delimited list output.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Don't print status messages.
 
-## AUTHOR ##
+## AUTHORS ##
 
 Alessandro Ghedini <alessandro@ghedini.me>  
-Modifications: Matthias C. Hormann <mhormann@gmx.de>
+Matthias C. Hormann <mhormann@gmx.de>
 
 ## COPYRIGHT ##
 

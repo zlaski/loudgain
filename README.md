@@ -29,6 +29,8 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
    - [MP3 ID3v2.3, ID3v2.4, and APE tags](#mp3-id3v23-id3v24-and-ape-tags)   
       - [Force writing ID3v2.3 or ID3v2.4 tags](#force-writing-id3v23-or-id3v24-tags)   
       - [Strip unwanted ID3v1/APEv2 tags `-S` (`--striptags`)](#strip-unwanted-id3v1apev2-tags-s-striptags)   
+   - [Analyze audio files and output to CSV](#analyze-audio-files-and-output-to-csv)   
+- [AUTHORS](#authors)   
 - [COPYRIGHT](#copyright)   
 
 <!-- /MDTOC -->
@@ -76,11 +78,11 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
-**Current** — v0.2.7 in progress:
+**2019-07-10** — **v0.2.7** released:
 * Add option to strip ID3v1/APEv2 tags from MP3 files: `-S` (`--striptags`).
 * Add option to select between ID3v2.3 & ID3v2.4 for MP3 files: `-I 3` (`--id3v2version 3`).
 * Much more technical documentation here.
-* Working on a new tab-delimited list output format: `-O` (`--output-new`).
+* Great new tab-delimited list output format: `-O` (`--output-new`). For a usage example, read [Analyze audio files and output to CSV](#analyze-audio-files-and-output-to-csv).
 
 **2019-07-09** — **v0.2.6** released:
 * Reverted back to default uppercase `REPLAYGAIN_*` tags in MP3 files. The ReplayGain 2.0 spec requires this.
@@ -358,7 +360,60 @@ Using loudgain’s `-S` (`--striptags`) option, these other tag types can be rem
 
 This option has no effect on FLAC or Ogg Vorbis files.
 
+
+### Analyze audio files and output to CSV
+
+Using the new output mode `-O` (`--output-new`) in combination with quiet mode `-q` (`--quiet`) allows you to analyze audio files without modifying anything, and write the results to a `.csv` file for later examination with LibreOffice Calc (or Excel).
+
+As an example, let’s examine a folder that contains Mary Black’s album »No Frontiers« (1989) in FLAC format. This is an album produced before the _loudness wars_ started and has a wide dynamic range. Unfortunately, it was also produced near the full digital range, at that time of course disregarding the EBU R128 recommendation of a maximum peak at -1 dBTP. (This album is actually a good example of why the EBU R128 recommendation to use a -23 LUFS target makes much sense!)
+
+Take a peak at the peaks (»Mary Black - Columbus«):
+
+![Mary Black - Columbus](docs/images/Mary%20Black%20-%20Columbus.png)
+
+Well, we want to analyse the album first, into `test-1.csv`:
+
+```bash
+$ loudgain -a -O -q *.flac > test-1.csv
+```
+
+_Hint:_ Select `tab-delimited` when opening the `.csv` file with LibreOffice Calc or Excel, _not_ `semicolon-` or `comma-delimited`.
+
+We get the following table (example):
+
+![test-1.csv](docs/images/test-1.csv.png)
+
+Watch the **Will_clip** column. **Oops!** Due to the high true peaks, tracks will **clip** when being replaygained at -18 LUFS and played with an audio player that doesn’t do clipping prevention!
+
+Now let’s see what would happen if we used loudgain’s clipping prevention mechanism (effectively reducing the gain just below the clipping point). We simply add the `-k` option to the commandline and write the results to `test-2.csv` for analysis:
+
+```bash
+$ loudgain -a -O -q -k *.flac > test-2.csv
+```
+
+See what we get:
+
+![test-2.csv](docs/images/test-2.csv.png)
+
+By correcting the album gain from -0.12 dB to -0.15 dB, we could ensure that nothing clips when using a player in album RG mode. Furthermore, three tracks needed a track gain adjustment to prevent clipping (check the **Clip_prevent** column).
+
+Oh happy audiophiles! I will now let loudgain apply what we found (add `-s e` to the commandline), then sit back before the big hi-fi set and enjoy one of my favourite albums—totally clipping-free.
+
+```bash
+$ loudgain -a -k -s e *.flac
+```
+(Since we don’t need to write a CSV file anymore, I dropped the `-O` and `-q` commands and the redirection from the above.)
+
+**… And this was just _one_ example of what you can do with loudgain.**
+
+**Have fun, experiment, give me feedback, and SPREAD THE WORD!**
+
 ---
+
+## AUTHORS
+
+Alessandro Ghedini <alessandro@ghedini.me>
+Matthias C. Hormann <mhormann@gmx.de>
 
 ## COPYRIGHT
 

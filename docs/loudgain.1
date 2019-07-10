@@ -94,10 +94,34 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 \~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP3/ID3v2 only; non\-standard)
 .
 .P
+\fB\-S, \-\-striptags\fR
+.
+.P
+\~\~\~\~\~\~ Strip tag types other than ID3v2 from MP3 files (i\.e\. ID3v1, APEv2)\.
+.
+.P
+\fB\-I 3, \-\-id3v2version 3\fR
+.
+.P
+\~\~\~\~\~\~ Write ID3v2\.3 tags to MP3 files\.
+.
+.P
+\fB\-I 4, \-\-id3v2version 4\fR
+.
+.P
+\~\~\~\~\~\~ Write ID3v2\.4 tags to MP3 files (default)\.
+.
+.P
 \fB\-o, \-\-output\fR
 .
 .P
-\~\~\~\~\~\~ Database\-friendly tab\-delimited list output\.
+\~\~\~\~\~\~ Database\-friendly tab\-delimited list output (mp3gain\-compatible)\.
+.
+.P
+\fB\-O, \-\-output\-new\fR
+.
+.P
+\~\~\~\~\~\~ Database\-friendly new format tab\-delimited list output\.
 .
 .P
 \fB\-q, \-\-quiet\fR
@@ -105,17 +129,17 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 .P
 \~\~\~\~\~\~ Don\'t print status messages\.
 .
-.SH "AUTHOR"
+.SH "AUTHORS"
 Alessandro Ghedini \fIalessandro@ghedini\.me\fR
 .
 .br
-Modifications: Matthias C\. Hormann \fImhormann@gmx\.de\fR
+Matthias C\. Hormann \fImhormann@gmx\.de\fR
 .
 .SH "COPYRIGHT"
 Copyright (C) 2014 Alessandro Ghedini \fIalessandro@ghedini\.me\fR
 .
 .br
-Modifications: Copyright (C) 2019 Matthias C\. Hormann \fImhormann@gmx\.de\fR
+Everything after v0\.1: Copyright (C) 2019 Matthias C\. Hormann \fImhormann@gmx\.de\fR
 .
 .P
 This program is released under the 2 clause BSD license\.

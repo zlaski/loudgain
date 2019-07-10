@@ -221,6 +221,9 @@ int main(int argc, char *argv[]) {
 	if (tab_output)
 		printf("File\tMP3 gain\tdB gain\tMax Amplitude\tMax global_gain\tMin global_gain\n");
 
+	if (tab_output_new)
+		printf("File\tLoudness\tRange\tGain\tReference\tPeak\tPeak_dBTP\tWill_clip\tClip_prevent\n");
+
 	for (i = 0; i < nb_files; i++) {
 		bool will_clip = false;
 		double tgain = 1.0;
@@ -346,6 +349,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (tab_output) {
+			// output old-style mp3gain-compatible list
 			printf("%s\t", scan -> file);
 			printf("%d\t", 0);
 			printf("%.2f\t", scan -> track_gain);
@@ -364,7 +368,31 @@ int main(int argc, char *argv[]) {
 				printf("%d\t", 0);
 				printf("%d\n", 0);
 			}
+		} else if (tab_output_new) {
+			// output new style list: File;Loudness;Range;Gain;Reference;Peak;Peak dBTP;Clipping;Clip-prevent
+			printf("%s\t", scan -> file);
+			printf("%.2f LUFS\t", scan -> track_loudness);
+			printf("%.2f %s\t", scan -> track_loudness_range, unit);
+			printf("%.2f %s\t", scan -> track_gain, unit);
+			printf("%.2f LUFS\t", scan -> loudness_reference);
+			printf("%.6f\t", scan -> track_peak);
+			printf("%.2f dBTP\t", 20.0 * log10(scan -> track_peak));
+			printf("%s\t", will_clip ? "Y" : "N");
+			printf("%s\n", tclip ? "Y" : "N");
+
+			if ((i == (nb_files - 1)) && do_album) {
+				printf("%s\t", "Album");
+				printf("%.2f LUFS\t", scan -> album_loudness);
+				printf("%.2f %s\t", scan -> album_loudness_range, unit);
+				printf("%.2f %s\t", scan -> album_gain, unit);
+				printf("%.2f LUFS\t", scan -> loudness_reference);
+				printf("%.6f\t", scan -> album_peak);
+				printf("%.2f dBTP\t", 20.0 * log10(scan -> album_peak));
+				printf("%s\t", (!aclip && (again > apeak)) ? "Y" : "N");
+				printf("%s\n", aclip ? "Y" : "N");
+			}
 		} else {
+			// output something human-readable
 			printf("\nTrack: %s\n", scan -> file);
 
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
