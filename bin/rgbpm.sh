@@ -5,10 +5,11 @@
 # For correct album replay gain, we assume all files of one album are in the same folder.
 # 2019-07-07 - new version looks for loudgain
 # 2019-07-10 - new version compatible with loudgain v0.2.6/0.2.7
+#            - added -k (clipping prevention) option to loudgain commands
 
 # define me
 me=`basename "$0"`
-#MUSICDIR="/home/$USER/Musik/Frank/ROCK/"
+#MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
 # check if we have loudgain available
@@ -61,21 +62,21 @@ while [ "$1" != '' ] ; do
 
     # calculate replay gain for all FLAC in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -print0 | xargs -0 -r loudgain -a -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -print0 | xargs -0 -r loudgain -a -k -s e
     else
       find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -print0 | xargs -0 -r metaflac --add-replay-gain
     fi
 
     # calculate replay gain for all OGG in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r loudgain -a -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r loudgain -a -k -s e
     else
       find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r vorbisgain -a
     fi
 
     # calculate replay gain for all MP3 in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
     else
       find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r mp3gain2
     fi
