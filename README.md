@@ -402,7 +402,7 @@ See what we get:
 
 ![test-2.csv](docs/images/test-2.csv.png)
 
-By correcting the album gain from -0.12 dB to -0.15 dB, we could ensure that nothing clips when using a player in album RG mode. Furthermore, three tracks needed a track gain adjustment to prevent clipping (check the **Clip_prevent** column).
+By correcting the album gain from 0.12 dB to -0.15 dB, we could ensure that nothing clips when using a player in album RG mode. Furthermore, three tracks needed a track gain adjustment to prevent clipping (check the **Clip_prevent** column).
 
 Oh happy audiophiles! I will now let loudgain apply what we found (add `-s e` to the commandline), then sit back before the big hi-fi set and enjoy one of my favourite albums—totally clipping-free.
 
