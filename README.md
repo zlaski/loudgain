@@ -78,6 +78,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-07-12** — Temporary solution to the taglib problem:
+* If you need to loudgain _Ogg Vorbis_ files, you can use the provided `loudgain.static` in the `bin/` folder. I have built it against _taglib 1.11.1-3_ on Manjaro, a version that doesn’t show the bug. Read [loudgain.static](#loudgainstatic).
+
 **2019-07-10** — **Warning:**
 * There seems to be an open [bug](https://github.com/taglib/taglib/issues/864) in `taglib` (which loudgain uses) that also affects lots of other programs: Upon writing _Ogg Vorbis_ files, they can possibly get corrupted.
 
@@ -216,7 +219,7 @@ Please study the code and adapt as needed for _your_ situation.
 
 This is a horrible kludge, really. A prebuilt statically-linked runnable version of loudgain _only_ to be used if you really really have no other option (i.e., needed libraries uncompilable under older Linuxes).
 
-It’s a 64-bit ELF made using [staticx](https://github.com/JonathonReinhart/staticx) that brings the needed libraries with it. I tested it with Ubuntu versions 14.04–18.04, and Linux Mint 17.3–19.1. It works but it’s _slooow_.
+It’s a 64-bit ELF made using [staticx](https://github.com/JonathonReinhart/staticx) that brings the needed libraries with it. I tested it with Ubuntu versions 14.04–18.04, Linux Mint 17.3–19.1, and Manjaro 18.0.4. It works but it’s _slooow_ to start.
 
 If you don’t have a "real" `loudgain`, you can create a symlink to it in your `~/bin` directory as follows (assuming you have copied `loudgain.static` to there):
 ```bash
