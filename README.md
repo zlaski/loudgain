@@ -30,6 +30,12 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
       - [Force writing ID3v2.3 or ID3v2.4 tags](#force-writing-id3v23-or-id3v24-tags)   
       - [Strip unwanted ID3v1/APEv2 tags `-S` (`--striptags`)](#strip-unwanted-id3v1apev2-tags-s-striptags)   
    - [Analyze audio files and output to CSV](#analyze-audio-files-and-output-to-csv)   
+      - [Example: Mary Black’s album »No Frontiers« (1989)](#example-mary-black’s-album-»no-frontiers«-1989)   
+      - [Write a simple analysis to a CSV file](#write-a-simple-analysis-to-a-csv-file)   
+      - [Analyze again, using clipping prevention](#analyze-again-using-clipping-prevention)   
+      - [Just for fun: What if we _really_ followed the EBU R128 recommendation?](#just-for-fun-what-if-we-_really_-followed-the-ebu-r128-recommendation)   
+      - [Time to save the tags and listen to the music!](#time-to-save-the-tags-and-listen-to-the-music)   
+   - [Clipping prevention](#clipping-prevention)   
 - [AUTHORS](#authors)   
 - [COPYRIGHT](#copyright)   
 
@@ -77,6 +83,13 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-07-13** — **v0.3.0** released:
+  * Much better clipping prevention logic.
+  * Breaking change: Some long options slightly renamed.
+  * Breaking change: `-k` now obeys EBU -1 dBTP maximum true peak level (as opposed to 0 dBTP before). Read [Clipping prevention](#clipping-prevention).
+  * New option `-K n` (`--maxtpl=n`) switches on clipping prevention like `-k` and allows manually setting the max. true peak level (i.e., `-K 0` to limit at digital full scale, or `-K -2` if later processing includes lossy encoding).
+  * Breaking change: Reordered and extended `-O` (`--output-new`) output. It now adds the fields `New_Peak` and `New_Peak_dBTP` so one can see what will happen in the playout/post-processing chain after the replay gain has been applied. Read [Analyze audio files and output to CSV](#analyze-audio-files-and-output-to-csv).
 
 **2019-07-12** — Temporary solution to the taglib problem:
 * If you need to loudgain _Ogg Vorbis_ files, you can use the provided `loudgain.static` in the `bin/` folder. I have built it against _taglib 1.11.1-3_ on Manjaro, a version that doesn’t show the bug. Read [loudgain.static](#loudgainstatic).
@@ -375,11 +388,14 @@ This option has no effect on FLAC or Ogg Vorbis files.
 
 Using the new output mode `-O` (`--output-new`) in combination with quiet mode `-q` (`--quiet`) allows you to analyze audio files without modifying anything, and write the results to a `.csv` file for later examination with LibreOffice Calc (or Excel).
 
+#### Example: Mary Black’s album »No Frontiers« (1989)
 As an example, let’s examine a folder that contains Mary Black’s album »No Frontiers« (1989) in FLAC format. This is an album produced before the _loudness wars_ started and has a wide dynamic range. Unfortunately, it was also produced near the full digital range, at that time of course disregarding the EBU R128 recommendation of a maximum peak at -1 dBTP. (This album is actually a good example of why the EBU R128 recommendation to use a -23 LUFS target makes much sense!)
 
 Take a peak at the peaks (»Mary Black - Columbus«):
 
 ![Mary Black - Columbus](docs/images/Mary%20Black%20-%20Columbus.png)
+
+#### Write a simple analysis to a CSV file
 
 Well, we want to analyse the album first, into `test-1.csv`:
 
@@ -395,6 +411,8 @@ We get the following table (example):
 
 Watch the **Will_clip** column. **Oops!** Due to the high true peaks, tracks will **clip** when being replaygained at -18 LUFS and played with an audio player that doesn’t do clipping prevention!
 
+#### Analyze again, using clipping prevention
+
 Now let’s see what would happen if we used loudgain’s clipping prevention mechanism (effectively reducing the gain just below the clipping point). We simply add the `-k` option to the commandline and write the results to `test-2.csv` for analysis:
 
 ```bash
@@ -405,9 +423,25 @@ See what we get:
 
 ![test-2.csv](docs/images/test-2.csv.png)
 
-By correcting the album gain from 0.12 dB to -0.15 dB, we could ensure that nothing clips when using a player in album RG mode. Furthermore, three tracks needed a track gain adjustment to prevent clipping (check the **Clip_prevent** column).
+By correcting the album gain from 0.12 dB to -1.15 dB, we could ensure that nothing clips when using a player in album RG mode. Furthermore, seven tracks needed a track gain adjustment to prevent clipping (check the **Clip_prevent** column).
 
-Oh happy audiophiles! I will now let loudgain apply what we found (add `-s e` to the commandline), then sit back before the big hi-fi set and enjoy one of my favourite albums—totally clipping-free.
+#### Just for fun: What if we _really_ followed the EBU R128 recommendation?
+
+Just for fun, let’s see what would happen if we followed the EBU R128 recommendation and use a loudness target of -23 LUFS instead of ReplayGain’s -18 LUFS. We simply tell loudgain to use an extra -5 LU pre-gain (`-d -5`, thus effectively going from -18 to -23 LUFS):
+
+```bash
+$ loudgain -a -O -q -k -d -5 *.flac > test-3.csv
+```
+
+Et voilà!
+
+![test-3.csv](docs/images/test-3.csv.png)
+
+At -23 LUFS, we have ample headroom, no gain shifts are needed to prevent clipping, a good thing. Apparently the EBU knew what they were doing. 8-)
+
+#### Time to save the tags and listen to the music!
+
+Anyway, back to the ReplayGain 2.0 world. I will now let loudgain apply what we found (add `-s e` to the commandline), then sit back before the big hi-fi set and enjoy one of my favourite albums—totally clipping-free.
 
 ```bash
 $ loudgain -a -k -s e *.flac
@@ -417,6 +451,24 @@ $ loudgain -a -k -s e *.flac
 **… And this was just _one_ example of what you can do with loudgain.**
 
 **Have fun, experiment, give me feedback, and SPREAD THE WORD!**
+
+---
+
+### Clipping prevention
+
+loudgain can help prevent clipping in the playout/post-processing stage by using the `-k` (`--noclip`) or `-K` (`--maxtpl`) options. It will use the measured track/album true peak values to reduce the calculated replay gain to a "safe" value, so that no clipping should occur after the replay gain has been applied by the player or post-processing software.
+
+Old-style programs (like `mp3gain` and others) and CD producers often used algorithms that would lower the gain so that the maximum peak value reached was 0 dBTP (digital full scale, 1.000000). Furthermore, all this was often based on sample amplitudes, or at most a RMS peak value.
+
+Now we all learned that **this is not enough**. Lossy encoding and _loudness war_ type productions have us seen true peak levels far above digital 1.0. This is why we nowadays (hopefully) all use True Peak meters with usually 4x oversampling up to 48 kHz and can thus much better see how much peak we’ll really get. But even a goot True Peak meter can have an **under-reading of up to about 0.5 dB/LU!** This is why the EBU decided that we should leave a "headroom" of -1 dBTP (or even -2 dBTP if we know that later on lossy encoding will happen). See [EBU Tech 3343](https://tech.ebu.ch/docs/tech/tech3343.pdf), page 42.
+
+This is why I changed the default setting of loudgain’s `-k` option away from 0 dBFS to -1 dBTP. Even with ReplayGain 2.0’s -18 LUFS target, this should give us a safe default for best reproduction.
+
+If, for some reason, you really _need_ to emulate the (bad) old behaviour, you can use `-K 0` instead which will force loudgain’s clipping prevention to use a 0 dBTP limit.
+
+You _could_ also use this option to set a max. true peak level of _-2 dBTP`_, i.e. for the two in Europe commonly used data reduction systems MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
+
+Home and semi-professional users should usually just use `-k`. This will give perfect results with almost any ReplayGain-aware player as well as hi-fi systems like _Logitech Media Server_ (ex _SqueezeServer/SqueezeBox_) and internet broadcasting software like _IDJC_, _ices 0.4.5+_, _LiquidSoap_, _Airtime_, _AzuraCast_, _Centova Cast_ and so on.
 
 ---
 

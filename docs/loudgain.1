@@ -15,6 +15,12 @@
 .P
 loudgain implements a subset of mp3gain\'s command\-line options, which means that it can be used as a drop\-in replacement in some situations\.
 .
+.P
+loudgain currently supports writing tags to the following file types:
+.
+.br
+FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3)\.
+.
 .SH "OPTIONS"
 \fB\-h, \-\-help\fR
 .
@@ -49,40 +55,46 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 \fB\-k, \-\-noclip\fR
 .
 .P
-\~\~\~\~\~\~ Lower track and/or album gain to avoid clipping\.
+\~\~\~\~\~\~ Lower track/album gain to avoid clipping (<= \-1 dBTP)\.
 .
 .P
-\fB\-d, \-\-db\-gain\fR
+\fB\-K n, \-\-maxtpl=n\fR
 .
 .P
-\~\~\~\~\~\~ Apply the given pre\-gain value (in dB/LU)\.
+\~\~\~\~\~\~ Avoid clipping; max\. true peak level = n dBTP\.
 .
 .P
-\fB\-s d, \-\-tag\-mode d\fR
+\fB\-d n, \-\-pregain=n\fR
+.
+.P
+\~\~\~\~\~\~ Apply n dB/LU pre\-gain value (\-5 for \-23 LUFS target)\.
+.
+.P
+\fB\-s d, \-\-tagmode=d\fR
 .
 .P
 \~\~\~\~\~\~ Delete ReplayGain tags from files\.
 .
 .P
-\fB\-s i, \-\-tag\-mode i\fR
+\fB\-s i, \-\-tagmode=i\fR
 .
 .P
 \~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis\.
 .
 .P
-\fB\-s e, \-\-tag\-mode e\fR
+\fB\-s e, \-\-tagmode=e\fR
 .
 .P
 \~\~\~\~\~\~ like \'\-s i\', plus extra tags (reference, ranges)\.
 .
 .P
-\fB\-s l, \-\-tag\-mode l\fR
+\fB\-s l, \-\-tagmode=l\fR
 .
 .P
 \~\~\~\~\~\~ like \'\-s e\', but LU units instead of dB\.
 .
 .P
-\fB\-s s, \-\-tag\-mode s\fR
+\fB\-s s, \-\-tagmode=s\fR
 .
 .P
 \~\~\~\~\~\~ Don\'t write ReplayGain tags (default)\.
@@ -100,13 +112,13 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 \~\~\~\~\~\~ Strip tag types other than ID3v2 from MP3 files (i\.e\. ID3v1, APEv2)\.
 .
 .P
-\fB\-I 3, \-\-id3v2version 3\fR
+\fB\-I 3, \-\-id3v2version=3\fR
 .
 .P
 \~\~\~\~\~\~ Write ID3v2\.3 tags to MP3 files\.
 .
 .P
-\fB\-I 4, \-\-id3v2version 4\fR
+\fB\-I 4, \-\-id3v2version=4\fR
 .
 .P
 \~\~\~\~\~\~ Write ID3v2\.4 tags to MP3 files (default)\.

@@ -14,6 +14,10 @@ standard, and can optionally write ReplayGain-compatible metadata.
 loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.
 
+loudgain currently supports writing tags to the following file types:  
+  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3).
+
+
 ## OPTIONS
 
 `-h, --help`
@@ -44,34 +48,39 @@ Ignore clipping warnings.
 `-k, --noclip`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Lower track and/or album gain to avoid clipping.
+Lower track/album gain to avoid clipping (<= -1 dBTP).
 
-`-d, --db-gain`
+`-K n, --maxtpl=n`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Apply the given pre-gain value (in dB/LU).
+Avoid clipping; max. true peak level = n dBTP.
 
-`-s d, --tag-mode d`
+`-d n, --pregain=n`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Apply n dB/LU pre-gain value (-5 for -23 LUFS target).
+
+`-s d, --tagmode=d`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Delete ReplayGain tags from files.
 
-`-s i, --tag-mode i`
+`-s i, --tagmode=i`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Write ReplayGain 2.0 tags to files. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis.
 
-`-s e, --tag-mode e`
+`-s e, --tagmode=e`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 like '-s i', plus extra tags (reference, ranges).
 
-`-s l, --tag-mode l`
+`-s l, --tagmode=l`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 like '-s e', but LU units instead of dB.
 
-`-s s, --tag-mode s`
+`-s s, --tagmode=s`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Don't write ReplayGain tags (default).
@@ -86,12 +95,12 @@ Force lowercase 'REPLAYGAIN_*' tags (MP3/ID3v2 only; non-standard)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Strip tag types other than ID3v2 from MP3 files (i.e. ID3v1, APEv2).
 
-`-I 3, --id3v2version 3`
+`-I 3, --id3v2version=3`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Write ID3v2.3 tags to MP3 files.
 
-`-I 4, --id3v2version 4`
+`-I 4, --id3v2version=4`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Write ID3v2.4 tags to MP3 files (default).

@@ -27,6 +27,11 @@
  *  - Add "-S" mode to strip ID3v1/APEv2 tags from MP3 files.
  *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
  *  - First step to implement a new tab-delimited list format: "-O" mode.
+ * 2019-07-13 - v0.2.8 - Matthias C. Hormann
+ *  - new -O output format: re-ordered, now shows peak before/after gain applied
+ *  - -k now defaults to clipping prevention at -1 dBTP (as EBU recommends)
+ *  - New -K: Allows clippping prevention with settable dBTP level,
+ *     i.e. -K 0 (old-style) or -K -2 (to compensate for post-processing losses)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -70,7 +75,7 @@
 #include "tag.h"
 #include "printf.h"
 
-const char *short_opts = "rackd:oOqs:LSI:h?v";
+const char *short_opts = "rackK:d:oOqs:LSI:h?v";
 
 static struct option long_opts[] = {
 	{ "track",        no_argument,       NULL, 'r' },
@@ -78,14 +83,15 @@ static struct option long_opts[] = {
 
 	{ "clip",         no_argument,       NULL, 'c' },
 	{ "noclip",       no_argument,       NULL, 'k' },
+	{ "maxtpl",       required_argument, NULL, 'K' },
 
-	{ "db-gain",      required_argument, NULL, 'd' },
+	{ "pregain",      required_argument, NULL, 'd' },
 
 	{ "output",       no_argument,       NULL, 'o' },
 	{ "output-new",   no_argument,       NULL, 'O' },
 	{ "quiet",        no_argument,       NULL, 'q' },
 
-	{ "tag-mode",     required_argument, NULL, 's' },
+	{ "tagmode",      required_argument, NULL, 's' },
 	{ "lowercase",    no_argument,       NULL, 'L' },
 	{ "striptags",    no_argument,       NULL, 'S' },
 	{ "id3v2version", required_argument, NULL, 'I' },
@@ -113,6 +119,7 @@ int main(int argc, char *argv[]) {
 	unsigned nb_files   = 0;
 
 	double pre_gain     = 0.f;
+	double max_true_peak_level = -1.0; // dBTP; default for -k, as per EBU Tech 3343
 
 	bool no_clip        = false;
 	bool warn_clip      = true;
@@ -145,8 +152,23 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'k':
+				// old-style, no argument, now defaults to -1 dBTP max. true peak level
 				no_clip = true;
 				break;
+
+			case 'K': {
+				// new style, argument in dBTP, sets max. true peak level
+				no_clip = true;
+
+				char *rest = NULL;
+				max_true_peak_level = strtod(optarg, &rest);
+
+				if (!rest ||
+				    (rest == optarg) ||
+				    !isfinite(pre_gain))
+					fail_printf("Invalid max. true peak level (dBTP)");
+				break;
+			}
 
 			case 'd': {
 				char *rest = NULL;
@@ -155,7 +177,7 @@ int main(int argc, char *argv[]) {
 				if (!rest ||
 				    (rest == optarg) ||
 				    !isfinite(pre_gain))
-					fail_printf("Invalid dB gain value");
+					fail_printf("Invalid pregain value (dB/LU)");
 				break;
 			}
 
@@ -198,6 +220,14 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case '?':
+				if (optopt == 0) {
+					// actual option '-?'
+					help();
+					return 0;
+				} else {
+					// getopt error, message already printed
+					return 1;	// error
+				}
 			case 'h':
 				help();
 				return 0;
@@ -222,14 +252,16 @@ int main(int argc, char *argv[]) {
 		printf("File\tMP3 gain\tdB gain\tMax Amplitude\tMax global_gain\tMin global_gain\n");
 
 	if (tab_output_new)
-		printf("File\tLoudness\tRange\tGain\tReference\tPeak\tPeak_dBTP\tWill_clip\tClip_prevent\n");
+		printf("File\tLoudness\tRange\tTrue_Peak\tTrue_Peak_dBTP\tReference\tWill_clip\tClip_prevent\tGain\tNew_Peak\tNew_Peak_dBTP\n");
 
 	for (i = 0; i < nb_files; i++) {
 		bool will_clip = false;
-		double tgain = 1.0;
-		double tpeak = 1.0;
-		double again = 1.0;
-		double apeak = 1.0;
+		double tgain = 1.0; // "gained" track peak
+		double tnew;
+		double tpeak = pow(10.0, max_true_peak_level / 20.0); // track peak limit
+		double again = 1.0; // "gained" album peak
+		double anew;
+		double apeak = pow(10.0, max_true_peak_level / 20.0); // album peak limit
 		bool tclip = false;
 		bool aclip = false;
 
@@ -241,15 +273,15 @@ int main(int argc, char *argv[]) {
 		if (do_album)
 			scan_set_album_result(scan, pre_gain);
 
-		// Check if track or album will clip, and correct if so requested (-k)
+		// Check if track or album will clip, and correct if so requested (-k/-K)
 
-		// dB/LU to scaling factor: 10 ^ (gain/20)
-		// peak scaling factor (so as not to exceed digital full scale = 1.0): 1/peak
-		tgain = pow(10.0, scan -> track_gain / 20.0);
-		tpeak = 1.f / scan -> track_peak;
+		// track peak after gain
+		tgain = pow(10.0, scan -> track_gain / 20.0) * scan -> track_peak;
+		tnew = tgain;
 		if (do_album) {
-			again = pow(10.0, scan -> album_gain / 20.0);
-			apeak = 1.f / scan -> album_peak;
+			// album peak after gain
+			again = pow(10.0, scan -> album_gain / 20.0) * scan -> album_peak;
+			anew = again;
 		}
 
 		if ((tgain > tpeak) || (do_album && (again > apeak)))
@@ -260,16 +292,16 @@ int main(int argc, char *argv[]) {
 		// 	tgain, tpeak, again, apeak, will_clip ? "Yes" : "No");
 
 		if (will_clip && no_clip) {
-			// scaling factor → dB/LU: 20 * log10(factor)
 			if (tgain > tpeak) {
-				scan -> track_gain = 20.0 * log10(tpeak);
-				tgain = pow(10.0, scan -> track_gain / 20.0);
+				// set new track peak = minimum of peak after gain and peak limit
+				tnew = FFMIN(tgain, tpeak);
+				scan -> track_gain = scan -> track_gain - (log10(tgain/tnew) * 20.0);
 				tclip = true;
 			}
 
 			if (do_album && (again > apeak)) {
-				scan -> album_gain = 20.0 * log10(apeak);
-				again = pow(10.0, scan -> album_gain / 20.0);
+				anew = FFMIN(again, apeak);
+				scan -> album_gain = scan -> album_gain - (log10(again/anew) * 20.0);
 				aclip = true;
 			}
 
@@ -373,23 +405,27 @@ int main(int argc, char *argv[]) {
 			printf("%s\t", scan -> file);
 			printf("%.2f LUFS\t", scan -> track_loudness);
 			printf("%.2f %s\t", scan -> track_loudness_range, unit);
-			printf("%.2f %s\t", scan -> track_gain, unit);
-			printf("%.2f LUFS\t", scan -> loudness_reference);
 			printf("%.6f\t", scan -> track_peak);
 			printf("%.2f dBTP\t", 20.0 * log10(scan -> track_peak));
+			printf("%.2f LUFS\t", scan -> loudness_reference);
 			printf("%s\t", will_clip ? "Y" : "N");
-			printf("%s\n", tclip ? "Y" : "N");
+			printf("%s\t", tclip ? "Y" : "N");
+			printf("%.2f %s\t", scan -> track_gain, unit);
+			printf("%.6f\t", tnew);
+			printf("%.2f dBTP\n", 20.0 * log10(tnew));
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("%s\t", "Album");
 				printf("%.2f LUFS\t", scan -> album_loudness);
 				printf("%.2f %s\t", scan -> album_loudness_range, unit);
-				printf("%.2f %s\t", scan -> album_gain, unit);
-				printf("%.2f LUFS\t", scan -> loudness_reference);
 				printf("%.6f\t", scan -> album_peak);
 				printf("%.2f dBTP\t", 20.0 * log10(scan -> album_peak));
+				printf("%.2f LUFS\t", scan -> loudness_reference);
 				printf("%s\t", (!aclip && (again > apeak)) ? "Y" : "N");
-				printf("%s\n", aclip ? "Y" : "N");
+				printf("%s\t", aclip ? "Y" : "N");
+				printf("%.2f %s\t", scan -> album_gain, unit);
+				printf("%.6f\t", anew);
+				printf("%.2f dBTP\n", 20.0 * log10(anew));
 			}
 		} else {
 			// output something human-readable
@@ -397,8 +433,8 @@ int main(int argc, char *argv[]) {
 
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
 			printf(" Range:    %8.2f %s\n", scan -> track_loudness_range, unit);
-			printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit, tclip ? " (corrected to prevent clipping)" : "");
 			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
+			printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit, tclip ? " (corrected to prevent clipping)" : "");
 
 			if (warn_clip && will_clip)
 				err_printf("The track will clip");
@@ -408,8 +444,8 @@ int main(int argc, char *argv[]) {
 
 				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
 				printf(" Range:    %8.2f %s\n", scan -> album_loudness_range, unit);
-				printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit, aclip ? " (corrected to prevent clipping)" : "");
 				printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
+				printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit, aclip ? " (corrected to prevent clipping)" : "");
 			}
 		}
 
@@ -449,25 +485,26 @@ static inline void help(void) {
 	puts("");
 
 	CMD_HELP("--clip",   "-c", "Ignore clipping warning");
-	CMD_HELP("--noclip", "-k", "Lower track and/or album gain to avoid clipping");
+	CMD_HELP("--noclip", "-k", "Lower track/album gain to avoid clipping (<= -1 dBTP)");
+	CMD_HELP("--maxtpl=n", "-K n", "Avoid clipping; max. true peak level = n dBTP");
 
-	CMD_HELP("--db-gain",  "-d",  "Apply the given pre-gain value (in dB/LU)");
+	CMD_HELP("--pregain=n",  "-d n",  "Apply n dB/LU pre-gain value (-5 for -23 LUFS target)");
 
 	puts("");
 
-	CMD_HELP("--tag-mode d", "-s d",  "Delete ReplayGain tags from files");
-	CMD_HELP("--tag-mode i", "-s i",  "Write ReplayGain 2.0 tags to files");
-	CMD_HELP("--tag-mode e", "-s e",  "like '-s i', plus extra tags (reference, ranges)");
-	CMD_HELP("--tag-mode l", "-s l",  "like '-s e', but LU units instead of dB");
+	CMD_HELP("--tagmode=d", "-s d",  "Delete ReplayGain tags from files");
+	CMD_HELP("--tagmode=i", "-s i",  "Write ReplayGain 2.0 tags to files");
+	CMD_HELP("--tagmode=e", "-s e",  "like '-s i', plus extra tags (reference, ranges)");
+	CMD_HELP("--tagmode=l", "-s l",  "like '-s e', but LU units instead of dB");
 
-	CMD_HELP("--tag-mode s", "-s s",  "Don't write ReplayGain tags (default)");
+	CMD_HELP("--tagmode=s", "-s s",  "Don't write ReplayGain tags (default)");
 
 	puts("");
 
 	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/ID3v2 only; non-standard)");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP3");
-	CMD_HELP("--id3v2version 3", "-I 3", "Write ID3v2.3 tags to MP3 files");
-	CMD_HELP("--id3v2version 4", "-I 4", "Write ID3v2.4 tags to MP3 files (default)");
+	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP3 files");
+	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP3 files (default)");
 
 	puts("");
 
@@ -476,6 +513,8 @@ static inline void help(void) {
 	CMD_HELP("--quiet",      "-q",  "Don't print status messages");
 
 	puts("");
+	// puts("Mandatory arguments to long options are also mandatory for any corresponding short options.");
+	// puts("");
 }
 
 static inline void version(void) {
