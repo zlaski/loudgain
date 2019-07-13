@@ -466,7 +466,7 @@ This is why I changed the default setting of loudgain’s `-k` option away from 
 
 If, for some reason, you really _need_ to emulate the (bad) old behaviour, you can use `-K 0` instead which will force loudgain’s clipping prevention to use a 0 dBTP limit.
 
-You _could_ also use this option to set a max. true peak level of _-2 dBTP`_, i.e. for the two in Europe commonly used data reduction systems MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
+You _could_ also use this option to set a max. true peak level of _-2 dBTP_, i.e. for the two in Europe commonly used data reduction systems MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
 
 Home and semi-professional users should usually just use `-k`. This will give perfect results with almost any ReplayGain-aware player as well as hi-fi systems like _Logitech Media Server_ (ex _SqueezeServer/SqueezeBox_) and internet broadcasting software like _IDJC_, _ices 0.4.5+_, _LiquidSoap_, _Airtime_, _AzuraCast_, _Centova Cast_ and so on.
 
