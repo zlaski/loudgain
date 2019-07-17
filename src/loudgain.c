@@ -319,7 +319,7 @@ int main(int argc, char *argv[]) {
 			case 'd': /* delete tags */
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
-						tag_clear_mp3(scan);
+						tag_clear_mp3(scan, strip, id3v2version);
 						break;
 
 					case AV_CODEC_ID_FLAC:
@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
 			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
-						tag_clear_mp3(scan);
+						tag_clear_mp3(scan, strip, id3v2version);
 						tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version);
 						break;
 

@@ -84,6 +84,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-07-17** — **v0.3.1** released:
+  * "Delete tags" `-s d` (`--tagmode=d`) now respects "strip" `-S` (`--striptags`) and "ID3v2 version" `-I` (`--id3v2version`) settings for MP3 files. Thus, when removing ReplayGain tags, unwanted tag types like ID3v1 or APE can also be removed, and the the resultant ID3v2 tag version be specified.
+
 **2019-07-13** — **v0.3.0** released:
   * Much better clipping prevention logic.
   * Breaking change: Some long options slightly renamed.
@@ -460,7 +463,7 @@ loudgain can help prevent clipping in the playout/post-processing stage by using
 
 Old-style programs (like `mp3gain` and others) and CD producers often used algorithms that would lower the gain so that the maximum peak value reached was 0 dBTP (digital full scale, 1.000000). Furthermore, all this was often based on sample amplitudes, or at most a RMS peak value.
 
-Now we all learned that **this is not enough**. Lossy encoding and _loudness war_ type productions have us seen true peak levels far above digital 1.0. This is why we nowadays (hopefully) all use True Peak meters with usually 4x oversampling up to 48 kHz and can thus much better see how much peak we’ll really get. But even a goot True Peak meter can have an **under-reading of up to about 0.5 dB/LU!** This is why the EBU decided that we should leave a "headroom" of -1 dBTP (or even -2 dBTP if we know that later on lossy encoding will happen). See [EBU Tech 3343](https://tech.ebu.ch/docs/tech/tech3343.pdf), page 42.
+Now we all learned that **this is not enough**. Lossy encoding and _loudness war_ type productions have us seen true peak levels far above digital 1.0. This is why we nowadays (hopefully) all use True Peak meters with usually 4x oversampling up to 48 kHz and can thus much better see how much peak we’ll really get. But even a good True Peak meter can have an **under-reading of up to about 0.5 dB/LU!** This is why the EBU decided that we should leave a "headroom" of -1 dBTP (or even -2 dBTP if we know that later on lossy encoding will happen). See [EBU Tech 3343](https://tech.ebu.ch/docs/tech/tech3343.pdf), page 42.
 
 This is why I changed the default setting of loudgain’s `-k` option away from 0 dBFS to -1 dBTP. Even with ReplayGain 2.0’s -18 LUFS target, this should give us a safe default for best reproduction.
 

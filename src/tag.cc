@@ -146,7 +146,7 @@ void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
-void tag_clear_mp3(scan_result *scan) {
+void tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
@@ -173,7 +173,7 @@ void tag_clear_mp3(scan_result *scan) {
 		}
 	}
 
-	f.save(TagLib::MPEG::File::ID3v2, false);
+	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
 void tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
