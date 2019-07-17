@@ -84,6 +84,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-07-17** — **v0.3.2** released:
+  * Work around [bug #913 in taglib](https://github.com/taglib/taglib/issues/913): If both APEv2 and ID3v1 tags present and due to be stripped, sometimes ID3v1 tags would be left over.
+
 **2019-07-17** — **v0.3.1** released:
   * "Delete tags" `-s d` (`--tagmode=d`) now respects "strip" `-S` (`--striptags`) and "ID3v2 version" `-I` (`--id3v2version`) settings for MP3 files. Thus, when removing ReplayGain tags, unwanted tag types like ID3v1 or APE can also be removed, and the the resultant ID3v2 tag version be specified.
 

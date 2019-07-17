@@ -143,6 +143,10 @@ void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 		}
 	}
 
+	// work around bug taglib/taglib#913: strip APE before ID3v1
+	if (strip)
+		f.strip(TagLib::MPEG::File::APE);
+
 	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
@@ -172,6 +176,10 @@ void tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
 				tag -> removeFrame(frame);
 		}
 	}
+
+	// work around bug taglib/taglib#913: strip APE before ID3v1
+	if (strip)
+		f.strip(TagLib::MPEG::File::APE);
 
 	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
