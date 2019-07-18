@@ -36,6 +36,10 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
       - [Just for fun: What if we _really_ followed the EBU R128 recommendation?](#just-for-fun-what-if-we-_really_-followed-the-ebu-r128-recommendation)   
       - [Time to save the tags and listen to the music!](#time-to-save-the-tags-and-listen-to-the-music)   
    - [Clipping prevention](#clipping-prevention)   
+   - [Here be dragons: A word on MP3 files and ID3 tags](#here-be-dragons-a-word-on-mp3-files-and-id3-tags)   
+      - [Some basic recommendations](#some-basic-recommendations)   
+      - [A zillion ways to store loudness/gaining information](#a-zillion-ways-to-store-loudnessgaining-information)   
+      - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
 - [AUTHORS](#authors)   
 - [COPYRIGHT](#copyright)   
 
@@ -475,6 +479,102 @@ If, for some reason, you really _need_ to emulate the (bad) old behaviour, you c
 You _could_ also use this option to set a max. true peak level of _-2 dBTP_, i.e. for the two in Europe commonly used data reduction systems MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
 
 Home and semi-professional users should usually just use `-k`. This will give perfect results with almost any ReplayGain-aware player as well as hi-fi systems like _Logitech Media Server_ (ex _SqueezeServer/SqueezeBox_) and internet broadcasting software like _IDJC_, _ices 0.4.5+_, _LiquidSoap_, _Airtime_, _AzuraCast_, _Centova Cast_ and so on.
+
+---
+
+### Here be dragons: A word on MP3 files and ID3 tags
+
+The good news: If you work with **FLAC** or **Ogg Vorbis** files, all **this doesn’t apply to you**. Then again, no dragons. FLAC and and Ogg Vorbis files have ever been using "Vorbis Comment" type tags which are easy-going, straightforward and have supported UTF-8 ever since.
+
+MP3 files can have more than one kind of tags: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _ID3v2.3_, _ID3v2.4_, and _APEv2_. To make it even more complicated, ID3v1, ID3v2 and APEv2 tags can _co-exist_ in the same file. Plus, the encoder (like LAME) can set gaining info in its header. It’s a mess, really.
+
+#### Some basic recommendations
+
+Here are some recommendations to keep things easy:
+
+* **Throw away (or convert) ID3v1, ID3v1.1, ID3v2.2 and APEv2 tags.** They are absolete and make things unneccessarily complicated. loudgain can do this for you: **Use the `-S` (`--striptags`) option on the commandline.** Nothing is worse than having different tag types in one file that specify _different_ values. One player would pick one, another player the other info, and you’d wonder about the errors!
+
+* Then try to **stick with either ID3v2.3 or ID3v2.4** type tags throughout your collection. loudgain’s default is to convert existing tags to ID3v2.4 but you can specify `-I 3` (`--id3v2version=3`) on the commandline to get ID3v2.3 tags instead.
+
+* **ID3v2.4** is the more modern standard and handles UTF-8 encoding in text frames (like Artist, Title, Album, …). This is also the default on most Linux systems. Unfortunately, older players (most notably Windows Media Player and older Apple products) cannot handle this format.
+
+* Therefore, **ID3v2.3** is still the most commonly used tag format for MP3 files, due to its widest compatibility.
+
+* Over the past decades, **replay gain tags** like `REPLAYGAIN_TRACK_GAIN` have evolved. These are stored in so-called "text frames" (TXXX). Both the ReplayGain 1 and ReplayGain 2.0 standards specify these tags to be UPPERCASE, but in reality most software in the field (like `foobar2000`) store these in lowercase (`replaygain_track_gain`) and most files I’ve come across actually have these tags in lowercase.
+
+  In theory, players should handle these in a case-insensitive manner, but some don’t. For instance, the famous IDJC (Internet DJ Console, a broadcasting software) does _only_ respect the lowercase variant.
+
+  So if you live in a mixed Windows/Linux environment (maybe using foobar2000 on Windows, IDJC on Linux), my recommendation for the time being is: **Use the (non-standard) _lowercase_ ReplayGain tags.** You can force loudgain to write lowercase tags by using the `-L` (`--lowercase`) option on the commandline.
+
+#### A zillion ways to store loudness/gaining information
+
+* In MP3 files, there are **_many_ ways to store loudness/gaining information**:
+  * The LAME header (_RGAD_album_, _RGAD_track_, _mp3_gain_, and others).
+  * Apple’s non-standard "Soundcheck" tags.
+  * ID3v2.2 _RVA_ frames.
+  * ID3v2.3 _RVAD_ frames.
+  * ID3v2.4 _RVA2_ frames.
+  * APEv2 tags like `REPLAYGAIN_TRACK_GAIN` (and others).
+  * ID3v2.2 _TXX_ frames like `REPLAYGAIN_TRACK_GAIN` (and others).
+  * ID3v2.3/ID3v2.4 _TXXX_ frames like `REPLAYGAIN_TRACK_GAIN` (and others).
+
+  Disregarding Apple, a modern player _should_ (but often doesn’t!) check for these in order of priority (lowest priority → top priority):
+  * LAME header (I don’t know of any player who uses this)
+  * APEv2 `REPLAYGAIN_*` tags
+  * RVA tag in ID3v2.2
+  * TXX `REPLAYGAIN_*` tags in ID3v2.2
+  * RVAD tag in ID3v2.3
+  * RVA2 tag in ID3v2.4
+  * TXXX `REPLAYGAIN_*` tags in ID3v2.3 and ID3v2.4
+
+  Thus, if a file is tagged with ReplayGain data in _TXXX_ frames, this information should always "win" if others are present.
+
+  **loudgain concentrates on these _TXXX_ `REPLAYGAIN_*` tags**, and it won’t read, write or delete any of the others. (Well, except delete APEv2 if so instructed.)
+
+  loudgain will also only **write the two most modern ID3v2.3 or ID3v2.4 tag types** (converting older tag types into the new format if needed).
+
+#### Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?
+
+Traditionally, character (text) encoding was complicated. Different operating systems used different encodings in different countries to represent national characters, and they would all be incompatible, or you’d have to transcode the text. Fortunately, Unicode and better encodings came along. Now we even have a character for a pile of poo: 💩!
+
+The most widely used character encoding nowadays is _UTF-8_, an encoding that can represent all Unicode characters using 1–4 bytes each. This encoding is possible when using ID3v2.4 tags. But, alas, not on older operating systems and players. And not with ID3v2.3.
+
+Fortunately, since the days of ID3v2.2, Unicode characters could be stored using other, more complicated ways:
+* ID3v2.2: UCS-2 (now obsolete old standard, 2 bytes/character, like in Windows/NT)
+* ID3v2.3: UTF-16 with BOM (byte order mark; $FF FE or $FE FF, like Windows 2000 and newer)
+* ID3v2.4: UTF-16 with BOM, UTF-16BE (big-endian) without BOM, or UTF-8
+
+Additionally, all ID3 tag formats support `ISO-8859-1` encoding, also known as `Latin-1`, a small superset of ASCII that supports a few extra European characters, 191 different characters in total.
+
+To make things even more complicated, in ID3v2 type tags, each field (so-called "frame") can have a _different_ encoding. So you could end up with a ID3v2.4-tagged MP3 file where the artist is encoded as UTF-8, the title encoded as UTF-16 and the REPLAYGAIN_TRACK_GAIN value encoded as ISO-8859-1, while the tags would still be valid. **Imagine dragons …**
+
+_Here’s the answer to above question, by the way: Either the (UTF-8-encoded) text "smørrebrød" was stored in a frame that was specified as having ISO-8859-1 encoding, or your player can’t handle the UTF-8 character set._
+
+Since loudgain _has_ to convert some tags when storing in ID3v2.3 or ID3v2.4 format, it follows some simple rules:
+
+* Don’t change more than needed.
+
+* When converting **from ID3v1/ID3v1.1** tags:
+  * If there are ID3v2 tags of the same name in the file, those shall be preferred over the ID3v1 tags (due to length restrictions).
+  * Assume ID3v1 tags were stored with `ISO-8859-1` encoding (the only legal encoding for ID3v1) and leave the resultant ID3v2.3/ID3v2.4 tag frame encoded as `ISO-8859-1`.
+  * **Note:** If you do not specify `-S` (`--striptags`) on the commandline, the old ID3v1 tags will be _kept_ besides the new ID3v2 tags! **I recommend using `-S` (`--striptags`) to avoid confusion.**
+
+* When converting **to ID3v2.4**:
+  * Leave tag frame encodings as they are (`ISO-8859-1` → `ISO-8859-1`, `UTF-16` → `UTF-16`).
+  * Convert `TYER` (year) and `TDAT` (date) frames to `TDRC` (recording time).
+  * Convert `TORY` (original release year) to `TDOR` (original release time).
+  * Convert `RVAD` (relative volume adjustment) to `RVA2`.
+
+* When converting **to ID3v2.3**:
+  * If possible, leave tag frame encodings as they are (`ISO-8859-1` → `ISO-8859-1`, `UTF-16` → `UTF-16`).
+  * Convert `UTF-16BE` and `UTF-8` encoded frames to `UTF-16 with BOM`.
+  * Convert `TDRC` (recording time) to `TYER` (year) and `TDAT` (date).
+  * Convert `TDOR` (original release time) to `TORY` (original release year).
+  * Convert `RVA2` (relative volume adjustment 2) to `RVAD`.
+
+* `REPLAYGAIN_*` tags written by loudgain:
+  * Always stored with `ISO-8859-1` encoding.
+
 
 ---
 
