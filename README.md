@@ -168,7 +168,7 @@ $ loudgain -d -5 -a -s l *.flac        # apply -5 LU pregain to reach -23 LUFS t
 $ loudgain -I 3 -S -L -a -k -s e *.mp3 # scan & tag an MP3 album, recommended settings
 ```
 
-See the [man page](docs/loudgain.1.md) for more information.
+See the [man page](docs/loudgain.1.md) for more information.  
 See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-gold-standard) for quickstart recommended settings.
 
 ---
