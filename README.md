@@ -40,6 +40,7 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
       - [Some basic recommendations](#some-basic-recommendations)   
       - [A zillion ways to store loudness/gaining information](#a-zillion-ways-to-store-loudnessgaining-information)   
       - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
+- [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [AUTHORS](#authors)   
 - [COPYRIGHT](#copyright)   
 
@@ -518,7 +519,7 @@ Here are some recommendations to keep things easy:
   * ID3v2.2 _TXX_ frames like `REPLAYGAIN_TRACK_GAIN` (and others).
   * ID3v2.3/ID3v2.4 _TXXX_ frames like `REPLAYGAIN_TRACK_GAIN` (and others).
 
-  Disregarding Apple, a modern player _should_ (but often doesn’t!) check for these in order of priority (lowest priority → top priority):
+* Disregarding Apple, a modern player _should_ (but often doesn’t!) check for these in order of priority (lowest priority → top priority):
   * LAME header (I don’t know of any player who uses this)
   * APEv2 `REPLAYGAIN_*` tags
   * RVA tag in ID3v2.2
@@ -529,9 +530,9 @@ Here are some recommendations to keep things easy:
 
   Thus, if a file is tagged with ReplayGain data in _TXXX_ frames, this information should always "win" if others are present.
 
-  **loudgain concentrates on these _TXXX_ `REPLAYGAIN_*` tags**, and it won’t read, write or delete any of the others. (Well, except delete APEv2 if so instructed.)
+* **loudgain concentrates on these _TXXX_ `REPLAYGAIN_*` tags**, and it won’t read, write or delete any of the others. (Well, except delete APEv2 if so instructed.)
 
-  loudgain will also only **write the two most modern ID3v2.3 or ID3v2.4 tag types** (converting older tag types into the new format if needed).
+* loudgain will also only **write the two most modern ID3v2.3 or ID3v2.4 tag types** (converting older tag types into the new format if needed).
 
 #### Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?
 
@@ -575,6 +576,24 @@ Since loudgain _has_ to convert some tags when storing in ID3v2.3 or ID3v2.4 for
 * `REPLAYGAIN_*` tags written by loudgain:
   * Always stored with `ISO-8859-1` encoding.
 
+
+## loudgain makes it easy following the »Gold Standard«
+
+Here are my personal recommendations for being (almost) universally compatible:
+
+Use loudgain on a »one album per folder« basis, standard RG2 settings but _lowercase_ ReplayGain tags, clipping prevention on, strip obsolete tag types from MP3 files, use ID3v2.3 for MP3s, store extended tags:
+
+```bash
+$ loudgain -a -k -s e *.flac
+$ loudgain -a -k -s e *.ogg
+$ loudgain -I3 -S -L -a -k -s e *.mp3
+```
+
+I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.
+
+If you want to adjust _lots of files_ (organized in album folders), please check out `rgbpm.sh`, a simple bash script file in the `bin/` folder, and adjust it to your needs. (_Hint:_ Copy this to your personal `~/bin` folder and `chmod +x rgbpm.sh` it so you can use it as a simple command.)
+
+**Happy replaygaining!**
 
 ---
 
