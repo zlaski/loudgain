@@ -404,13 +404,13 @@ Using the new output mode `-O` (`--output-new`) in combination with quiet mode `
 #### Example: Mary Black’s album »No Frontiers« (1989)
 As an example, let’s examine a folder that contains Mary Black’s album »No Frontiers« (1989) in FLAC format. This is an album produced before the _loudness wars_ started and has a wide dynamic range. Unfortunately, it was also produced near the full digital range, at that time of course disregarding the EBU R128 recommendation of a maximum peak at -1 dBTP. (This album is actually a good example of why the EBU R128 recommendation to use a -23 LUFS target makes much sense!)
 
-Take a peak at the peaks (»Mary Black - Columbus«):
+Take a peek at the peaks (»Mary Black - Columbus«):
 
 ![Mary Black - Columbus](docs/images/Mary%20Black%20-%20Columbus.png)
 
 #### Write a simple analysis to a CSV file
 
-Well, we want to analyse the album first, into `test-1.csv`:
+Well, we want to analyze the album first, into `test-1.csv`:
 
 ```bash
 $ loudgain -a -O -q *.flac > test-1.csv
@@ -473,13 +473,13 @@ loudgain can help prevent clipping in the playout/post-processing stage by using
 
 Old-style programs (like `mp3gain` and others) and CD producers often used algorithms that would lower the gain so that the maximum peak value reached was 0 dBTP (digital full scale, 1.000000). Furthermore, all this was often based on sample amplitudes, or at most a RMS peak value.
 
-Now we all learned that **this is not enough**. Lossy encoding and _loudness war_ type productions have us seen true peak levels far above digital 1.0. This is why we nowadays (hopefully) all use True Peak meters with usually 4x oversampling up to 48 kHz and can thus much better see how much peak we’ll really get. But even a good True Peak meter can have an **under-reading of up to about 0.5 dB/LU!** This is why the EBU decided that we should leave a "headroom" of -1 dBTP (or even -2 dBTP if we know that later on lossy encoding will happen). See [EBU Tech 3343](https://tech.ebu.ch/docs/tech/tech3343.pdf), page 42.
+Now we all learned that **this is not enough**. Lossy encoding and _loudness war_ type productions have us seen true peak levels far above digital 1.0. This is why we nowadays (hopefully) all use True Peak meters with usually 4x oversampling up to 48 kHz and can thus see the real peaks much better. But even a good True Peak meter can have an **under-reading of up to about 0.5 dB/LU!** This is why the EBU decided that we should leave a "headroom" of -1 dBTP (or even -2 dBTP if we know that later on lossy encoding will happen). See [EBU Tech 3343](https://tech.ebu.ch/docs/tech/tech3343.pdf), page 42.
 
 This is why I changed the default setting of loudgain’s `-k` option away from 0 dBFS to -1 dBTP. Even with ReplayGain 2.0’s -18 LUFS target, this should give us a safe default for best reproduction.
 
 If, for some reason, you really _need_ to emulate the (bad) old behaviour, you can use `-K 0` instead which will force loudgain’s clipping prevention to use a 0 dBTP limit.
 
-You _could_ also use this option to set a max. true peak level of _-2 dBTP_, i.e. for the two in Europe commonly used data reduction systems MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
+You _could_ also use this option to set a max. true peak level of _-2 dBTP_, i.e. for two data reduction systems commonly used in Europe—MPEG1 Layer2 and Dolby AC-3. Simply use `-K -2` in this case.
 
 Home and semi-professional users should usually just use `-k`. This will give perfect results with almost any ReplayGain-aware player as well as hi-fi systems like _Logitech Media Server_ (ex _SqueezeServer/SqueezeBox_) and internet broadcasting software like _IDJC_, _ices 0.4.5+_, _LiquidSoap_, _Airtime_, _AzuraCast_, _Centova Cast_ and so on.
 
@@ -487,7 +487,7 @@ Home and semi-professional users should usually just use `-k`. This will give pe
 
 ### Here be dragons: A word on MP3 files and ID3 tags
 
-The good news: If you work with **FLAC** or **Ogg Vorbis** files, all **this doesn’t apply to you**. Then again, no dragons. FLAC and and Ogg Vorbis files have ever been using "Vorbis Comment" type tags which are easy-going, straightforward and have supported UTF-8 ever since.
+The good news: If you work with **FLAC** or **Ogg Vorbis** files, all of this **doesn’t apply to you**. Then again, no dragons. FLAC and Ogg Vorbis files use "Vorbis Comment" type tags which are easy-going, straightforward and have supported UTF-8 ever since.
 
 MP3 files can have more than one kind of tags: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _ID3v2.3_, _ID3v2.4_, and _APEv2_. To make it even more complicated, ID3v1, ID3v2 and APEv2 tags can _co-exist_ in the same file. Plus, the encoder (like LAME) can set gaining info in its header. It’s a mess, really.
 
@@ -495,7 +495,7 @@ MP3 files can have more than one kind of tags: _ID3v1_, _ID3v1.1_, _ID3v2.2_, _I
 
 Here are some recommendations to keep things easy:
 
-* **Throw away (or convert) ID3v1, ID3v1.1, ID3v2.2 and APEv2 tags.** They are absolete and make things unneccessarily complicated. loudgain can do this for you: **Use the `-S` (`--striptags`) option on the commandline.** Nothing is worse than having different tag types in one file that specify _different_ values. One player would pick one, another player the other info, and you’d wonder about the errors!
+* **Throw away (or convert) ID3v1, ID3v1.1, ID3v2.2 and APEv2 tags.** They are obsolete and make things unneccessarily complicated. loudgain can do this for you: **Use the `-S` (`--striptags`) option on the commandline.** Nothing is worse than having different tag types in one file that specify _different_ values. One player would pick one, another player the other info, and you’d wonder about the errors!
 
 * Then try to **stick with either ID3v2.3 or ID3v2.4** type tags throughout your collection. loudgain’s default is to convert existing tags to ID3v2.4 but you can specify `-I 3` (`--id3v2version=3`) on the commandline to get ID3v2.3 tags instead.
 
@@ -532,7 +532,7 @@ Here are some recommendations to keep things easy:
 
   Thus, if a file is tagged with ReplayGain data in _TXXX_ frames, this information should always "win" if others are present.
 
-* **loudgain concentrates on these _TXXX_ `REPLAYGAIN_*` tags**, and it won’t read, write or delete any of the others. (Well, except delete APEv2 if so instructed.)
+* **loudgain concentrates on these _TXXX_ `REPLAYGAIN_*` tags**, and it won’t read, write or delete any of the others. (Well, except when deleting APEv2 tags, if so instructed.)
 
 * loudgain will also only **write the two most modern ID3v2.3 or ID3v2.4 tag types** (converting older tag types into the new format if needed).
 
@@ -540,7 +540,7 @@ Here are some recommendations to keep things easy:
 
 Traditionally, character (text) encoding was complicated. Different operating systems used different encodings in different countries to represent national characters, and they would all be incompatible, or you’d have to transcode the text. Fortunately, Unicode and better encodings came along. Now we even have a character for a pile of poo: 💩!
 
-The most widely used character encoding nowadays is _UTF-8_, an encoding that can represent all Unicode characters using 1–4 bytes each. This encoding is possible when using ID3v2.4 tags. But, alas, not on older operating systems and players. And not with ID3v2.3.
+The most widely used character encoding nowadays is _UTF-8_, an encoding that can represent all Unicode characters using 1–4 bytes each. This encoding is possible when using ID3v2.4 tags. But, alas, not on older operating systems and players. ID3v2.3 also doesn’t support UTF-8 encoding.
 
 Fortunately, since the days of ID3v2.2, Unicode characters could be stored using other, more complicated ways:
 * ID3v2.2: UCS-2 (now obsolete old standard, 2 bytes/character, like in Windows/NT)
