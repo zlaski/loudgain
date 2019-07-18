@@ -158,16 +158,18 @@ loudgain is (mostly) compatible with mp3gain's command-line arguments (the `-r`
 option is always implied). Here are a few examples:
 
 ```bash
-$ loudgain *.mp3                 # scan some mp3 files without tagging
-$ loudgain -s i *.mp3            # scan and tag some mp3 files with ReplayGain 2.0 tags
-$ loudgain -d 13 -k *.mp3        # add a pre-amp gain and prevent clipping
-$ loudgain -s d *.mp3            # remove ReplayGain tags from the files
-$ loudgain -a -s i *.flac        # scan & tag an album of FLAC files
-$ loudgain -a -s e *.flac        # scan & tag an album of FLAC files, add extra tags (reference, ranges)
-$ loudgain -d -5 -a -s l *.flac  # apply -5 LU pregain to reach -23 LUFS target for EBU compatibility, add reference & range information, use 'LU' units in tags
+$ loudgain *.mp3                       # scan some mp3 files without tagging
+$ loudgain -s i *.mp3                  # scan and tag some mp3 files with ReplayGain 2.0 tags
+$ loudgain -d 13 -k *.mp3              # add a pre-amp gain and prevent clipping
+$ loudgain -s d *.mp3                  # remove ReplayGain tags from the files
+$ loudgain -a -s i *.flac              # scan & tag an album of FLAC files
+$ loudgain -a -s e *.flac              # scan & tag an album of FLAC files, add extra tags (reference, ranges)
+$ loudgain -d -5 -a -s l *.flac        # apply -5 LU pregain to reach -23 LUFS target for EBU compatibility, add reference & range information, use 'LU' units in tags
+$ loudgain -I 3 -S -L -a -k -s e *.mp3 # scan & tag an MP3 album, recommended settings
 ```
 
 See the [man page](docs/loudgain.1.md) for more information.
+See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-gold-standard) for quickstart recommended settings.
 
 ---
 
