@@ -331,7 +331,8 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case AV_CODEC_ID_AAC:
-						tag_clear_aac(scan);
+					case AV_CODEC_ID_ALAC:
+						tag_clear_mp4(scan);
 						break;
 
 					default:
@@ -360,8 +361,9 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case AV_CODEC_ID_AAC:
-						tag_clear_aac(scan);
-						tag_write_aac(scan, do_album, mode, unit, lowercase);
+					case AV_CODEC_ID_ALAC:
+						tag_clear_mp4(scan);
+						tag_write_mp4(scan, do_album, mode, unit, lowercase);
 						break;
 
 					default:

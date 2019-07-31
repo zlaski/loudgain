@@ -18,6 +18,8 @@
  * 2019-07-10 - v0.2.7 - Matthias C. Hormann
  *  - Add "-S" mode to strip ID3v1/APEv2 tags from MP3 files.
  *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
+ * 2019-07-31 - v0.40 - Matthias C. Hormann
+ *	- Add MP4 handling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -291,7 +293,7 @@ void tag_clear_vorbis(scan_result *scan) {
 	f.save();
 }
 
-void tag_write_aac(scan_result *scan, bool do_album, char mode, char *unit,
+void tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase) {
 	char value[2048];
 
@@ -365,7 +367,7 @@ void tag_write_aac(scan_result *scan, bool do_album, char mode, char *unit,
 
 }
 
-void tag_clear_aac(scan_result *scan) {
+void tag_clear_mp4(scan_result *scan) {
 	TagLib::MP4::File f(scan -> file);
 	TagLib::MP4::Tag *tag = f.tag();
 

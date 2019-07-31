@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3/MP4/M4A audio files. It uses the well-known `mp3gain` commandline syntax.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3/MP4/M4A/ALAC audio files. It uses the well-known `mp3gain` commandline syntax.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
@@ -69,7 +69,7 @@ these. (_Hint:_ In some players, you need to enable this feature.)
 
 **Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac` and `aacgain`
 in order to write ReplayGain 2.0 compatible loudness tags into MP3, Ogg Vorbis,
-FLAC and M4A/MP4 (AAC audio) files, respectively.
+FLAC and M4A/MP4 (AAC/ALAC audio) files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
 and uses _LU_ and _LUFS_ units. The proposed ReplayGain 2.0 standard tries to
@@ -88,6 +88,12 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-07-31** – **v0.4.1** released:
+  * Added support for ALAC (Apple Lossless Audio Codec) audio in MPEG-4 containers
+  (.m4a, .mp4, .alac). `-L` (`--lowercase`) option is supported.
+  ReplayGain tags are written to `----:com.apple.iTunes:REPLAYGAIN_*`.
+  * **Note:** I do not care about any »iTunes Soundcheck« (a.k.a »iTunNORM«) tags. If such should exist, they will stay untouched. Software outside Apple’s iTunes diaspora usually ignores these tags anyway.
 
 **2019-07-31** – **v0.4.0** released:
   * Added support for AAC audio in MPEG-4 containers (.m4a, .mp4). `-L` (`--lowercase`) option is supported. ReplayGain tags are written to `----:com.apple.iTunes:REPLAYGAIN_*`.
@@ -170,7 +176,7 @@ $ loudgain -a -s i *.flac              # scan & tag an album of FLAC files
 $ loudgain -a -s e *.flac              # scan & tag an album of FLAC files, add extra tags (reference, ranges)
 $ loudgain -d -5 -a -s l *.flac        # apply -5 LU pregain to reach -23 LUFS target for EBU compatibility, add reference & range information, use 'LU' units in tags
 $ loudgain -I 3 -S -L -a -k -s e *.mp3 # scan & tag an MP3 album, recommended settings
-$ loudgain -L -a -k -s e *.m4a         # scan & tag an MP4 AAC audio album, recommended settings
+$ loudgain -L -a -k -s e *.m4a         # scan & tag an MP4 AAC/ALAC audio album, recommended settings
 ```
 
 See the [man page](docs/loudgain.1.md) for more information.  
