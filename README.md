@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3 audio files. It uses the well-known `mp3gain` commandline syntax.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3/MP4/M4A audio files. It uses the well-known `mp3gain` commandline syntax.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
