@@ -330,6 +330,10 @@ int main(int argc, char *argv[]) {
 						tag_clear_vorbis(scan);
 						break;
 
+					case AV_CODEC_ID_AAC:
+						tag_clear_aac(scan);
+						break;
+
 					default:
 						err_printf("File type not supported");
 						break;
@@ -353,6 +357,11 @@ int main(int argc, char *argv[]) {
 					case AV_CODEC_ID_VORBIS:
 						tag_clear_vorbis(scan);
 						tag_write_vorbis(scan, do_album, mode, unit);
+						break;
+
+					case AV_CODEC_ID_AAC:
+						tag_clear_aac(scan);
+						tag_write_aac(scan, do_album, mode, unit, lowercase);
 						break;
 
 					default:

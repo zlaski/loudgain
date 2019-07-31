@@ -42,6 +42,10 @@ void tag_clear_flac(scan_result *scan);
 void tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit);
 void tag_clear_vorbis(scan_result *scan);
 
+void tag_write_aac(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase);
+void tag_clear_aac(scan_result *scan);
+
 #ifdef __cplusplus
 }
 #endif

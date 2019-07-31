@@ -53,6 +53,7 @@
 #include <flacfile.h>
 #include <vorbisfile.h>
 #include <xiphcomment.h>
+#include <mp4file.h>
 
 #include "scan.h"
 #include "tag.h"
@@ -286,6 +287,103 @@ void tag_clear_vorbis(scan_result *scan) {
 	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
 	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
 	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+
+	f.save();
+}
+
+void tag_write_aac(scan_result *scan, bool do_album, char mode, char *unit,
+	bool lowercase) {
+	char value[2048];
+
+	TagLib::MP4::File f(scan -> file);
+	TagLib::MP4::Tag *tag = f.tag();
+
+	if (lowercase) {
+		// use lowercase replaygain tags
+		// (non-standard but used by foobar2000 and needed by some players)
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag -> setItem("----:com.apple.iTunes:replaygain_track_gain", TagLib::StringList(value));
+
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag -> setItem("----:com.apple.iTunes:replaygain_track_peak", TagLib::StringList(value));
+
+		// Only write album tags if in album mode (would be zero otherwise)
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag -> setItem("----:com.apple.iTunes:replaygain_album_gain", TagLib::StringList(value));
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag -> setItem("----:com.apple.iTunes:replaygain_album_peak", TagLib::StringList(value));
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag -> setItem("----:com.apple.iTunes:replaygain_reference_loudness", TagLib::StringList(value));
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag -> setItem("----:com.apple.iTunes:replaygain_track_range", TagLib::StringList(value));
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag -> setItem("----:com.apple.iTunes:replaygain_album_range", TagLib::StringList(value));
+			}
+		}
+	} else {
+		// use standard-compliant uppercase replaygain tags (default)
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN", TagLib::StringList(value));
+
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK", TagLib::StringList(value));
+
+		// Only write album tags if in album mode (would be zero otherwise)
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN", TagLib::StringList(value));
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK", TagLib::StringList(value));
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS", TagLib::StringList(value));
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE", TagLib::StringList(value));
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE", TagLib::StringList(value));
+			}
+		}
+	}
+
+	f.save();
+
+}
+
+void tag_clear_aac(scan_result *scan) {
+	TagLib::MP4::File f(scan -> file);
+	TagLib::MP4::Tag *tag = f.tag();
+
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS");
+
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_gain");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_peak");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_range");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_gain");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_peak");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_range");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_reference_loudness");
 
 	f.save();
 }

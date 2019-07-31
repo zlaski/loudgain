@@ -6,6 +6,7 @@
 # 2019-07-07 - new version looks for loudgain
 # 2019-07-10 - new version compatible with loudgain v0.2.6/0.2.7
 #            - added -k (clipping prevention) option to loudgain commands
+# 2019-07-31 - add support for *.m4a (AAC audio) files (requires loudgain 0.4.0+)
 
 # define me
 me=`basename "$0"`
@@ -79,6 +80,11 @@ while [ "$1" != '' ] ; do
       find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
     else
       find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r mp3gain2
+    fi
+
+    # calculate replay gain for all M4A in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.m4a" -type f -print0 | xargs -0 -r loudgain -L -a -k -s e
     fi
 
     # calculate BPM for all MP3 or FLAC in this folder
