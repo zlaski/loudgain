@@ -141,7 +141,7 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 * Update README.md and program help.
 
 **2019-07-07** — **v0.2.3** released:
-*  Fix broken album peak (again).
+* Fix broken album peak (again).
 * MP3/ID3v2 now get _lowercase_ `replaygain_*` tags.
 * Better versioning.
 
@@ -189,12 +189,13 @@ See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-
  * `libavcodec`
  * `libavformat`
  * `libavutil`
+ * `libswresample`
  * `libebur128` (v1.2.4+ recommended)
  * `libtag`
 
  On Ubuntu 18.04/Linux Mint 19.1, you can usually install CMake and the needed libraries using
  ```bash
- sudo apt-get install cmake libavcodec-dev libavformat-dev libavutil-dev libebur128-dev libtag1-dev
+ sudo apt-get install cmake libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libebur128-dev libtag1-dev
  ```
 
 ---
