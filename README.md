@@ -89,6 +89,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-08-01** – **v0.5.0** released:
+  * loudgain now uses FFmpeg’s `libswresample` instead of the deprecated `libavresample`. Fixes [#1](https://github.com/Moonbase59/loudgain/issues/1). Tested on Ubuntu 18.04, Linux Mint 19.1, Manjaro 18.0.4, Arch.
+
 **2019-07-31** – **v0.4.1** released:
   * Added support for ALAC (Apple Lossless Audio Codec) audio in MPEG-4 containers
   (.m4a, .mp4, .alac). `-L` (`--lowercase`) option is supported.
@@ -205,6 +208,8 @@ See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-
 loudgain is distributed as source code. Install with:
 
 ```bash
+$ git clone https://github.com/Moonbase59/loudgain.git
+$ cd loudgain
 $ mkdir build && cd build
 $ cmake ..
 $ make
