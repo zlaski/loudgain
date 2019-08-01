@@ -7,6 +7,8 @@
  * 2019-06-30 - Matthias C. Hormann
  *  calculate correct album peak
  *  TODO: This still sucks because albums are handled track-by-track.
+ * 2019-08-01 - Matthias C. Hormann
+ *  - Move from deprecated libavresample library to libswresample (FFmpeg)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,7 +40,7 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavresample/avresample.h>
+#include <libswresample/swresample.h>
 #include <libavutil/avutil.h>
 #include <libavutil/common.h>
 #include <libavutil/opt.h>
@@ -47,7 +49,7 @@
 #include "printf.h"
 
 static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
-                       AVAudioResampleContext *avr);
+                       SwrContext *avr);
 static void scan_av_log(void *avcl, int level, const char *fmt, va_list args);
 
 static ebur128_state **scan_states   = NULL;
@@ -102,7 +104,7 @@ int scan_file(const char *file, unsigned index) {
 	AVFrame *frame;
 	AVPacket packet;
 
-	AVAudioResampleContext *avr;
+	SwrContext *avr;
 
 	ebur128_state **ebur128 = &scan_states[index];
 
@@ -164,7 +166,7 @@ int scan_file(const char *file, unsigned index) {
 	packet.data = buffer;
 	packet.size = buffer_size;
 
-	avr = avresample_alloc_context();
+	avr = swr_alloc();
 
 	*ebur128 = ebur128_init(
 		ctx -> channels, ctx -> sample_rate,
@@ -210,7 +212,7 @@ int scan_file(const char *file, unsigned index) {
 
 	av_frame_free(&frame);
 
-	avresample_free(&avr);
+	swr_free(&avr);
 
 	avcodec_close(ctx);
 
@@ -313,7 +315,7 @@ void scan_set_album_result(scan_result *result, double pre_gain) {
 }
 
 static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
-                       AVAudioResampleContext *avr) {
+                       SwrContext *avr) {
 	int rc;
 
 	uint8_t            *out_data;
@@ -326,12 +328,12 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	av_opt_set_int(avr, "in_sample_fmt", frame -> format, 0);
 	av_opt_set_int(avr, "out_sample_fmt", out_fmt, 0);
 
-	rc = avresample_open(avr);
+	rc = swr_init(avr);
 	if (rc < 0) {
 		char errbuf[2048];
 		av_strerror(rc, errbuf, 2048);
 
-		fail_printf("Could not open AVResample: %s", errbuf);
+		fail_printf("Could not open SWResample: %s", errbuf);
 	}
 
 	out_size = av_samples_get_buffer_size(
@@ -340,9 +342,9 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 
 	out_data = av_malloc(out_size);
 
-	if (avresample_convert(
-		avr, &out_data, out_linesize, frame -> nb_samples,
-		frame -> data, frame -> linesize[0], frame -> nb_samples
+	if (swr_convert(
+		avr, (uint8_t**) &out_data, frame -> nb_samples,
+		(const uint8_t**) frame -> data, frame -> nb_samples
 	) < 0)
 		fail_printf("Cannot convert");
 
@@ -353,7 +355,7 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	if (rc != EBUR128_SUCCESS)
 		err_printf("Error filtering");
 
-	avresample_close(avr);
+	swr_close(avr);
 	av_free(out_data);
 }
 
