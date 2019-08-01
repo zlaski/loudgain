@@ -108,7 +108,7 @@ int scan_file(const char *file, unsigned index) {
 
 	ebur128_state **ebur128 = &scan_states[index];
 
-	int buffer_size = 192000 + FF_INPUT_BUFFER_PADDING_SIZE;
+	int buffer_size = 192000 + AV_INPUT_BUFFER_PADDING_SIZE;
 
 	uint8_t buffer[buffer_size];
 
