@@ -15,7 +15,7 @@ loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.
 
 loudgain currently supports writing tags to the following file types:  
-  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3).
+  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3), MP4 (.mp4, .m4a).
 
 
 ## OPTIONS
@@ -68,7 +68,7 @@ Delete ReplayGain tags from files.
 `-s i, --tagmode=i`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain 2.0 tags to files. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis.
+Write ReplayGain 2.0 tags to files. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes-type metadata for MP4.
 
 `-s e, --tagmode=e`
 
@@ -88,7 +88,7 @@ Don't write ReplayGain tags (default).
 `-L, --lowercase`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Force lowercase 'REPLAYGAIN_*' tags (MP3/ID3v2 only; non-standard)
+Force lowercase 'REPLAYGAIN_*' tags (MP3/MP4 only; non-standard)
 
 `-S, --striptags`
 
@@ -118,7 +118,7 @@ Database-friendly new format tab-delimited list output.
 `-q, --quiet`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Don't print status messages.
+Don't print scanning status messages.
 
 ## AUTHORS ##
 

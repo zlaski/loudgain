@@ -20,6 +20,9 @@
  *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
  * 2019-07-31 - v0.40 - Matthias C. Hormann
  *	- Add MP4 handling
+ * 2019-08-02 - v0.5.1 - Matthias C. Hormann
+ *  - avoid unneccessary double file write on deleting+writing tags
+ *  - make tag delete/write functions return true on success, false otherwise
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -61,6 +64,8 @@
 #include "tag.h"
 #include "printf.h"
 
+/*** MP3 ****/
+
 static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 	TagLib::ID3v2::UserTextIdentificationFrame *frame =
 		new TagLib::ID3v2::UserTextIdentificationFrame;
@@ -71,15 +76,43 @@ static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
 	tag -> addFrame(frame);
 }
 
+void tag_remove_mp3(TagLib::ID3v2::Tag *tag) {
+	TagLib::ID3v2::FrameList::Iterator it;
+	TagLib::ID3v2::FrameList frames = tag -> frameList("TXXX");
+
+	for (it = frames.begin(); it != frames.end(); ++it) {
+		TagLib::ID3v2::UserTextIdentificationFrame *frame =
+		 dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
+
+		 // this removes all variants of upper-/lower-/mixed-case tags
+		if (frame && frame -> fieldList().size() >= 2) {
+			TagLib::String desc = frame -> description().upper();
+
+			// also remove (old) reference loudness, it might be wrong after recalc
+			if ((desc == "REPLAYGAIN_TRACK_GAIN") ||
+			    (desc == "REPLAYGAIN_TRACK_PEAK") ||
+					(desc == "REPLAYGAIN_TRACK_RANGE") ||
+			    (desc == "REPLAYGAIN_ALBUM_GAIN") ||
+			    (desc == "REPLAYGAIN_ALBUM_PEAK") ||
+					(desc == "REPLAYGAIN_ALBUM_RANGE") ||
+			    (desc == "REPLAYGAIN_REFERENCE_LOUDNESS"))
+				tag -> removeFrame(frame);
+		}
+	}
+}
+
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
 // So for the time being, we write non-standard lowercase tags to ID3v2.
-void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
+bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase, bool strip, int id3v2version) {
 	char value[2048];
 
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
+
+	// remove old tags before writing new ones
+	tag_remove_mp3(tag);
 
 	if (lowercase) {
 		// use lowercase replaygain tags
@@ -150,48 +183,43 @@ void tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 	if (strip)
 		f.strip(TagLib::MPEG::File::APE);
 
-	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+	return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
-void tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
+bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	TagLib::ID3v2::FrameList::Iterator it;
-	TagLib::ID3v2::FrameList frames = tag -> frameList("TXXX");
-
-	for (it = frames.begin(); it != frames.end(); ++it) {
-		TagLib::ID3v2::UserTextIdentificationFrame *frame =
-		 dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
-
-		 // this removes all variants of upper-/lower-/mixed-case tags
-		if (frame && frame -> fieldList().size() >= 2) {
-			TagLib::String desc = frame -> description().upper();
-
-			// also remove (old) reference loudness, it might be wrong after recalc
-			if ((desc == "REPLAYGAIN_TRACK_GAIN") ||
-			    (desc == "REPLAYGAIN_TRACK_PEAK") ||
-					(desc == "REPLAYGAIN_TRACK_RANGE") ||
-			    (desc == "REPLAYGAIN_ALBUM_GAIN") ||
-			    (desc == "REPLAYGAIN_ALBUM_PEAK") ||
-					(desc == "REPLAYGAIN_ALBUM_RANGE") ||
-			    (desc == "REPLAYGAIN_REFERENCE_LOUDNESS"))
-				tag -> removeFrame(frame);
-		}
-	}
+	tag_remove_mp3(tag);
 
 	// work around bug taglib/taglib#913: strip APE before ID3v1
 	if (strip)
 		f.strip(TagLib::MPEG::File::APE);
 
-	f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+	return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
-void tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
+
+/*** FLAC ****/
+
+void tag_remove_flac(TagLib::Ogg::XiphComment *tag) {
+	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
+	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
+	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
+	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
+	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
+	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+}
+
+bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
 	char value[2048];
 
 	TagLib::FLAC::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
+
+	// remove old tags before writing new ones
+	tag_remove_flac(tag);
 
 	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
 	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
@@ -222,13 +250,22 @@ void tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
 		}
 	}
 
-	f.save();
+	return f.save();
 }
 
-void tag_clear_flac(scan_result *scan) {
+bool tag_clear_flac(scan_result *scan) {
 	TagLib::FLAC::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
+	tag_remove_flac(tag);
+
+	return f.save();
+}
+
+
+/*** Ogg Vorbis ****/
+
+void tag_remove_vorbis(TagLib::Ogg::XiphComment *tag) {
 	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
 	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
 	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
@@ -236,15 +273,16 @@ void tag_clear_flac(scan_result *scan) {
 	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
 	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
 	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
-
-	f.save();
 }
 
-void tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
+bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
 	char value[2048];
 
 	TagLib::Ogg::Vorbis::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.tag();
+
+	// remove old tags before writing new ones
+	tag_remove_vorbis(tag);
 
 	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
 	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
@@ -275,30 +313,48 @@ void tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
 		}
 	}
 
-	f.save();
+	return f.save();
 }
 
-void tag_clear_vorbis(scan_result *scan) {
+bool tag_clear_vorbis(scan_result *scan) {
 	TagLib::Ogg::Vorbis::File f(scan -> file);
 	TagLib::Ogg::XiphComment *tag = f.tag();
 
-	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
-	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
-	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
-	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+	tag_remove_vorbis(tag);
 
-	f.save();
+	return f.save();
 }
 
-void tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
+
+/*** MP4 ****/
+
+void tag_remove_mp4(TagLib::MP4::Tag *tag) {
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE");
+	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS");
+
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_gain");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_peak");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_track_range");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_gain");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_peak");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_album_range");
+	tag -> removeItem("----:com.apple.iTunes:replaygain_reference_loudness");
+}
+
+bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase) {
 	char value[2048];
 
 	TagLib::MP4::File f(scan -> file);
 	TagLib::MP4::Tag *tag = f.tag();
+
+	// remove old tags before writing new ones
+	tag_remove_mp4(tag);
 
 	if (lowercase) {
 		// use lowercase replaygain tags
@@ -363,29 +419,14 @@ void tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
 		}
 	}
 
-	f.save();
-
+	return f.save();
 }
 
-void tag_clear_mp4(scan_result *scan) {
+bool tag_clear_mp4(scan_result *scan) {
 	TagLib::MP4::File f(scan -> file);
 	TagLib::MP4::Tag *tag = f.tag();
 
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS");
+	tag_remove_mp4(tag);
 
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_gain");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_peak");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_range");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_gain");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_peak");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_range");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_reference_loudness");
-
-	f.save();
+	return f.save();
 }

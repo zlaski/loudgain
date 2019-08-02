@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "LOUDGAIN" "1" "July 2019" "" ""
+.TH "LOUDGAIN" "1" "August 2019" "" ""
 .
 .SH "NAME"
 \fBloudgain\fR \- loudness normalizer based on the EBU R128 standard
@@ -19,7 +19,7 @@ loudgain implements a subset of mp3gain\'s command\-line options, which means th
 loudgain currently supports writing tags to the following file types:
 .
 .br
-FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3)\.
+FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 .
 .SH "OPTIONS"
 \fB\-h, \-\-help\fR
@@ -79,7 +79,7 @@ FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3)\.
 \fB\-s i, \-\-tagmode=i\fR
 .
 .P
-\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis\.
+\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes\-type metadata for MP4\.
 .
 .P
 \fB\-s e, \-\-tagmode=e\fR
@@ -103,7 +103,7 @@ FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3)\.
 \fB\-L, \-\-lowercase\fR
 .
 .P
-\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP3/ID3v2 only; non\-standard)
+\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP3/MP4 only; non\-standard)
 .
 .P
 \fB\-S, \-\-striptags\fR
@@ -139,7 +139,7 @@ FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3)\.
 \fB\-q, \-\-quiet\fR
 .
 .P
-\~\~\~\~\~\~ Don\'t print status messages\.
+\~\~\~\~\~\~ Don\'t print scanning status messages\.
 .
 .SH "AUTHORS"
 Alessandro Ghedini \fIalessandro@ghedini\.me\fR

@@ -81,13 +81,18 @@ tag-mode which uses "LU"; 1 dB = 1 LU).
 loudgain defaults to the ReplayGain 2.0 standard (-18 LUFS, "dB" units,
 uppercase tags). Peak values are measured using the True Peak algorithm.
 
-**Standing on the shoulders of giants:** loudgain wouldn’t be possible without Linux and the fantastic [`taglib`](https://github.com/taglib/taglib) and [`libebur128`](https://github.com/jiixyj/libebur128) libraries. Thank you!
+**Standing on the shoulders of giants:** loudgain wouldn’t be possible without Linux and the fantastic [`FFmpeg`](https://ffmpeg.org/), [`taglib`](https://github.com/taglib/taglib) and [`libebur128`](https://github.com/jiixyj/libebur128) libraries. Thank you!
 
-Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back in 2014 and gave us his [v0.1 repo](https://github.com/ghedo/loudgain) from which I forked. (Want a PR?)
+Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back in 2014 and gave us his [v0.1 repo](https://github.com/ghedo/loudgain) from which I forked.
 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-08-02** – **v0.5.1** released:
+  * Speedup: Eliminate unneccessary double file writes (deleting+rewriting RG tags). Should help with low-speed disks and network mounts.
+  * Error handling: loudgain now complains when unable to write to a file (instead of silently ignoring it).
+  * Cosmetic changes: Update man page, help text and version info.
 
 **2019-08-01** – **v0.5.0** released:
   * loudgain now uses FFmpeg’s `libswresample` instead of the deprecated `libavresample`. Fixes [#1](https://github.com/Moonbase59/loudgain/issues/1). Tested on Ubuntu 18.04, Linux Mint 19.1, Manjaro 18.0.4, Arch.

@@ -68,6 +68,7 @@
 #include <ebur128.h>
 #include <libavcodec/avcodec.h>
 #include <libavutil/common.h>
+#include <libswresample/swresample.h>
 
 
 #include "config.h"
@@ -106,6 +107,8 @@ int  ebur128_v_major     = 0;
 int  ebur128_v_minor     = 0;
 int  ebur128_v_patch     = 0;
 char ebur128_version[15] = "";
+unsigned swr_ver         = 0;
+char     swr_version[15] = "";
 
 static inline void help(void);
 static inline void version(void);
@@ -136,6 +139,11 @@ int main(int argc, char *argv[]) {
 		ebur128_v_major, ebur128_v_minor, ebur128_v_patch);
 	if (ebur128_v_major <= 1 && ebur128_v_minor <= 2 && ebur128_v_patch < 4)
 		warn_ebu = true;
+
+	// libswresample version
+	swr_ver = swresample_version();
+	snprintf(swr_version, sizeof(swr_version), "%u.%u.%u",
+		swr_ver>>16, swr_ver>>8&0xff, swr_ver&0xff);
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -319,20 +327,24 @@ int main(int argc, char *argv[]) {
 			case 'd': /* delete tags */
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
-						tag_clear_mp3(scan, strip, id3v2version);
+						if (!tag_clear_mp3(scan, strip, id3v2version))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_FLAC:
-						tag_clear_flac(scan);
+						if (!tag_clear_flac(scan))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_VORBIS:
-						tag_clear_vorbis(scan);
+						if (!tag_clear_vorbis(scan))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_AAC:
 					case AV_CODEC_ID_ALAC:
-						tag_clear_mp4(scan);
+						if (!tag_clear_mp4(scan))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					default:
@@ -346,24 +358,28 @@ int main(int argc, char *argv[]) {
 			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
 				switch (scan -> codec_id) {
 					case AV_CODEC_ID_MP3:
-						tag_clear_mp3(scan, strip, id3v2version);
-						tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version);
+						// tag_clear_mp3(scan, strip, id3v2version);
+						if (!tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_FLAC:
-						tag_clear_flac(scan);
-						tag_write_flac(scan, do_album, mode, unit);
+						// tag_clear_flac(scan);
+						if (!tag_write_flac(scan, do_album, mode, unit))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_VORBIS:
-						tag_clear_vorbis(scan);
-						tag_write_vorbis(scan, do_album, mode, unit);
+						// tag_clear_vorbis(scan);
+						if (!tag_write_vorbis(scan, do_album, mode, unit))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					case AV_CODEC_ID_AAC:
 					case AV_CODEC_ID_ALAC:
-						tag_clear_mp4(scan);
-						tag_write_mp4(scan, do_album, mode, unit, lowercase);
+						// tag_clear_mp4(scan);
+						if (!tag_write_mp4(scan, do_album, mode, unit, lowercase))
+							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					default:
@@ -476,7 +492,7 @@ static inline void help(void) {
 	puts("[OPTIONS] FILES...\n");
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
-	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3)\n");
+	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3), MP4 (.mp4, .m4a).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -512,7 +528,7 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/ID3v2 only; non-standard)");
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/MP4 only; non-standard)");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP3");
 	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP3 files");
 	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP3 files (default)");
@@ -521,7 +537,7 @@ static inline void help(void) {
 
 	CMD_HELP("--output",     "-o",  "Database-friendly tab-delimited list output");
 	CMD_HELP("--output-new", "-O",  "New format tab-delimited list output");
-	CMD_HELP("--quiet",      "-q",  "Don't print status messages");
+	CMD_HELP("--quiet",      "-q",  "Don't print scanning status messages");
 
 	puts("");
 	// puts("Mandatory arguments to long options are also mandatory for any corresponding short options.");
@@ -529,6 +545,7 @@ static inline void help(void) {
 }
 
 static inline void version(void) {
-	printf("%s %s\n", PROJECT_NAME, PROJECT_VER);
-	printf("%s %s\n", "libebur128", ebur128_version);
+	printf("%s %s, using:\n", PROJECT_NAME, PROJECT_VER);
+	printf("  %s %s\n", "libebur128", ebur128_version);
+	printf("  %s %s\n", "libswresample", swr_version);
 }
