@@ -545,7 +545,7 @@ static inline void help(void) {
 }
 
 static inline void version(void) {
-	printf("%s %s, using:\n", PROJECT_NAME, PROJECT_VER);
+	printf("%s %s - using:\n", PROJECT_NAME, PROJECT_VER);
 	printf("  %s %s\n", "libebur128", ebur128_version);
 	printf("  %s %s\n", "libswresample", swr_version);
 }
