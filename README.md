@@ -41,6 +41,7 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
       - [A zillion ways to store loudness/gaining information](#a-zillion-ways-to-store-loudnessgaining-information)   
       - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
+- [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
 - [COPYRIGHT](#copyright)   
 
@@ -90,7 +91,7 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ## NEWS, CHANGELOG
 
 **2019-08-02** – **v0.5.1** released:
-  * Speedup: Eliminate unneccessary double file writes (deleting+rewriting RG tags). Should help with low-speed disks and network mounts.
+  * Speedup: Eliminate unneccessary double file writes (deleting+rewriting RG tags). Should help with low-speed disks and network mounts.  
   * Error handling: loudgain now complains when unable to write to a file (instead of silently ignoring it).
   * Cosmetic changes: Update man page, help text and version info.
 
@@ -623,6 +624,27 @@ I’ve been happy with these settings for many, many years now, and colleagues h
 If you want to adjust _lots of files_ (organized in album folders), please check out `rgbpm.sh`, a simple bash script file in the `bin/` folder, and adjust it to your needs. (_Hint:_ Copy this to your personal `~/bin` folder and `chmod +x rgbpm.sh` it so you can use it as a simple command.)
 
 **Happy replaygaining!**
+
+---
+
+## Quality over speed
+
+loudgain is designed to do its thing **correctly**, sometimes at the sacrifice of raw speed.
+
+Here are a few—probably non-representative—measurements from one of my machines, a Dell Optiplex 7010 from around 2013 with a 4TB built-in hard disc, still running Ubuntu 14.04 and thus using the slow-loading `loudgain.static` build:
+
+* Mixed sample collection of FLAC, MP3 and MP4 (1,924 files, 12.2GB): 73 minutes, averaging around 2.3 seconds/file.
+* Compared with early versions, version 0.5.1 sped up scanning and tagging a real _huge_ collection of almost 150,000 titles and nearly 2TB from almost 7 days to 3 days 20 hours. Fortunately, this usually needs to be done _only once_.
+* I used the `rgbpm.sh` script for these tests.
+
+Some notes on speed which are generally true, not just for loudgain:
+
+* Preferably, use a (fast) _local_ disc for the music to be tagged. (Later copying it somewhere else, like a NAS, is no problem.)
+* If anyhow possible, do _not_ use external discs connected through USB-2.
+* If you need to connect an external "Music" disc, prefer (in order) eSATA – USB3+UASP – USB3.
+* loudgain will work on network (even Wi-Fi) mounts but chances are it’ll be brutally sloooooooow …
+
+Your mileage may vary. Quality over speed. ;-)
 
 ---
 
