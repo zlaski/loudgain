@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP3/MP4/M4A/ALAC audio files. It uses the well-known `mp3gain` commandline syntax.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
@@ -69,7 +69,7 @@ write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (_Hint:_ In some players, you need to enable this feature.)
 
 **Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac` and `aacgain`
-in order to write ReplayGain 2.0 compatible loudness tags into MP3, Ogg Vorbis,
+in order to write ReplayGain 2.0 compatible loudness tags into MP2, MP3, Ogg Vorbis,
 FLAC and M4A/MP4 (AAC/ALAC audio) files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
@@ -89,6 +89,10 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-08-05** – **v0.5.2** released:
+  * Add support for MPEG-1 Layer 2 (.mp2) audio files: Much like MP3, uses ID3v2 tags and the same options. These can be used with many taggers/players like _MusicBrainz Picard_, _IDJC_, _Audacious_ and many more.
+  * `rgbpm.sh` also updated for `*.mp2` support.
 
 **2019-08-02** – **v0.5.1** released:
   * Speedup: Eliminate unneccessary double file writes (deleting+rewriting RG tags). Should help with low-speed disks and network mounts.  

@@ -7,6 +7,8 @@
 # 2019-07-10 - new version compatible with loudgain v0.2.6/0.2.7
 #            - added -k (clipping prevention) option to loudgain commands
 # 2019-07-31 - add support for *.m4a (AAC audio) files (requires loudgain 0.4.0+)
+# 2019-08-05 - add support for *.mp2 (MPEG-1 layer 2) audio files
+#              (requires loudgain 0.5.2+ and new bpm-calc)
 
 # define me
 me=`basename "$0"`
@@ -75,6 +77,11 @@ while [ "$1" != '' ] ; do
       find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r vorbisgain -a
     fi
 
+    # calculate replay gain for all MP2 in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.mp2" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
+    fi
+
     # calculate replay gain for all MP3 in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
@@ -90,7 +97,7 @@ while [ "$1" != '' ] ; do
     # calculate BPM for all MP3 or FLAC in this folder
     echo ""
     if [ "$BPMCALC" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -type f \( -iname "*.mp3" -or -iname "*.flac" \) -print0 | xargs -0 -r bpm-calc
+      find "$FOLDER" -maxdepth 1 -type f \( -iname "*.mp2" -or -iname "*.mp3" -or -iname "*.flac" \) -print0 | xargs -0 -r bpm-calc
     else
       echo "Skipping BPM calculation ..."
     fi

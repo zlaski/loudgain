@@ -85,8 +85,12 @@ standard, and can optionally write ReplayGain-compatible metadata.</p>
 <p>loudgain implements a subset of mp3gain's command-line options, which means that
 it can be used as a drop-in replacement in some situations.</p>
 
+<p>loudgain will <em>not</em> modify the actual audio data, but instead just
+write ReplayGain <em>tags</em> if so requested. It is up to the player to interpret
+these. (In some players, you need to enable this feature.)</p>
+
 <p>loudgain currently supports writing tags to the following file types:<br />
-  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3), MP4 (.mp4, .m4a).</p>
+  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
@@ -138,7 +142,7 @@ Delete ReplayGain tags from files.</p>
 <p><code>-s i, --tagmode=i</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain 2.0 tags to files. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes-type metadata for MP4.</p>
+Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes-type metadata for MP4.</p>
 
 <p><code>-s e, --tagmode=e</code></p>
 
@@ -158,22 +162,22 @@ Don't write ReplayGain tags (default).</p>
 <p><code>-L, --lowercase</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Force lowercase 'REPLAYGAIN_*' tags (MP3/MP4 only; non-standard)</p>
+Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4 only; non-standard)</p>
 
 <p><code>-S, --striptags</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Strip tag types other than ID3v2 from MP3 files (i.e. ID3v1, APEv2).</p>
+Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).</p>
 
 <p><code>-I 3, --id3v2version=3</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.3 tags to MP3 files.</p>
+Write ID3v2.3 tags to MP2/MP3 files.</p>
 
 <p><code>-I 4, --id3v2version=4</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.4 tags to MP3 files (default).</p>
+Write ID3v2.4 tags to MP2/MP3 files (default).</p>
 
 <p><code>-o, --output</code></p>
 
@@ -192,13 +196,13 @@ Don't print scanning status messages.</p>
 
 <h2 id="AUTHORS">AUTHORS</h2>
 
-<p>Alessandro Ghedini <a href="&#109;&#97;&#x69;&#108;&#116;&#x6f;&#x3a;&#x61;&#x6c;&#x65;&#x73;&#115;&#x61;&#110;&#100;&#114;&#x6f;&#x40;&#103;&#104;&#101;&#x64;&#105;&#x6e;&#x69;&#x2e;&#109;&#x65;" data-bare-link="true">&#97;&#x6c;&#x65;&#115;&#x73;&#97;&#x6e;&#x64;&#x72;&#111;&#64;&#103;&#x68;&#x65;&#100;&#105;&#110;&#105;&#x2e;&#x6d;&#x65;</a><br />
-Matthias C. Hormann <a href="&#x6d;&#x61;&#105;&#108;&#116;&#x6f;&#58;&#x6d;&#x68;&#x6f;&#x72;&#109;&#x61;&#x6e;&#x6e;&#x40;&#103;&#x6d;&#x78;&#x2e;&#x64;&#x65;" data-bare-link="true">&#109;&#x68;&#111;&#x72;&#x6d;&#97;&#110;&#110;&#64;&#x67;&#109;&#120;&#x2e;&#100;&#x65;</a></p>
+<p>Alessandro Ghedini <a href="&#109;&#97;&#x69;&#108;&#116;&#x6f;&#58;&#97;&#108;&#101;&#115;&#x73;&#97;&#x6e;&#x64;&#114;&#111;&#x40;&#x67;&#104;&#101;&#x64;&#x69;&#110;&#105;&#46;&#109;&#101;" data-bare-link="true">&#97;&#x6c;&#101;&#x73;&#x73;&#x61;&#x6e;&#x64;&#114;&#111;&#x40;&#103;&#104;&#101;&#x64;&#x69;&#x6e;&#x69;&#x2e;&#x6d;&#101;</a><br />
+Matthias C. Hormann <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x6d;&#x68;&#111;&#114;&#109;&#97;&#x6e;&#x6e;&#x40;&#103;&#109;&#x78;&#46;&#x64;&#101;" data-bare-link="true">&#x6d;&#x68;&#x6f;&#114;&#x6d;&#97;&#x6e;&#110;&#64;&#103;&#109;&#x78;&#46;&#x64;&#101;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2014 Alessandro Ghedini <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#58;&#x61;&#108;&#x65;&#115;&#x73;&#97;&#x6e;&#x64;&#114;&#x6f;&#64;&#103;&#104;&#x65;&#100;&#105;&#x6e;&#105;&#x2e;&#x6d;&#101;" data-bare-link="true">&#x61;&#x6c;&#x65;&#115;&#115;&#97;&#x6e;&#100;&#x72;&#x6f;&#64;&#x67;&#x68;&#101;&#x64;&#x69;&#x6e;&#105;&#x2e;&#109;&#101;</a><br />
-Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#x6d;&#104;&#x6f;&#114;&#x6d;&#97;&#110;&#110;&#64;&#103;&#109;&#x78;&#x2e;&#100;&#x65;" data-bare-link="true">&#109;&#104;&#111;&#114;&#x6d;&#97;&#x6e;&#110;&#64;&#x67;&#x6d;&#x78;&#x2e;&#100;&#x65;</a></p>
+<p>Copyright (C) 2014 Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#97;&#108;&#101;&#115;&#115;&#97;&#x6e;&#x64;&#114;&#111;&#x40;&#x67;&#104;&#101;&#100;&#x69;&#110;&#105;&#x2e;&#x6d;&#x65;" data-bare-link="true">&#x61;&#108;&#x65;&#x73;&#x73;&#97;&#110;&#100;&#x72;&#x6f;&#64;&#x67;&#x68;&#x65;&#x64;&#x69;&#110;&#x69;&#x2e;&#109;&#101;</a><br />
+Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#111;&#x3a;&#x6d;&#x68;&#x6f;&#114;&#109;&#97;&#110;&#x6e;&#x40;&#103;&#109;&#120;&#x2e;&#100;&#101;" data-bare-link="true">&#109;&#x68;&#x6f;&#114;&#x6d;&#97;&#x6e;&#x6e;&#64;&#103;&#x6d;&#120;&#x2e;&#x64;&#x65;</a></p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 

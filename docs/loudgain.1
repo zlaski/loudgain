@@ -16,10 +16,13 @@
 loudgain implements a subset of mp3gain\'s command\-line options, which means that it can be used as a drop\-in replacement in some situations\.
 .
 .P
+loudgain will \fInot\fR modify the actual audio data, but instead just write ReplayGain \fItags\fR if so requested\. It is up to the player to interpret these\. (In some players, you need to enable this feature\.)
+.
+.P
 loudgain currently supports writing tags to the following file types:
 .
 .br
-FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
+FLAC (\.flac), Ogg Vorbis (\.ogg), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 .
 .SH "OPTIONS"
 \fB\-h, \-\-help\fR
@@ -79,7 +82,7 @@ FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 \fB\-s i, \-\-tagmode=i\fR
 .
 .P
-\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes\-type metadata for MP4\.
+\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP2/MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes\-type metadata for MP4\.
 .
 .P
 \fB\-s e, \-\-tagmode=e\fR
@@ -103,25 +106,25 @@ FLAC (\.flac), Ogg Vorbis (\.ogg), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 \fB\-L, \-\-lowercase\fR
 .
 .P
-\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP3/MP4 only; non\-standard)
+\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4 only; non\-standard)
 .
 .P
 \fB\-S, \-\-striptags\fR
 .
 .P
-\~\~\~\~\~\~ Strip tag types other than ID3v2 from MP3 files (i\.e\. ID3v1, APEv2)\.
+\~\~\~\~\~\~ Strip tag types other than ID3v2 from MP2/MP3 files (i\.e\. ID3v1, APEv2)\.
 .
 .P
 \fB\-I 3, \-\-id3v2version=3\fR
 .
 .P
-\~\~\~\~\~\~ Write ID3v2\.3 tags to MP3 files\.
+\~\~\~\~\~\~ Write ID3v2\.3 tags to MP2/MP3 files\.
 .
 .P
 \fB\-I 4, \-\-id3v2version=4\fR
 .
 .P
-\~\~\~\~\~\~ Write ID3v2\.4 tags to MP3 files (default)\.
+\~\~\~\~\~\~ Write ID3v2\.4 tags to MP2/MP3 files (default)\.
 .
 .P
 \fB\-o, \-\-output\fR

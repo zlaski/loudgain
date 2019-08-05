@@ -326,6 +326,7 @@ int main(int argc, char *argv[]) {
 
 			case 'd': /* delete tags */
 				switch (scan -> codec_id) {
+					case AV_CODEC_ID_MP2:
 					case AV_CODEC_ID_MP3:
 						if (!tag_clear_mp3(scan, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
@@ -357,6 +358,7 @@ int main(int argc, char *argv[]) {
 			case 'e': /* same as 'i' plus extra tags */
 			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
 				switch (scan -> codec_id) {
+					case AV_CODEC_ID_MP2:
 					case AV_CODEC_ID_MP3:
 						// tag_clear_mp3(scan, strip, id3v2version);
 						if (!tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version))
@@ -492,7 +494,7 @@ static inline void help(void) {
 	puts("[OPTIONS] FILES...\n");
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
-	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP3 (.mp3), MP4 (.mp4, .m4a).\n");
+	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -528,10 +530,10 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP3/MP4 only; non-standard)");
-	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP3");
-	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP3 files");
-	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP3 files (default)");
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4 only; non-standard)");
+	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
+	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3 files");
+	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3 files (default)");
 
 	puts("");
 
