@@ -255,6 +255,10 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 		peak = FFMAX(peak, tmp);
 	}
 
+  // Opus is always based on -23 LUFS, we have to adapt
+  if (scan_codecs[index] == AV_CODEC_ID_OPUS)
+    pre_gain = pre_gain - 5.0f;
+
 	result -> file                 = scan_files[index];
 	result -> codec_id             = scan_codecs[index];
 

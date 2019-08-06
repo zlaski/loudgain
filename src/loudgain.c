@@ -32,6 +32,8 @@
  *  - -k now defaults to clipping prevention at -1 dBTP (as EBU recommends)
  *  - New -K: Allows clippping prevention with settable dBTP level,
  *     i.e. -K 0 (old-style) or -K -2 (to compensate for post-processing losses)
+ * 2019-08-06 - v0.5.3 - Matthias C. Hormann
+ *  - Add support for Opus (.opus) files.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -348,6 +350,11 @@ int main(int argc, char *argv[]) {
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
+					case AV_CODEC_ID_OPUS:
+						if (!tag_clear_opus(scan))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
 					default:
 						err_printf("File type not supported");
 						break;
@@ -381,6 +388,12 @@ int main(int argc, char *argv[]) {
 					case AV_CODEC_ID_ALAC:
 						// tag_clear_mp4(scan);
 						if (!tag_write_mp4(scan, do_album, mode, unit, lowercase))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
+					case AV_CODEC_ID_OPUS:
+						// tag_clear_opus(scan);
+						if (!tag_write_opus(scan, do_album, mode, unit))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
@@ -463,7 +476,15 @@ int main(int argc, char *argv[]) {
 			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
 			printf(" Range:    %8.2f %s\n", scan -> track_loudness_range, unit);
 			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
-			printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit, tclip ? " (corrected to prevent clipping)" : "");
+			if (scan -> codec_id == AV_CODEC_ID_OPUS) {
+				// also show the Q7.8 number that goes into R128_TRACK_GAIN
+				printf(" Gain:     %8.2f %s (%d)%s\n", scan -> track_gain, unit,
+				 gain_to_q78num(scan -> track_gain),
+				 tclip ? " (corrected to prevent clipping)" : "");
+			} else {
+				printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit,
+				 tclip ? " (corrected to prevent clipping)" : "");
+			}
 
 			if (warn_clip && will_clip)
 				err_printf("The track will clip");
@@ -474,7 +495,15 @@ int main(int argc, char *argv[]) {
 				printf(" Loudness: %8.2f LUFS\n", scan -> album_loudness);
 				printf(" Range:    %8.2f %s\n", scan -> album_loudness_range, unit);
 				printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
-				printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit, aclip ? " (corrected to prevent clipping)" : "");
+				if (scan -> codec_id == AV_CODEC_ID_OPUS) {
+					// also show the Q7.8 number that goes into R128_ALBUM_GAIN
+					printf(" Gain:     %8.2f %s (%d)%s\n", scan -> album_gain, unit,
+					gain_to_q78num(scan -> album_gain),
+						aclip ? " (corrected to prevent clipping)" : "");
+				} else {
+					printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit,
+						aclip ? " (corrected to prevent clipping)" : "");
+				}
 			}
 		}
 
@@ -494,7 +523,8 @@ static inline void help(void) {
 	puts("[OPTIONS] FILES...\n");
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
-	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).\n");
+	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).");
+	puts("  Opus (.opus) -- experimental support, use with care!\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);

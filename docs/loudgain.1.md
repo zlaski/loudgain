@@ -20,6 +20,7 @@ these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
   FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).
+  Opus (.opus) -- experimental support, use with care!
 
 
 ## OPTIONS

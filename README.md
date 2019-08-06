@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
@@ -40,6 +40,7 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
       - [Some basic recommendations](#some-basic-recommendations)   
       - [A zillion ways to store loudness/gaining information](#a-zillion-ways-to-store-loudnessgaining-information)   
       - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
+   - [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
@@ -68,9 +69,9 @@ it can be used as a drop-in replacement in some situations.
 write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (_Hint:_ In some players, you need to enable this feature.)
 
-**Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac` and `aacgain`
-in order to write ReplayGain 2.0 compatible loudness tags into MP2, MP3, Ogg Vorbis,
-FLAC and M4A/MP4 (AAC/ALAC audio) files, respectively.
+**Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac`,
+`aacgain` and others in order to write ReplayGain 2.0 compatible loudness tags
+into MP2, MP3, Ogg Vorbis, FLAC, M4A/MP4 (AAC/ALAC audio) and Opus files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
 and uses _LU_ and _LUFS_ units. The proposed ReplayGain 2.0 standard tries to
@@ -81,6 +82,7 @@ tag-mode which uses "LU"; 1 dB = 1 LU).
 
 loudgain defaults to the ReplayGain 2.0 standard (-18 LUFS, "dB" units,
 uppercase tags). Peak values are measured using the True Peak algorithm.
+The only exception are Opus files which are 'nailed' to -23 LUFS by design.
 
 **Standing on the shoulders of giants:** loudgain wouldn’t be possible without Linux and the fantastic [`FFmpeg`](https://ffmpeg.org/), [`taglib`](https://github.com/taglib/taglib) and [`libebur128`](https://github.com/jiixyj/libebur128) libraries. Thank you!
 
@@ -89,6 +91,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-08-06** – **v0.5.3** released:
+  * Added _experimental (!)_ Opus (.opus) support. Please read [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
 
 **2019-08-05** – **v0.5.2** released:
   * Add support for MPEG-1 Layer 2 (.mp2) audio files: Much like MP3, uses ID3v2 tags and the same options. These can be used with many taggers/players like _MusicBrainz Picard_, _IDJC_, _Audacious_ and many more.
@@ -190,6 +195,7 @@ $ loudgain -a -s e *.flac              # scan & tag an album of FLAC files, add 
 $ loudgain -d -5 -a -s l *.flac        # apply -5 LU pregain to reach -23 LUFS target for EBU compatibility, add reference & range information, use 'LU' units in tags
 $ loudgain -I 3 -S -L -a -k -s e *.mp3 # scan & tag an MP3 album, recommended settings
 $ loudgain -L -a -k -s e *.m4a         # scan & tag an MP4 AAC/ALAC audio album, recommended settings
+$ loudgain -a -k -s i *.opus           # scan & tag an Opus album
 ```
 
 See the [man page](docs/loudgain.1.md) for more information.  
@@ -609,6 +615,51 @@ Since loudgain _has_ to convert some tags when storing in ID3v2.3 or ID3v2.4 for
 * `REPLAYGAIN_*` tags written by loudgain:
   * Always stored with `ISO-8859-1` encoding.
 
+---
+
+### How I handle Opus (.opus) audio files
+
+1. Opus **only** uses `R128_TRACK_GAIN` and (optionally) `R128_ALBUM_GAIN`
+   as an _additional_ offset to the header's 'output_gain'.
+
+2. Encoders and muxes (should) set 'output_gain' to zero, so a non-zero
+   'output_gain' in the header is supposed to be a change _after_ encoding/muxing.
+
+3. We assume that FFmpeg's avformat does already apply 'output_gain' (???)
+   so we get get pre-gained data and only have to calculate the _difference_.
+
+4. Opus adheres to _EBU-R128_, so the loudness reference is **always -23 LUFS**.
+   This means we have to adapt for possible `-d n` (`--pregain=n`) changes.
+   This also means **players have to add an extra +5 dB to reach the loudness
+   ReplayGain 2.0 prescribes** (-18 LUFS). _IDJC_, _foobar2000_ and several
+   others already seem to handle this correctly (in newer versions).
+
+5. Opus `R128_*` tags use ASCII-encoded _Q7.8 numbers_ with max. 6 places including
+   the minus sign, and _no unit_.
+   See https://en.wikipedia.org/wiki/Q_(number_format)
+
+6. [RFC 7845](https://tools.ietf.org/html/rfc7845#page-25) states:
+   _"To avoid confusion with multiple normalization schemes, an
+   Opus comment header **SHOULD NOT** contain any of the `REPLAYGAIN_TRACK_GAIN`,
+   `REPLAYGAIN_TRACK_PEAK`, `REPLAYGAIN_ALBUM_GAIN`, or `REPLAYGAIN_ALBUM_PEAK` tags, […]"_
+
+   **So we actually _remove_ `REPLAYGAIN_*` tags if any are present.**
+
+7. [RFC 7845](https://tools.ietf.org/html/rfc7845#page-25) states:
+   _"Peak normalizations are difficult to calculate reliably
+   for lossy codecs because of variation in excursion heights due to decoder
+   differences. In the authors' investigations, they were not applied
+   consistently or broadly enough to merit inclusion here."_
+
+   **So we don’t store any "Peak" type tags.** The (oversampled) true peak levels that
+   `libebur128` calculates for us are **still used for clipping prevention** if so
+   requested. They are **also shown in the output**, just not stored into tags.
+
+8. Tagging modes `-s i`, `-s e`, `-s l` all behave the same for Opus files.
+
+Please **give feedback** on the [issue tracker](https://github.com/Moonbase59/loudgain/issues),
+so we can finalize loudgain's Opus support. Thanks!
+
 
 ## loudgain makes it easy following the »Gold Standard«
 
@@ -621,6 +672,7 @@ $ loudgain -a -k -s e *.flac
 $ loudgain -a -k -s e *.ogg
 $ loudgain -I3 -S -L -a -k -s e *.mp3
 $ loudgain -L -a -k -s e *.m4a
+$ loudgain -a -k -s e *.opus
 ```
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.

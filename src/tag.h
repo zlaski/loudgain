@@ -46,6 +46,11 @@ bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase);
 bool tag_clear_mp4(scan_result *scan);
 
+bool tag_write_opus(scan_result *scan, bool do_album, char mode, char *unit);
+bool tag_clear_opus(scan_result *scan);
+
+int gain_to_q78num(double gain);
+
 #ifdef __cplusplus
 }
 #endif
