@@ -19,7 +19,7 @@ write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
-  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).
+  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).  
   Opus (.opus) -- experimental support, use with care!
 
 
@@ -73,7 +73,7 @@ Delete ReplayGain tags from files.
 `-s i, --tagmode=i`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3, Vorbis Comments for FLAC and Ogg Vorbis, iTunes-type metadata for MP4.
+Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3, Vorbis Comments for FLAC, Ogg Vorbis and Opus, iTunes-type metadata for MP4.
 
 `-s e, --tagmode=e`
 

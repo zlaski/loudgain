@@ -635,7 +635,7 @@ Since loudgain _has_ to convert some tags when storing in ID3v2.3 or ID3v2.4 for
    others already seem to handle this correctly (in newer versions).
 
 5. Opus `R128_*` tags use ASCII-encoded _Q7.8 numbers_ with max. 6 places including
-   the minus sign, and _no unit_.
+   the minus sign, and _no unit_.  
    See https://en.wikipedia.org/wiki/Q_(number_format)
 
 6. [RFC 7845](https://tools.ietf.org/html/rfc7845#page-25) states:
