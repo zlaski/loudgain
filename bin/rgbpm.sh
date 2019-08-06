@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# rgbpm.sh
+# rgbpm.sh - Copyright (c) 2019 Matthias C. Hormann
 # apply replay gain (mp3gain2) and BPM (bpm-calc) to all folders below and including specified one
 # For correct album replay gain, we assume all files of one album are in the same folder.
 # 2019-07-07 - new version looks for loudgain
@@ -9,6 +9,8 @@
 # 2019-07-31 - add support for *.m4a (AAC audio) files (requires loudgain 0.4.0+)
 # 2019-08-05 - add support for *.mp2 (MPEG-1 layer 2) audio files
 #              (requires loudgain 0.5.2+ and new bpm-calc)
+# 2019-08-06 - add support for *.opus (Opus) files (requires loudgain 0.5.3+)
+#              Note: Currently not supported by bpm-calc!
 
 # define me
 me=`basename "$0"`
@@ -94,7 +96,12 @@ while [ "$1" != '' ] ; do
       find "$FOLDER" -maxdepth 1 -iname "*.m4a" -type f -print0 | xargs -0 -r loudgain -L -a -k -s e
     fi
 
-    # calculate BPM for all MP3 or FLAC in this folder
+    # calculate replay gain for all OPUS in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -print0 | xargs -0 -r loudgain -a -k -s e
+    fi
+
+    # calculate BPM for all MP2, MP3 or FLAC in this folder
     echo ""
     if [ "$BPMCALC" = true ] ; then
       find "$FOLDER" -maxdepth 1 -type f \( -iname "*.mp2" -or -iname "*.mp3" -or -iname "*.flac" \) -print0 | xargs -0 -r bpm-calc
