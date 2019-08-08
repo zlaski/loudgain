@@ -4,6 +4,9 @@
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
+_**Note:** There is a »runnable« version for 64-bit systems in the `bin` folder, called `loudgain.static`. Read [loudgain.static](#loudgainstatic).
+You can use this if you only want to try out loudgain, cannot or don’t wish to compile it yourself. It starts much slower, but brings all its dependencies with it, and thus can even be used on older systems._
+
 ---
 
 ## Table of Contents
@@ -283,6 +286,7 @@ It’s a 64-bit ELF made using [staticx](https://github.com/JonathonReinhart/sta
 If you don’t have a "real" `loudgain`, you can create a symlink to it in your `~/bin` directory as follows (assuming you have copied `loudgain.static` to there):
 ```bash
 $ cd ~/bin
+$ chmod +x loudgain.static
 $ ln -s loudgain.static loudgain
 ```
 
