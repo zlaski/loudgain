@@ -7,4 +7,6 @@
 /debian/debhelper-build-stamp
 /debian/docs
 /debian/files
+/debian/patches
 /obj-*
+/.pc
