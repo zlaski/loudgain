@@ -1,2 +1,10 @@
 # exclude cmake build dir
 /build
+
+# exclude Debian packaging stuff
+/debian/.debhelper
+/debian/loudgain*
+/debian/debhelper-build-stamp
+/debian/docs
+/debian/files
+/obj-*
