@@ -37,7 +37,13 @@
 #include <syslog.h>
 #include <limits.h>
 
-#include <pty.h>
+// Mac OS X has no pty.h, so use util.h instead
+#include "config.h"
+#ifdef HAVE_PTY_H
+	#include <pty.h>
+#else
+	#include <util.h>
+#endif
 
 #include "printf.h"
 #include "util.h"
