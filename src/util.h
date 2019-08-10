@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include "printf.h"
 
 #define _free_ __attribute__((cleanup(freep)))
 #define _close_ __attribute__((cleanup(closep)))
