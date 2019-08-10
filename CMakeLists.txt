@@ -34,8 +34,6 @@ FILE(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cc" "src/*.c")
 
 ADD_EXECUTABLE(loudgain ${SOURCES})
 
-CONFIGURE_FILE("config.h.in" "config.h")
-
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${EBUR128_INCLUDE_DIR}
@@ -50,6 +48,8 @@ INCLUDE_DIRECTORIES(
 # Mac OS X has no pty.h
 INCLUDE (CheckIncludeFiles)
 CHECK_INCLUDE_FILES (pty.h HAVE_PTY_H)
+
+CONFIGURE_FILE("config.h.in" "config.h")
 
 SET(LIBS )
 
