@@ -1,4 +1,4 @@
-# Locate libebur128 library  
+# Locate libebur128 library
 # This module defines
 # EBUR128_LIBRARY, the name of the library to link against
 # EBUR128_FOUND, if false, do not try to link
@@ -6,9 +6,10 @@
 #
 set(EBUR128_FOUND FALSE)
 
-find_path(EBUR128_INCLUDE_DIR ebur128.h
+find_path(EBUR128_INCLUDE_DIR
+  NAMES ebur128.h
   HINTS
-  PATH_SUFFIXES include 
+  PATH_SUFFIXES include
   PATHS
   ~/Library/Frameworks
   /Library/Frameworks
@@ -16,7 +17,7 @@ find_path(EBUR128_INCLUDE_DIR ebur128.h
   /usr/include
   /sw/include
   /opt/local/include
-  /opt/csw/include 
+  /opt/csw/include
   /opt/include
   /mingw
 )
