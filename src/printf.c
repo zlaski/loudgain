@@ -41,12 +41,14 @@
 #include "config.h"
 #ifdef HAVE_PTY_H
 	#include <pty.h>
-#else
+#endif
+#ifndef HAVE_PTY_H
 	#include <util.h>
 #endif
 
+#include <sys/ioctl.h>
+
 #include "printf.h"
-#include "util.h"
 
 int use_syslog = 0;
 int quiet = 0;
