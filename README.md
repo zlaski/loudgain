@@ -24,7 +24,7 @@ _**Mac users:** Read [Installation using Homebrew (Mac & Linux)](#installation-u
 - [BUILDING](#building)   
 - [TECHNICAL DETAILS (advanced users stuff)](#technical-details-advanced-users-stuff)   
    - [Things in the `bin`folder](#things-in-the-binfolder)   
-      - [rgbpm.sh – Folder-based loudness and BPM scanning](#rgbpmsh-–-folder-based-loudness-and-bpm-scanning)   
+      - [rgbpm – Folder-based loudness and BPM scanning](#rgbpmsh-–-folder-based-loudness-and-bpm-scanning)   
       - [loudgain.static](#loudgainstatic)   
    - [Uppercase or lowercase 'REPLAYGAIN_*' tags?](#uppercase-or-lowercase-replaygain_-tags)   
    - [Tags written (and/or deleted)](#tags-written-andor-deleted)   
@@ -97,6 +97,11 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-08-13** – **v0.5.5** released:
+  * Now officially provides the former `rgbpm.sh` as an updated and MacOS-compatible `rgbpm` command. After installing, type `rgbpm -h` for help. This is for _mass-tagging_ (1 album per folder).
+  * Now provides a `[sudo] make uninstall` target, should you wish to uninstall it again.
+  * Tested on Linux Mint 19.2, Ubuntu 18.04, Manjaro 18.0.4, MacOS 10.14.4 Mojave.
 
 **2019-08-13** – **v0.5.4** released:
   * Make loudgain compile & run on MacOS X, with lots of help from @classicjazz.
@@ -217,10 +222,17 @@ See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-
 
 **loudgain** can now be installed on MacOS X (and Linux, too) using [Homebrew](https://brew.sh/).
 
-Since `taglib` (`libtag`) hasn’t had a new release since 24 Oct 2016 (v1.11.1) _but_ they have fixed a lot of nasty bugs, it is mandatory to update `libtag` to the HEAD version _first_:
+Homebrew is updated extremely often (a _good_ thing!), and I therefore recommend performing a
 
 ```bash
 brew update
+brew upgrade
+```
+very often, and in any case before installing something new.
+
+Since `taglib` (`libtag`) hasn’t had a new release since 24 Oct 2016 (v1.11.1) _but_ they have fixed a lot of nasty bugs, it is mandatory to update `libtag` to the HEAD version _first_:
+
+```bash
 brew uninstall --ignore-dependencies libtag
 brew install --HEAD libtag
 ```
@@ -302,17 +314,17 @@ But _if_ you do, you might need them badly. Welcome to the expert sessions—rea
 These are meant for testing, and to get you going FAST.
 You can simply copy these files into your user’s `$HOME/bin` folder and make them executable. On most Linuxes, they should be available as commands in the path when opening the next shell. Maybe you need to log off and back on again to make it work.
 
-#### rgbpm.sh – Folder-based loudness and BPM scanning
+#### rgbpm – Folder-based loudness and BPM scanning
 
 This is a little bash script to invoke loudgain (well, and a BPM scanner) and have it scan album folders, starting from a top folder, recursively. I use this almost every day.
 
 ```bash
-$ rgbpm.sh folder [...]
+$ rgbpm folder [...]
 ```
 
-Please study the code and adapt as needed for _your_ situation.
+`rgbpm` is now officially provided with `loudgain`, as an executable installed script. No guarantees, though. ;-)
 
-**TODO:** Make a version that works on MacOS because MacOS’ `xargs` doesn’t support the `-i` and `-r` switches. (You can probably do that yourself by using `find … -exec` instead.)
+Please study the code and adapt as needed for _your_ situation. `rgbpm` does ReplayGain mass-tagging according to _my_ needs, your mileage may vary.
 
 #### loudgain.static
 
@@ -718,7 +730,7 @@ $ loudgain -a -k -s e *.opus
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.
 
-If you want to adjust _lots of files_ (organized in album folders), please check out `rgbpm.sh`, a simple bash script file in the `bin/` folder, and adjust it to your needs. (_Hint:_ Copy this to your personal `~/bin` folder and `chmod +x rgbpm.sh` it so you can use it as a simple command.)
+If you want to adjust _lots of files_ (organized in album folders), please check out `rgbpm`, a simple bash script file in the `bin/` folder, and adjust it to your needs. (_Hint:_ Copy this to your personal `~/bin` folder and `chmod +x rgbpm` it so you can use it as a simple command.)
 
 **Happy replaygaining!**
 
@@ -732,7 +744,7 @@ Here are a few—probably non-representative—measurements from one of my machi
 
 * Mixed sample collection of FLAC, MP3 and MP4 (1,924 files, 12.2GB): 73 minutes, averaging around 2.3 seconds/file.
 * Compared with early versions, version 0.5.1 sped up scanning and tagging a real _huge_ collection of almost 150,000 titles and nearly 2TB from almost 7 days to 3 days 20 hours. Fortunately, this usually needs to be done _only once_.
-* I used the `rgbpm.sh` script for these tests.
+* I used the `rgbpm` script for these tests.
 
 Some notes on speed which are generally true, not just for loudgain:
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# rgbpm.sh - Copyright (c) 2019 Matthias C. Hormann
+# rgbpm - Copyright (c) 2019 Matthias C. Hormann
 # apply replay gain (mp3gain2) and BPM (bpm-calc) to all folders below and including specified one
 # For correct album replay gain, we assume all files of one album are in the same folder.
 # 2019-07-07 - new version looks for loudgain
