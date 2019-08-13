@@ -7,7 +7,7 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
 _**Note:** There is a »runnable« version for 64-bit systems in the `bin` folder, called `loudgain.static`. Read [loudgain.static](#loudgainstatic).
 You can use this if you only want to try out loudgain, cannot or don’t wish to compile it yourself. It starts much slower, but brings all its dependencies with it, and thus can even be used on older systems._
 
-_**Mac users:** For installation with Homebrew, read [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac-linux)._
+_**Mac users:** Read [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac--linux)._
 
 ---
 
