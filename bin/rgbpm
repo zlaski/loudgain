@@ -11,9 +11,13 @@
 #              (requires loudgain 0.5.2+ and new bpm-calc)
 # 2019-08-06 - add support for *.opus (Opus) files (requires loudgain 0.5.3+)
 #              Note: Currently not supported by bpm-calc!
+# 2019-08-13 - v0.8:
+#            - MacOS-compatible version (no xargs -i, -r); rename to "rgbpm" (w/o ".sh")
+#            - added getopts for -h, -v and -b
 
 # define me
 me=`basename "$0"`
+version="0.8"
 #MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
@@ -34,7 +38,7 @@ if [ "$LOUDGAIN" != true ] ; then
 else
   LOUDGAINVER=$(loudgain --version | head -n1 | awk '{print $2}')
   # we have the greatest and latest, yay!
-  echo "Using 'loudgain' v${LOUDGAINVER} instead of mp3gain2, metaflac and vorbisgain."
+  echo "$me is using 'loudgain' v${LOUDGAINVER} instead of mp3gain2, metaflac and vorbisgain."
 fi
 
 # check if bpm-calc installed
@@ -42,13 +46,71 @@ BPMCALC=true
 #command -v bpm-calc >/dev/null 2>&1 || { echo >&2 "$me requires \"bpm-calc\" but it's not installed. Aborting."; exit 2; }
 command -v bpm-calc >/dev/null 2>&1 || BPMCALC=false
 if [ "$BPMCALC" != true ] ; then
-  echo "No 'bpm-calc' found, BPM calculation will be skipped!"
+  echo "$me: No 'bpm-calc' found, BPM calculation will be skipped!"
 fi
+
+# option handling
+
+usage() {
+cat <<EOF
+Usage: ${me} [OPTIONS] FOLDER ...
+
+$me assumes one music album per folder, all tracks of the same file type.
+It will then traverse from (and including) the starting folder(s) to all
+folders below and add the recommended replay gain track & album tags to
+audio files.
+
+If using 'loudgain', $me currently supports files of type:
+  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus
+EOF
+if [ "$BPMCALC" = true ] ; then
+cat <<EOF
+
+BPM calculation (and tagging) can be done for files of type:
+  *.mp2, *.mp3, *.flac
+EOF
+fi
+cat <<EOF
+
+Options:
+  -h  Show this help.
+  -v  Show version number of this script.
+  -b  Disable BPM calculation (and tagging).
+EOF
+}
+
+while getopts "bhv" option ; do
+  case "${option}" in
+    v)
+      echo "$me $version"
+      exit 0;
+      ;;
+    h)
+      usage
+      exit 0;
+      ;;
+    b)
+      if [ "$BPMCALC" = true ] ; then
+        echo "$me: BPM calculation (and tagging) disabled"
+        BPMCALC=false
+      fi
+      ;;
+    *)
+      exit 1;
+      ;;
+  esac
+done
+shift $((OPTIND-1))
 
 # default to MUSICDIR if no path(s) given
 if [ "$1" = "" ] ; then
   # (re-)set arguments
   set -- "${@}" "$MUSICDIR"
+fi
+
+if [ -z "$1" ] ; then
+  usage
+  exit 1;
 fi
 
 # go process each path
@@ -57,7 +119,7 @@ while [ "$1" != '' ] ; do
   # build an array with all folders within $1
   # need to change IFS (internal field separator), otherwise content would be split by space, tab, newline
   IFS=$'\n'
-  FOLDERLIST=( $(find "$1" -depth -type d -print0 | xargs -0 -i echo {}) )
+  FOLDERLIST=( $(find "$1" -depth -type d -print0 | xargs -0 -I{} echo {}) )
   unset $IFS
   echo "${#FOLDERLIST[@]} folders found in $1"
 
@@ -67,44 +129,44 @@ while [ "$1" != '' ] ; do
 
     # calculate replay gain for all FLAC in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -print0 | xargs -0 -r loudgain -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -exec loudgain -a -k -s e {} +
     else
-      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -print0 | xargs -0 -r metaflac --add-replay-gain
+      find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -exec metaflac --add-replay-gain {} +
     fi
 
     # calculate replay gain for all OGG in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r loudgain -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -exec loudgain -a -k -s e {} +
     else
-      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -print0 | xargs -0 -r vorbisgain -a
+      find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -exec vorbisgain -a {} +
     fi
 
     # calculate replay gain for all MP2 in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.mp2" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.mp2" -type f -exec loudgain -I3 -S -L -a -k -s e {} +
     fi
 
     # calculate replay gain for all MP3 in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r loudgain -I3 -S -L -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -exec loudgain -I3 -S -L -a -k -s e {} +
     else
-      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -print0 | xargs -0 -r mp3gain2
+      find "$FOLDER" -maxdepth 1 -iname "*.mp3" -type f -exec mp3gain2 {} +
     fi
 
     # calculate replay gain for all M4A in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.m4a" -type f -print0 | xargs -0 -r loudgain -L -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.m4a" -type f -exec loudgain -L -a -k -s e {} +
     fi
 
     # calculate replay gain for all OPUS in this folder
     if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -print0 | xargs -0 -r loudgain -a -k -s e
+      find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -exec loudgain -a -k -s e {} +
     fi
 
     # calculate BPM for all MP2, MP3 or FLAC in this folder
     echo ""
     if [ "$BPMCALC" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -type f \( -iname "*.mp2" -or -iname "*.mp3" -or -iname "*.flac" \) -print0 | xargs -0 -r bpm-calc
+      find "$FOLDER" -maxdepth 1 -type f \( -iname "*.mp2" -or -iname "*.mp3" -or -iname "*.flac" \) -exec bpm-calc {} +
     else
       echo "Skipping BPM calculation ..."
     fi
