@@ -10,3 +10,7 @@
 /debian/patches
 /obj-*
 /.pc
+
+# exclude MacOS stuff
+.DS_Store
+
