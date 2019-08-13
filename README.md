@@ -312,6 +312,8 @@ $ rgbpm.sh folder [...]
 
 Please study the code and adapt as needed for _your_ situation.
 
+**TODO:** Make a version that works on MacOS because MacOS’ `xargs` doesn’t support the `-i` and `-r` switches. (You can probably do that yourself by using `find … -exec` instead.)
+
 #### loudgain.static
 
 This is a kludge, really. A prebuilt statically-linked runnable version of loudgain _only_ to be used if you really really have no other option (i.e., needed libraries uncompilable under older Linuxes).

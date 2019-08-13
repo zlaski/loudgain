@@ -1,3 +1,9 @@
+loudgain (0.5.4-1) unstable; urgency=medium
+
+  * Version 0.5.4
+
+ -- Matthias C. Hormann <mhormann@gmx.de>  Tue, 13 Aug 2019 06:40:09 +0200
+
 loudgain (0.5.3-1ubuntu1) unstable; urgency=medium
 
   * Version 0.5.3
