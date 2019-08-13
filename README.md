@@ -7,6 +7,8 @@ Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combine
 _**Note:** There is a »runnable« version for 64-bit systems in the `bin` folder, called `loudgain.static`. Read [loudgain.static](#loudgainstatic).
 You can use this if you only want to try out loudgain, cannot or don’t wish to compile it yourself. It starts much slower, but brings all its dependencies with it, and thus can even be used on older systems._
 
+_**Mac users:** For installation with Homebrew, read [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac-linux)._
+
 ---
 
 ## Table of Contents
@@ -17,6 +19,7 @@ You can use this if you only want to try out loudgain, cannot or don’t wish to
 - [MAIN FEATURES](#main-features)   
 - [NEWS, CHANGELOG](#news-changelog)   
 - [GETTING STARTED](#getting-started)   
+- [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac-linux)   
 - [DEPENDENCIES](#dependencies)   
 - [BUILDING](#building)   
 - [TECHNICAL DETAILS (advanced users stuff)](#technical-details-advanced-users-stuff)   
@@ -94,6 +97,10 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-08-13** – **v0.5.4** released:
+  * Make loudgain compile & run on MacOS X, with lots of help from @classicjazz.
+  * Support for installation using [Homebrew](https://brew.sh/) (Apple) and [Linuxbrew](https://docs.brew.sh/Homebrew-on-Linux) (Linux).
 
 **2019-08-06** – **v0.5.3** released:
   * Added _experimental (!)_ Opus (.opus) support. Please read [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
@@ -203,6 +210,34 @@ $ loudgain -a -k -s i *.opus           # scan & tag an Opus album
 
 See the [man page](docs/loudgain.1.md) for more information.  
 See [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-gold-standard) for quickstart recommended settings.
+
+---
+
+## Installation using Homebrew (Mac & Linux)
+
+**loudgain** can now be installed on MacOS X (and Linux, too) using [Homebrew](https://brew.sh/).
+
+Since `taglib` (`libtag`) hasn’t had a new release since 24 Oct 2016 (v1.11.1) _but_ they have fixed a lot of nasty bugs, it is mandatory to update `libtag` to the HEAD version _first_:
+
+```bash
+brew update
+brew uninstall --ignore-dependencies libtag
+brew install --HEAD libtag
+```
+
+Then simply install `loudgain` (stable version):
+
+```bash
+brew install Moonbase59/tap/loudgain
+```
+
+or even the latest development version using:
+
+```bash
+brew install --HEAD Moonbase59/tap/loudgain
+```
+
+Enjoy!
 
 ---
 
