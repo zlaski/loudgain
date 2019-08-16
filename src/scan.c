@@ -352,6 +352,8 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 
 	av_opt_set_channel_layout(swr, "in_channel_layout", frame -> channel_layout, 0);
 	av_opt_set_channel_layout(swr, "out_channel_layout", frame -> channel_layout, 0);
+  av_opt_set_int(swr, "in_sample_rate", frame -> sample_rate, 0);
+  av_opt_set_int(swr, "out_sample_rate", frame -> sample_rate, 0);
 	av_opt_set_sample_fmt(swr, "in_sample_fmt", frame -> format, 0);
 	av_opt_set_sample_fmt(swr, "out_sample_fmt", out_fmt, 0);
 
