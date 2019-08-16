@@ -98,8 +98,8 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
-**2019-08-??** – **v0.5.5** in preparation:
-  * Had to postpone this release because FFmpeg 4.2 breaks the old API (deprecated calls no longer working). Some rework needed before release.
+**2019-08-16** – **v0.6.0** released:
+  * Rework the scanner module to work with the newer FFmpeg API (needed for FFmpeg 4.2+). No more deprecated calls. Tested ok with FFmpeg 3.4.6, 4.1.4, 4.2.
   * Now officially provides the former `rgbpm.sh` as an updated and MacOS-compatible `rgbpm` command. After installing, type `rgbpm -h` for help. This is for _mass-tagging_ (1 album per folder).
   * Now provides a `[sudo] make uninstall` target, should you wish to uninstall it again.
   * Tested on Linux Mint 19.2, Ubuntu 18.04, Manjaro 18.0.4, MacOS 10.14.4 Mojave.

@@ -9,6 +9,9 @@
  *  TODO: This still sucks because albums are handled track-by-track.
  * 2019-08-01 - Matthias C. Hormann
  *  - Move from deprecated libavresample library to libswresample (FFmpeg)
+ * 2019-08-16 - Matthias C. Hormann
+ *  - Rework to use the new FFmpeg API, no more deprecated calls
+ *    (needed for FFmpeg 4.2+)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -60,8 +63,11 @@ static int             scan_nb_files = 0;
 #define LUFS_TO_RG(L) (-18 - L)
 
 int scan_init(unsigned nb_files) {
-  // deprecated
-	// av_register_all();
+  // deprecated (?)
+	// but seems needed after all, at least for ffmpeg 3.4.6
+  av_register_all();
+  avcodec_register_all();
+
 
 	av_log_set_callback(scan_av_log);
 
@@ -157,6 +163,7 @@ int scan_file(const char *file, unsigned index) {
 
 		fail_printf("Could not open codec: %s", errbuf);
 	}
+  ok_printf("Stream #%d: %s", stream_id, codec->long_name);
 
 	scan_codecs[index] = codec -> id;
 
@@ -206,14 +213,13 @@ int scan_file(const char *file, unsigned index) {
             err_printf("Error while receiving a frame from the decoder");
             goto end;
         }
-      }
+        if (rc >= 0) {
+          double pos = frame -> pkt_dts *
+  				             av_q2d(container -> streams[stream_id] -> time_base);
+  				scan_frame(*ebur128, frame, avr);
 
-      if (rc >= 0) {
-        double pos = frame -> pkt_dts *
-				             av_q2d(container -> streams[stream_id] -> time_base);
-				scan_frame(*ebur128, frame, avr);
-
-				progress_bar(1, pos - start, len, 0);
+  				progress_bar(1, pos - start, len, 0);
+        }
       }
 
       av_frame_unref(frame);
