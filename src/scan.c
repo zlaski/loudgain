@@ -60,7 +60,8 @@ static int             scan_nb_files = 0;
 #define LUFS_TO_RG(L) (-18 - L)
 
 int scan_init(unsigned nb_files) {
-	av_register_all();
+  // deprecated
+	// av_register_all();
 
 	av_log_set_callback(scan_av_log);
 
@@ -93,7 +94,7 @@ void scan_deinit() {
 }
 
 int scan_file(const char *file, unsigned index) {
-	int i, rc, stream_id = -1;
+	int rc, stream_id = -1;
 	double start = 0, len = 0;
 
 	AVFormatContext *container = NULL;
@@ -135,22 +136,20 @@ int scan_file(const char *file, unsigned index) {
 		fail_printf("Could not find stream info: %s", errbuf);
 	}
 
-	for (i = 0; i < container -> nb_streams; i++) {
-		if (container -> streams[i] -> codec -> codec_type == AVMEDIA_TYPE_AUDIO) {
-			stream_id = i;
-			break;
-		}
-	}
+  /* select the audio stream */
+  stream_id = av_find_best_stream(container, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
 
 	if (stream_id < 0)
 		fail_printf("Could not find audio stream");
 
-	ctx   = container -> streams[stream_id] -> codec;
-	codec = avcodec_find_decoder(ctx -> codec_id);
+  /* create decoding context */
+  ctx = avcodec_alloc_context3(codec);
+  if (!ctx)
+    fail_printf("Could not allocate audio codec context!");
 
-	if (codec == NULL)
-		fail_printf("Could not find codec!");
+  avcodec_parameters_to_context(ctx, container->streams[stream_id]->codecpar);
 
+  /* init the audio decoder */
 	rc = avcodec_open2(ctx, codec, NULL);
 	if (rc < 0) {
 		char errbuf[2048];
@@ -192,22 +191,38 @@ int scan_file(const char *file, unsigned index) {
 
 	while (av_read_frame(container, &packet) >= 0) {
 		if (packet.stream_index == stream_id) {
-			int got_frame = 0;
 
-			avcodec_decode_audio4(ctx, frame, &got_frame, &packet);
+      rc = avcodec_send_packet(ctx, &packet);
+      if (rc < 0) {
+        err_printf("Error while sending a packet to the decoder");
+        break;
+      }
 
-			if (got_frame) {
-				double pos = frame -> pkt_dts *
+      while (rc >= 0) {
+        rc = avcodec_receive_frame(ctx, frame);
+        if (rc == AVERROR(EAGAIN) || rc == AVERROR_EOF) {
+            break;
+        } else if (rc < 0) {
+            err_printf("Error while receiving a frame from the decoder");
+            goto end;
+        }
+      }
+
+      if (rc >= 0) {
+        double pos = frame -> pkt_dts *
 				             av_q2d(container -> streams[stream_id] -> time_base);
 				scan_frame(*ebur128, frame, avr);
 
 				progress_bar(1, pos - start, len, 0);
-			}
-		}
+      }
 
-		av_free_packet(&packet);
+      av_frame_unref(frame);
+    }
+
+		av_packet_unref(&packet);
 	}
 
+end:
 	progress_bar(2, 0, 0, 0);
 
 	av_frame_free(&frame);
