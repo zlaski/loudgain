@@ -52,7 +52,7 @@
 #include "printf.h"
 
 static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
-                       SwrContext *avr);
+                       SwrContext *swr);
 static void scan_av_log(void *avcl, int level, const char *fmt, va_list args);
 
 static ebur128_state **scan_states   = NULL;
@@ -113,7 +113,7 @@ int scan_file(const char *file, unsigned index) {
 	AVFrame *frame;
 	AVPacket packet;
 
-	SwrContext *avr;
+	SwrContext *swr;
 
 	ebur128_state **ebur128 = &scan_states[index];
 
@@ -174,7 +174,7 @@ int scan_file(const char *file, unsigned index) {
 	packet.data = buffer;
 	packet.size = buffer_size;
 
-	avr = swr_alloc();
+	swr = swr_alloc();
 
 	*ebur128 = ebur128_init(
 		ctx -> channels, ctx -> sample_rate,
@@ -218,7 +218,7 @@ int scan_file(const char *file, unsigned index) {
         if (rc >= 0) {
           double pos = frame -> pkt_dts *
   				             av_q2d(container -> streams[stream_id] -> time_base);
-  				scan_frame(*ebur128, frame, avr);
+  				scan_frame(*ebur128, frame, swr);
 
   				progress_bar(1, pos - start, len, 0);
         }
@@ -235,7 +235,7 @@ end:
 
 	av_frame_free(&frame);
 
-	swr_free(&avr);
+	swr_free(&swr);
 
 	avcodec_close(ctx);
 
@@ -342,7 +342,7 @@ void scan_set_album_result(scan_result *result, double pre_gain) {
 }
 
 static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
-                       SwrContext *avr) {
+                       SwrContext *swr) {
 	int rc;
 
 	uint8_t            *out_data;
@@ -350,12 +350,12 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	int                 out_linesize;
 	enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
 
-	av_opt_set_int(avr, "in_channel_layout", frame -> channel_layout, 0);
-	av_opt_set_int(avr, "out_channel_layout", frame -> channel_layout, 0);
-	av_opt_set_int(avr, "in_sample_fmt", frame -> format, 0);
-	av_opt_set_int(avr, "out_sample_fmt", out_fmt, 0);
+	av_opt_set_channel_layout(swr, "in_channel_layout", frame -> channel_layout, 0);
+	av_opt_set_channel_layout(swr, "out_channel_layout", frame -> channel_layout, 0);
+	av_opt_set_sample_fmt(swr, "in_sample_fmt", frame -> format, 0);
+	av_opt_set_sample_fmt(swr, "out_sample_fmt", out_fmt, 0);
 
-	rc = swr_init(avr);
+	rc = swr_init(swr);
 	if (rc < 0) {
 		char errbuf[2048];
 		av_strerror(rc, errbuf, 2048);
@@ -370,7 +370,7 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	out_data = av_malloc(out_size);
 
 	if (swr_convert(
-		avr, (uint8_t**) &out_data, frame -> nb_samples,
+		swr, (uint8_t**) &out_data, frame -> nb_samples,
 		(const uint8_t**) frame -> data, frame -> nb_samples
 	) < 0)
 		fail_printf("Cannot convert");
@@ -382,7 +382,7 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	if (rc != EBUR128_SUCCESS)
 		err_printf("Error filtering");
 
-	swr_close(avr);
+	swr_close(swr);
 	av_free(out_data);
 }
 
