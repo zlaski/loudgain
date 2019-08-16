@@ -34,6 +34,8 @@
  *     i.e. -K 0 (old-style) or -K -2 (to compensate for post-processing losses)
  * 2019-08-06 - v0.5.3 - Matthias C. Hormann
  *  - Add support for Opus (.opus) files.
+ * 2019-08-16 - v0.6.0 - Matthias C. Hormann
+ *  - Rework for new FFmpeg API (get rid of deprecated calls)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -71,6 +73,7 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/common.h>
 #include <libswresample/swresample.h>
+#include <libavformat/avformat.h>
 
 
 #include "config.h"
@@ -111,6 +114,8 @@ int  ebur128_v_patch     = 0;
 char ebur128_version[15] = "";
 unsigned swr_ver         = 0;
 char     swr_version[15] = "";
+unsigned lavf_ver         = 0;
+char     lavf_version[15] = "";
 
 static inline void help(void);
 static inline void version(void);
@@ -141,6 +146,11 @@ int main(int argc, char *argv[]) {
 		ebur128_v_major, ebur128_v_minor, ebur128_v_patch);
 	if (ebur128_v_major <= 1 && ebur128_v_minor <= 2 && ebur128_v_patch < 4)
 		warn_ebu = true;
+
+	// libavformat version
+	lavf_ver = avformat_version();
+	snprintf(lavf_version, sizeof(lavf_version), "%u.%u.%u",
+		lavf_ver>>16, lavf_ver>>8&0xff, lavf_ver&0xff);
 
 	// libswresample version
 	swr_ver = swresample_version();
@@ -579,5 +589,6 @@ static inline void help(void) {
 static inline void version(void) {
 	printf("%s %s - using:\n", PROJECT_NAME, PROJECT_VER);
 	printf("  %s %s\n", "libebur128", ebur128_version);
+	printf("  %s %s\n", "libavformat", lavf_version);
 	printf("  %s %s\n", "libswresample", swr_version);
 }
