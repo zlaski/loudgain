@@ -212,8 +212,6 @@ int scan_file(const char *file, unsigned index) {
 		len   = container -> streams[stream_id] -> duration *
 		        av_q2d(container -> streams[stream_id] -> time_base);
 
-  ok_printf("Start: %.0f, Length: %.0f", start, len);
-
 	progress_bar(0, 0, 0, 0);
 
 	while (av_read_frame(container, &packet) >= 0) {
