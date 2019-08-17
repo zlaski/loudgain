@@ -98,6 +98,10 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-08-17** – **v0.6.1** released:
+  * Can now show data for _.wav_ and other files (albeit not tag them). You could use that for a quick check or to write a (tab-separated) `.csv` file using `loudgain -O … > result.csv`. Or even with `awk` for further custom processing.
+  * Fixed some channel layout and memory issues for files with more than 2 channels (i.e., 5.0, 5.1).
+
 **2019-08-16** – **v0.6.0** released:
   * Rework the scanner module to work with the newer FFmpeg API (needed for FFmpeg 4.2+). Tested ok with FFmpeg 3.4.6, 4.1.4, 4.2.
   * Now officially provides the former `rgbpm.sh` as an updated and MacOS-compatible `rgbpm` command. After installing, type `rgbpm -h` for help. This is for _mass-tagging_ (1 album per folder).

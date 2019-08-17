@@ -104,6 +104,8 @@ void scan_deinit() {
 int scan_file(const char *file, unsigned index) {
 	int rc, stream_id = -1;
 	double start = 0, len = 0;
+  char infotext[20];
+  char infobuf[512];
 
 	AVFormatContext *container = NULL;
 
@@ -165,7 +167,21 @@ int scan_file(const char *file, unsigned index) {
 
 		fail_printf("Could not open codec: %s", errbuf);
 	}
-  ok_printf("Stream #%d: %s", stream_id, codec->long_name);
+
+  // try to get default channel layout (they aren’t specified in .wav files)
+  if (!ctx->channel_layout)
+    ctx->channel_layout = av_get_default_channel_layout(ctx->channels);
+
+  // show some information about the file
+  // only show bits/sample where it makes sense
+  infotext[0] = '\0';
+  if (ctx->bits_per_raw_sample > 0 || ctx->bits_per_coded_sample > 0) {
+    snprintf(infotext, sizeof(infotext), "%d bit, ",
+      ctx->bits_per_raw_sample > 0 ? ctx->bits_per_raw_sample : ctx->bits_per_coded_sample);
+  }
+  av_get_channel_layout_string(infobuf, sizeof(infobuf), -1, ctx->channel_layout);
+  ok_printf("Stream #%d: %s, %s%d Hz, %d ch, %s",
+    stream_id, codec->long_name, infotext, ctx->sample_rate, ctx->channels, infobuf);
 
 	scan_codecs[index] = codec -> id;
 
@@ -195,6 +211,8 @@ int scan_file(const char *file, unsigned index) {
 	if (container -> streams[stream_id] -> duration != AV_NOPTS_VALUE)
 		len   = container -> streams[stream_id] -> duration *
 		        av_q2d(container -> streams[stream_id] -> time_base);
+
+  ok_printf("Start: %.0f, Length: %.0f", start, len);
 
 	progress_bar(0, 0, 0, 0);
 
@@ -229,6 +247,9 @@ int scan_file(const char *file, unsigned index) {
 
 		av_packet_unref(&packet);
 	}
+
+  // complete progress bar for very short files (only cosmetic)
+  progress_bar(1, len, len, 0);
 
 end:
 	progress_bar(2, 0, 0, 0);
@@ -352,6 +373,11 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 
 	av_opt_set_channel_layout(swr, "in_channel_layout", frame -> channel_layout, 0);
 	av_opt_set_channel_layout(swr, "out_channel_layout", frame -> channel_layout, 0);
+
+  // add channel count to properly handle .wav reading
+  av_opt_set_int(swr, "in_channel_count",  frame -> channels, 0);
+  av_opt_set_int(swr, "out_channel_count", frame -> channels, 0);
+
   av_opt_set_int(swr, "in_sample_rate", frame -> sample_rate, 0);
   av_opt_set_int(swr, "out_sample_rate", frame -> sample_rate, 0);
 	av_opt_set_sample_fmt(swr, "in_sample_fmt", frame -> format, 0);
@@ -366,7 +392,7 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
 	}
 
 	out_size = av_samples_get_buffer_size(
-		&out_linesize, 2, frame -> nb_samples, out_fmt, 0
+		&out_linesize, frame -> channels, frame -> nb_samples, out_fmt, 0
 	);
 
 	out_data = av_malloc(out_size);
