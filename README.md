@@ -263,7 +263,7 @@ Enjoy!
 
 ## Installation on Windows 10 (Linux bash)
 
-Install the Linux bash first (I recommend the Ubuntu version). There are many tutorials
+**Yes, we can!** Install the Linux bash first (I recommend the Ubuntu version). There are many tutorials
 available, like these two in [English](https://www.windowscentral.com/how-install-bash-shell-command-line-windows-10)
 and [German](https://www.netzwelt.de/tutorial/164359-windows-10-so-installiert-aktiviert-linux-subsystem-bash.html).
 
