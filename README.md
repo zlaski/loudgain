@@ -9,6 +9,8 @@ You can use this if you only want to try out loudgain, cannot or don’t wish to
 
 _**Mac users:** Read [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac--linux)._
 
+_**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installation-on-windows-10-linux-bash)._
+
 ---
 
 ## Table of Contents
@@ -20,11 +22,12 @@ _**Mac users:** Read [Installation using Homebrew (Mac & Linux)](#installation-u
 - [NEWS, CHANGELOG](#news-changelog)   
 - [GETTING STARTED](#getting-started)   
 - [Installation using Homebrew (Mac & Linux)](#installation-using-homebrew-mac-linux)   
+- [Installation on Windows 10 (Linux bash)](#installation-on-windows-10-linux-bash)   
 - [DEPENDENCIES](#dependencies)   
 - [BUILDING](#building)   
 - [TECHNICAL DETAILS (advanced users stuff)](#technical-details-advanced-users-stuff)   
    - [Things in the `bin`folder](#things-in-the-binfolder)   
-      - [rgbpm – Folder-based loudness and BPM scanning](#rgbpmsh-–-folder-based-loudness-and-bpm-scanning)   
+      - [rgbpm – Folder-based loudness and BPM scanning](#rgbpm-–-folder-based-loudness-and-bpm-scanning)   
       - [loudgain.static](#loudgainstatic)   
    - [Uppercase or lowercase 'REPLAYGAIN_*' tags?](#uppercase-or-lowercase-replaygain_-tags)   
    - [Tags written (and/or deleted)](#tags-written-andor-deleted)   
@@ -258,6 +261,19 @@ Enjoy!
 
 ---
 
+## Installation on Windows 10 (Linux bash)
+
+Install the Linux bash first (I recommend the Ubuntu version). There are many tutorials
+available, like these two in [English](https://www.windowscentral.com/how-install-bash-shell-command-line-windows-10)
+and [German](https://www.netzwelt.de/tutorial/164359-windows-10-so-installiert-aktiviert-linux-subsystem-bash.html).
+
+Then continue with [DEPENDENCIES](#dependencies).
+
+![loudgain running under Windows 10’s Linux shell](docs/images/loudgain-windows10-bash.png)
+_loudgain running under Windows 10’s Linux shell_
+
+---
+
 ## DEPENDENCIES
 
  * `libavcodec`
@@ -267,10 +283,35 @@ Enjoy!
  * `libebur128` (v1.2.4+ recommended)
  * `libtag`
 
- On Ubuntu 18.04/Linux Mint 19.1, you can usually install CMake and the needed libraries using
- ```bash
- sudo apt-get install cmake libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libebur128-dev libtag1-dev
- ```
+You might want to upgrade your system before you start. This is especially **important**
+if you are using the _Windows 10 Linux bash_:
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get upgrade
+```
+
+If you plan to use `loudgain.static` and `rgbpm` from your personal `~/bin` folder,
+I recommend to create `~/bin` first (if not already done):
+
+```bash
+$ mkdir ~/bin
+```
+
+If you freshly created this, you might need to log out and log in again
+to make your system recognize your personal `~/bin` folder.
+
+On Ubuntu 18.04, Linux Mint 19 or the Windows 10 Linux bash, install the build environment like this:
+ 
+```bash
+$ sudo apt-get install build-essential cmake pkg-config git
+```
+ 
+Then you can install the needed libraries using
+
+```bash
+$ sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libebur128-dev libtag1-dev
+```
 
 ---
 
@@ -302,7 +343,7 @@ $ staticx --strip `which loudgain` loudgain.static
 $ ln -s loudgain.static loudgain
 ```
 
-You can then move `loudgain` and `loudgain.static` to your target user’s `~/bin` folder.
+You can then move `loudgain`, `loudgain.static` and `rgbpm` to your target user’s `~/bin` folder.
 
 Beware this is a kludge only to be used if all else fails. (For example, you _can_ build on Ubuntu 18.04/Linux Mint 19 but really _need_ loudgain to work on Ubuntu 14.04/Linux Mint 17.3. That’s what I used it for.)
 
