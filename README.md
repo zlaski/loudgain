@@ -761,6 +761,11 @@ Since loudgain _has_ to convert some tags when storing in ID3v2.3 or ID3v2.4 for
 
 8. Tagging modes `-s i`, `-s e`, `-s l` all behave the same for Opus files.
 
+If using [foobar2000](https://www.foobar2000.org/) (a very good player/organizer for Windows) and checking the ReplayGain 2 values, please be aware that …
+
+* foobar2000 shows Opus ReplayGain values in dB, already adjusted by +5 dB, so as to be more easily comparable to other files’ RG values.
+* loudgain’s values are still correct, and foobar2000 will play the files at the perfectly correct loudness.
+
 Please **give feedback** on the [issue tracker](https://github.com/Moonbase59/loudgain/issues),
 so we can finalize loudgain's Opus support. Thanks!
 
