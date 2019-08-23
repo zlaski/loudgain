@@ -319,6 +319,24 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 	return result;
 }
 
+int scan_album_has_different_codecs() {
+  int i;
+  int different_codecs = 0;
+  for (i = 0; i < scan_nb_files; i++) {
+    different_codecs = (scan_codecs[0] != scan_codecs[i]);
+  }
+  return different_codecs;
+}
+
+int scan_album_has_opus() {
+  int i;
+  for (i = 0; i < scan_nb_files; i++) {
+    if (scan_codecs[i] == AV_CODEC_ID_OPUS)
+      return 1;
+  }
+  return 0;
+}
+
 double scan_get_album_peak() {
   double peak = 0.0;
   int i;
@@ -352,6 +370,13 @@ void scan_set_album_result(scan_result *result, double pre_gain) {
 		scan_states, scan_nb_files, &range
 	) != EBUR128_SUCCESS)
 		range = 0.0;
+
+  // Opus is always based on -23 LUFS, we have to adapt
+  // When we arrive here, it’s already verified that the album
+  // does NOT mix Opus and non-Opus tracks,
+  // so we can safely reduce the pre-gain to arrive at -23 LUFS.
+  if (scan_album_has_opus())
+    pre_gain = pre_gain - 5.0f;
 
 	result -> album_gain           = LUFS_TO_RG(global) + pre_gain;
 	// Calculate correct album peak (v0.2.1)

@@ -75,6 +75,14 @@ void debug_printf(const char *fmt, ...) {
 	va_end(args);
 }
 
+void warn_printf(const char *fmt, ...) {
+	va_list args;
+
+	va_start(args, fmt);
+	do_log("[" COLOR_YELLOW "!" COLOR_OFF "] ", fmt, args);
+	va_end(args);
+}
+
 void err_printf(const char *fmt, ...) {
 	va_list args;
 

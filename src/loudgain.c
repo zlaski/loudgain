@@ -268,6 +268,16 @@ int main(int argc, char *argv[]) {
 		scan_file(argv[i], i - optind);
 	}
 
+	// check for different file (codec) types in an album and warn
+	// (including Opus might mess up album gain)
+	if (do_album) {
+		if (scan_album_has_different_codecs()) {
+			warn_printf("You have different file types in the same album!");
+			if (scan_album_has_opus())
+				fail_printf("Cannot calculate correct album gain when mixing Opus and non-Opus files!");
+		}
+	}
+
 	if (tab_output)
 		printf("File\tMP3 gain\tdB gain\tMax Amplitude\tMax global_gain\tMin global_gain\n");
 

@@ -101,6 +101,11 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-08-23** – **v0.6.2** released:
+  * Album gain for Opus albums now calculated correctly. Fixes [#6](https://github.com/Moonbase59/loudgain/issues/6). Thanks to _pr0m3th3u5_ for intensive testing!
+  * loudgain will now issue a _warning_ if you mix files of different types (=codecs) in the same album.
+  * loudgain now aborts with an _error_ if you try to mix Opus and non-Opus files in the same album (it’s not possible to calculate a correct album gain in this case).
+
 **2019-08-17** – **v0.6.1** released:
   * Can now show data for _.wav_ and other files (albeit not tag them). You could use that for a quick check or to write a (tab-separated) `.csv` file using `loudgain -O … > result.csv`. Or even with `awk` for further custom processing.
   * Fixed some channel layout and memory issues for files with more than 2 channels (i.e., 5.0, 5.1).
@@ -302,11 +307,11 @@ If you freshly created this, you might need to log out and log in again
 to make your system recognize your personal `~/bin` folder.
 
 On Ubuntu 18.04, Linux Mint 19 or the Windows 10 Linux bash, install the build environment like this:
- 
+
 ```bash
 $ sudo apt-get install build-essential cmake pkg-config git
 ```
- 
+
 Then you can install the needed libraries using
 
 ```bash

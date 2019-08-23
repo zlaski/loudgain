@@ -54,6 +54,8 @@ typedef struct {
 int scan_init(unsigned nb_files);
 void scan_deinit(void);
 
+int scan_album_has_different_codecs(void);
+int scan_album_has_opus(void);
 int scan_file(const char *file, unsigned index);
 
 scan_result *scan_get_track_result(unsigned index, double pre_gain);
