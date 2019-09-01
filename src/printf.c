@@ -117,7 +117,7 @@ void sysf_printf(const char *fmt, ...) {
 	_exit(EXIT_FAILURE);
 }
 
-void progress_bar(unsigned ctrl, unsigned x, unsigned n, unsigned w) {
+void progress_bar(unsigned ctrl, unsigned long x, unsigned long n, unsigned w) {
 	int i;
 	FILE *stream = stdout;
 	static int show_bar = 0;
@@ -146,7 +146,7 @@ void progress_bar(unsigned ctrl, unsigned x, unsigned n, unsigned w) {
 				w -= 8;
 			}
 
-			float ratio = x / (float) n;
+			double ratio = x / (double) n;
 			int   c     = ratio * w;
 
 			fprintf(stream, " %3.0f%% [", ratio * 100);

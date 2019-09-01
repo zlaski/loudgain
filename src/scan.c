@@ -236,7 +236,8 @@ int scan_file(const char *file, unsigned index) {
   				             av_q2d(container -> streams[stream_id] -> time_base);
   				scan_frame(*ebur128, frame, swr);
 
-  				progress_bar(1, pos - start, len, 0);
+          if (pos >= 0)
+            progress_bar(1, pos - start, len, 0);
         }
       }
 
