@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus/ASF/WMA audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
@@ -50,6 +50,7 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
       - [A zillion ways to store loudness/gaining information](#a-zillion-ways-to-store-loudnessgaining-information)   
       - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
    - [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files)   
+   - [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
@@ -100,6 +101,9 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-09-01** – **v0.6.3** released:
+  * Added _experimental (!)_ ASF/WMA (.asf, .wma) support. Please read [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
 
 **2019-08-23** – **v0.6.2** released:
   * Album gain for Opus albums now calculated correctly. Fixes [#6](https://github.com/Moonbase59/loudgain/issues/6). Thanks to _pr0m3th3u5_ for intensive testing!
@@ -224,6 +228,7 @@ $ loudgain -d -5 -a -s l *.flac        # apply -5 LU pregain to reach -23 LUFS t
 $ loudgain -I 3 -S -L -a -k -s e *.mp3 # scan & tag an MP3 album, recommended settings
 $ loudgain -L -a -k -s e *.m4a         # scan & tag an MP4 AAC/ALAC audio album, recommended settings
 $ loudgain -a -k -s i *.opus           # scan & tag an Opus album
+$ loudgain -L -a -k -s e *.wma         # scan & tag a WMA album
 ```
 
 See the [man page](docs/loudgain.1.md) for more information.  
@@ -770,6 +775,44 @@ Please **give feedback** on the [issue tracker](https://github.com/Moonbase59/lo
 so we can finalize loudgain's Opus support. Thanks!
 
 
+### How I handle ASF/WMA (.asf, .wma) audio files
+
+1. **Experimental support, use with care!** Supported are _WMAv1_, _WMAv2_, _WMA Pro_ and
+   _WMA Lossless_ formats. _WMA Voice_ is currently not supported, since the
+   FFmpeg libraries don’t (yet) decode it.
+
+2. loudgain will neither read nor write the following Microsoft-specifc tags:
+   ```
+   PeakValue
+   AverageLevel
+   WM/WMADRCAverageReference
+   WM/WMADRCPeakReference
+   WM/WMADRCAverageTarget
+   WM/WMADRCPeakTarget
+   ```
+   These are used internally by Microsoft and the Windows Media Player.
+
+3. Depending on the tagging mode, loudgain calculates and stores a selection of
+   the following WMA tags:
+   ```
+   REPLAYGAIN_TRACK_GAIN
+   REPLAYGAIN_TRACK_PEAK
+   REPLAYGAIN_TRACK_RANGE
+   REPLAYGAIN_ALBUM_GAIN
+   REPLAYGAIN_ALBUM_PEAK
+   REPLAYGAIN_ALBUM_RANGE
+   REPLAYGAIN_REFERENCE_LOUDNESS
+   ```
+   The `-L` (`--lowercase`) switch will force these to be lowercase instead.
+   The lowercase variants are the same as used by other taggers and players,
+   like _foobar2000_ and _WinAmp_. There’s an [issue](https://tickets.metabrainz.org/projects/PICARD/issues/PICARD-1586) open for _MusicBrainz Picard_
+   to also support these tags.
+
+4. Peak values are _true peak_ values. Due to the better approximation of the
+   real audio signal, they are expected to be larger than _sample peak_ or
+   _RMS peak_ values. True peak values can be above 1.0.
+
+
 ## loudgain makes it easy following the »Gold Standard«
 
 Here are my personal recommendations for being (almost) universally compatible:
@@ -782,6 +825,7 @@ $ loudgain -a -k -s e *.ogg
 $ loudgain -I3 -S -L -a -k -s e *.mp3
 $ loudgain -L -a -k -s e *.m4a
 $ loudgain -a -k -s e *.opus
+$ loudgain -L -a -k -s e *.wma
 ```
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.

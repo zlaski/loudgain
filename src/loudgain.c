@@ -562,8 +562,8 @@ static inline void help(void) {
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).");
-	puts("  Opus (.opus) -- experimental support, use with care!\n");
-	puts("  ASF/WMA (.wma) -- experimental support, use with care!\n");
+	puts("  Opus (.opus) -- experimental support, use with care!");
+	puts("  ASF/WMA (.asf, .wma) -- experimental support, use with care!\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
