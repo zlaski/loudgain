@@ -51,6 +51,10 @@ bool tag_clear_opus(scan_result *scan);
 
 int gain_to_q78num(double gain);
 
+bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase);
+bool tag_clear_asf(scan_result *scan);
+
 #ifdef __cplusplus
 }
 #endif

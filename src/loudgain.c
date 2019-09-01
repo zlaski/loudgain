@@ -375,6 +375,14 @@ int main(int argc, char *argv[]) {
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
+					case AV_CODEC_ID_WMAV1:
+					case AV_CODEC_ID_WMAV2:
+					case AV_CODEC_ID_WMAPRO:
+					case AV_CODEC_ID_WMALOSSLESS:
+						if (!tag_clear_asf(scan))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
 					default:
 						err_printf("File type not supported");
 						break;
@@ -414,6 +422,16 @@ int main(int argc, char *argv[]) {
 					case AV_CODEC_ID_OPUS:
 						// tag_clear_opus(scan);
 						if (!tag_write_opus(scan, do_album, mode, unit))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
+					// ASF/WMA: WMAVOICE is *not* supported
+					case AV_CODEC_ID_WMAV1:
+					case AV_CODEC_ID_WMAV2:
+					case AV_CODEC_ID_WMAPRO:
+					case AV_CODEC_ID_WMALOSSLESS:
+						// tag_clear_asf(scan);
+						if (!tag_write_asf(scan, do_album, mode, unit, lowercase))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
@@ -545,6 +563,7 @@ static inline void help(void) {
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).");
 	puts("  Opus (.opus) -- experimental support, use with care!\n");
+	puts("  ASF/WMA (.wma) -- experimental support, use with care!\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -580,7 +599,7 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4 only; non-standard)");
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA; non-standard)");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
 	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3 files");
 	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3 files (default)");

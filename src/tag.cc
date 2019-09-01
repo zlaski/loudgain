@@ -64,6 +64,7 @@
 #include <xiphcomment.h>
 #include <mp4file.h>
 #include <opusfile.h>
+#include <asffile.h>
 
 #include "scan.h"
 #include "tag.h"
@@ -518,6 +519,111 @@ bool tag_clear_opus(scan_result *scan) {
 	TagLib::Ogg::XiphComment *tag = f.tag();
 
 	tag_remove_opus(tag);
+
+	return f.save();
+}
+
+/*** ASF/WMA ****/
+
+void tag_remove_asf(TagLib::ASF::Tag *tag) {
+	tag -> removeItem("REPLAYGAIN_TRACK_GAIN");
+	tag -> removeItem("REPLAYGAIN_TRACK_PEAK");
+	tag -> removeItem("REPLAYGAIN_TRACK_RANGE");
+	tag -> removeItem("REPLAYGAIN_ALBUM_GAIN");
+	tag -> removeItem("REPLAYGAIN_ALBUM_PEAK");
+	tag -> removeItem("REPLAYGAIN_ALBUM_RANGE");
+	tag -> removeItem("REPLAYGAIN_REFERENCE_LOUDNESS");
+
+	tag -> removeItem("replaygain_track_gain");
+	tag -> removeItem("replaygain_track_peak");
+	tag -> removeItem("replaygain_track_range");
+	tag -> removeItem("replaygain_album_gain");
+	tag -> removeItem("replaygain_album_peak");
+	tag -> removeItem("replaygain_album_range");
+	tag -> removeItem("replaygain_reference_loudness");
+}
+
+bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
+	bool lowercase) {
+	char value[2048];
+
+	TagLib::ASF::File f(scan -> file);
+	TagLib::ASF::Tag *tag = f.tag();
+
+	// remove old tags before writing new ones
+	tag_remove_asf(tag);
+
+	if (lowercase) {
+		// use lowercase replaygain tags
+		// (non-standard but used by foobar2000 & WinAmp and needed by some players)
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag -> setAttribute("replaygain_track_gain", TagLib::String(value));
+
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag -> setAttribute("replaygain_track_peak", TagLib::String(value));
+
+		// Only write album tags if in album mode (would be zero otherwise)
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag -> setAttribute("replaygain_album_gain", TagLib::String(value));
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag -> setAttribute("replaygain_album_peak", TagLib::String(value));
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag -> setAttribute("replaygain_reference_loudness", TagLib::String(value));
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag -> setAttribute("replaygain_track_range", TagLib::String(value));
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag -> setAttribute("replaygain_album_range", TagLib::String(value));
+			}
+		}
+	} else {
+		// use standard-compliant uppercase replaygain tags (default)
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+		tag -> setAttribute("REPLAYGAIN_TRACK_GAIN", TagLib::String(value));
+
+		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+		tag -> setAttribute("REPLAYGAIN_TRACK_PEAK", TagLib::String(value));
+
+		// Only write album tags if in album mode (would be zero otherwise)
+		if (do_album) {
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+			tag -> setAttribute("REPLAYGAIN_ALBUM_GAIN", TagLib::String(value));
+
+			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+			tag -> setAttribute("REPLAYGAIN_ALBUM_PEAK", TagLib::String(value));
+		}
+
+		// extra tags mode -s e or -s l
+		if (mode == 'e' || mode == 'l') {
+			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+			tag -> setAttribute("REPLAYGAIN_REFERENCE_LOUDNESS", TagLib::String(value));
+
+			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+			tag -> setAttribute("REPLAYGAIN_TRACK_RANGE", TagLib::String(value));
+
+			if (do_album) {
+				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+				tag -> setAttribute("REPLAYGAIN_ALBUM_RANGE", TagLib::String(value));
+			}
+		}
+	}
+
+	return f.save();
+}
+
+bool tag_clear_asf(scan_result *scan) {
+	TagLib::ASF::File f(scan -> file);
+	TagLib::ASF::Tag *tag = f.tag();
+
+	tag_remove_asf(tag);
 
 	return f.save();
 }
