@@ -17,7 +17,7 @@
 
 # define me
 me=`basename "$0"`
-version="0.8"
+version="0.9"
 #MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
@@ -61,7 +61,7 @@ folders below and add the recommended replay gain track & album tags to
 audio files.
 
 If using 'loudgain', $me currently supports files of type:
-  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus
+  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma
 EOF
 if [ "$BPMCALC" = true ] ; then
 cat <<EOF
@@ -161,6 +161,16 @@ while [ "$1" != '' ] ; do
     # calculate replay gain for all OPUS in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -exec loudgain -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all WMA in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.wma" -type f -exec loudgain -L -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all ASF in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.asf" -type f -exec loudgain -L -a -k -s e {} +
     fi
 
     # calculate BPM for all MP2, MP3 or FLAC in this folder
