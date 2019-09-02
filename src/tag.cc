@@ -51,6 +51,8 @@
  */
 
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <taglib.h>
 
@@ -69,6 +71,42 @@
 #include "scan.h"
 #include "tag.h"
 #include "printf.h"
+
+// define possible replaygain tags
+
+enum RG_ENUM {
+    RG_TRACK_GAIN,
+    RG_TRACK_PEAK,
+    RG_TRACK_RANGE,
+    RG_ALBUM_GAIN,
+    RG_ALBUM_PEAK,
+    RG_ALBUM_RANGE,
+    RG_REFERENCE_LOUDNESS
+};
+
+static const char *RG_STRING_UPPER[] = {
+    "REPLAYGAIN_TRACK_GAIN",
+    "REPLAYGAIN_TRACK_PEAK",
+    "REPLAYGAIN_TRACK_RANGE",
+    "REPLAYGAIN_ALBUM_GAIN",
+    "REPLAYGAIN_ALBUM_PEAK",
+    "REPLAYGAIN_ALBUM_RANGE",
+    "REPLAYGAIN_REFERENCE_LOUDNESS"
+};
+
+static const char *RG_STRING_LOWER[] = {
+    "replaygain_track_gain",
+    "replaygain_track_peak",
+    "replaygain_track_range",
+    "replaygain_album_gain",
+    "replaygain_album_peak",
+    "replaygain_album_range",
+    "replaygain_reference_loudness"
+};
+
+// this is where we store the RG tags in MP4/M4A files
+static const char *RG_ATOM = "----:com.apple.iTunes:";
+
 
 /*** MP3 ****/
 
@@ -95,13 +133,13 @@ void tag_remove_mp3(TagLib::ID3v2::Tag *tag) {
 			TagLib::String desc = frame -> description().upper();
 
 			// also remove (old) reference loudness, it might be wrong after recalc
-			if ((desc == "REPLAYGAIN_TRACK_GAIN") ||
-			    (desc == "REPLAYGAIN_TRACK_PEAK") ||
-					(desc == "REPLAYGAIN_TRACK_RANGE") ||
-			    (desc == "REPLAYGAIN_ALBUM_GAIN") ||
-			    (desc == "REPLAYGAIN_ALBUM_PEAK") ||
-					(desc == "REPLAYGAIN_ALBUM_RANGE") ||
-			    (desc == "REPLAYGAIN_REFERENCE_LOUDNESS"))
+			if ((desc == RG_STRING_UPPER[RG_TRACK_GAIN]) ||
+			    (desc == RG_STRING_UPPER[RG_TRACK_PEAK]) ||
+					(desc == RG_STRING_UPPER[RG_TRACK_RANGE]) ||
+			    (desc == RG_STRING_UPPER[RG_ALBUM_GAIN]) ||
+			    (desc == RG_STRING_UPPER[RG_ALBUM_PEAK]) ||
+					(desc == RG_STRING_UPPER[RG_ALBUM_RANGE]) ||
+			    (desc == RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]))
 				tag -> removeFrame(frame);
 		}
 	}
@@ -109,10 +147,15 @@ void tag_remove_mp3(TagLib::ID3v2::Tag *tag) {
 
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
-// So for the time being, we write non-standard lowercase tags to ID3v2.
+// So we use the "lowercase" flag to switch.
 bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase, bool strip, int id3v2version) {
 	char value[2048];
+	const char **RG_STRING = RG_STRING_UPPER;
+
+	if (lowercase) {
+		RG_STRING = RG_STRING_LOWER;
+	}
 
 	TagLib::MPEG::File f(scan -> file);
 	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
@@ -120,68 +163,32 @@ bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 	// remove old tags before writing new ones
 	tag_remove_mp3(tag);
 
-	if (lowercase) {
-		// use lowercase replaygain tags
-		// (non-standard but used by foobar2000 and needed by some players like IDJC)
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_track_gain"), value);
+	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+	tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_GAIN]), value);
 
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag_add_txxx(tag, const_cast<char *>("replaygain_track_peak"), value);
+	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+	tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_PEAK]), value);
 
-		// Only write album tags if in album mode (would be zero otherwise)
+	// Only write album tags if in album mode (would be zero otherwise)
+	if (do_album) {
+		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_GAIN]), value);
+
+		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_PEAK]), value);
+	}
+
+	// extra tags mode -s e or -s l
+	if (mode == 'e' || mode == 'l') {
+		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_REFERENCE_LOUDNESS]), value);
+
+		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_RANGE]), value);
+
 		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag_add_txxx(tag, const_cast<char *>("replaygain_album_gain"), value);
-
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag_add_txxx(tag, const_cast<char *>("replaygain_album_peak"), value);
-		}
-
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag_add_txxx(tag, const_cast<char *>("replaygain_reference_loudness"), value);
-
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag_add_txxx(tag, const_cast<char *>("replaygain_track_range"), value);
-
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag_add_txxx(tag, const_cast<char *>("replaygain_album_range"), value);
-			}
-		}
-	} else {
-		// use standard-compliant uppercase replaygain tags (default)
-		// required, for instance, by VLC
-		// unforunately not respected by others, like IDJC
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_GAIN"), value);
-
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_PEAK"), value);
-
-		// Only write album tags if in album mode (would be zero otherwise)
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_GAIN"), value);
-
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_PEAK"), value);
-		}
-
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_REFERENCE_LOUDNESS"), value);
-
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_TRACK_RANGE"), value);
-
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag_add_txxx(tag, const_cast<char *>("REPLAYGAIN_ALBUM_RANGE"), value);
-			}
+			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+			tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_RANGE]), value);
 		}
 	}
 
@@ -209,13 +216,13 @@ bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
 /*** FLAC ****/
 
 void tag_remove_flac(TagLib::Ogg::XiphComment *tag) {
-	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
-	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
-	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
-	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
@@ -228,31 +235,31 @@ bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
 	tag_remove_flac(tag);
 
 	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
+	tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
+	tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
 
 	// Only write album tags if in album mode (would be zero otherwise)
 	if (do_album) {
 		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
+		tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
 
 		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+		tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
 	}
 
 	// extra tags mode -s e or -s l
 	if (mode == 'e' || mode == 'l') {
 		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag -> addField("REPLAYGAIN_REFERENCE_LOUDNESS", value);
+		tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
 
 		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag -> addField("REPLAYGAIN_TRACK_RANGE", value);
+		tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
 
 		if (do_album) {
 			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag -> addField("REPLAYGAIN_ALBUM_RANGE", value);
+			tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
 		}
 	}
 
@@ -272,13 +279,13 @@ bool tag_clear_flac(scan_result *scan) {
 /*** Ogg Vorbis ****/
 
 void tag_remove_vorbis(TagLib::Ogg::XiphComment *tag) {
-	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
-	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
-	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
-	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
@@ -291,31 +298,31 @@ bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
 	tag_remove_vorbis(tag);
 
 	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag -> addField("REPLAYGAIN_TRACK_GAIN", value);
+	tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
 
 	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag -> addField("REPLAYGAIN_TRACK_PEAK", value);
+	tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
 
 	// Only write album tags if in album mode (would be zero otherwise)
 	if (do_album) {
 		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag -> addField("REPLAYGAIN_ALBUM_GAIN", value);
+		tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
 
 		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag -> addField("REPLAYGAIN_ALBUM_PEAK", value);
+		tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
 	}
 
 	// extra tags mode -s e or -s l
 	if (mode == 'e' || mode == 'l') {
 		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag -> addField("REPLAYGAIN_REFERENCE_LOUDNESS", value);
+		tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
 
 		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag -> addField("REPLAYGAIN_TRACK_RANGE", value);
+		tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
 
 		if (do_album) {
 			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag -> addField("REPLAYGAIN_ALBUM_RANGE", value);
+			tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
 		}
 	}
 
@@ -334,27 +341,44 @@ bool tag_clear_vorbis(scan_result *scan) {
 
 /*** MP4 ****/
 
-void tag_remove_mp4(TagLib::MP4::Tag *tag) {
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS");
+// build tagging key from RG_ATOM and RG_STRING_*
+//   tag_key(key, RG_STRING_UPPER[RG_TRACK_GAIN]) returns pointer to:
+//   "----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN"
+char *tagname(char *dest, const char *src) {
+  strcpy(dest, RG_ATOM);
+  strcat(dest, src);
+  return dest;
+}
 
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_gain");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_peak");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_track_range");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_gain");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_peak");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_album_range");
-	tag -> removeItem("----:com.apple.iTunes:replaygain_reference_loudness");
+void tag_remove_mp4(TagLib::MP4::Tag *tag) {
+  char key[128];
+
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_GAIN]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_PEAK]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_RANGE]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_GAIN]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_PEAK]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_RANGE]));
+	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]));
+
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_GAIN]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_PEAK]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_RANGE]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_GAIN]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_PEAK]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_RANGE]));
+	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]));
 }
 
 bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase) {
+  char key[128];
 	char value[2048];
+  const char **RG_STRING = RG_STRING_UPPER;
+
+	if (lowercase) {
+		RG_STRING = RG_STRING_LOWER;
+	}
 
 	TagLib::MP4::File f(scan -> file);
 	TagLib::MP4::Tag *tag = f.tag();
@@ -362,68 +386,34 @@ bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
 	// remove old tags before writing new ones
 	tag_remove_mp4(tag);
 
-	if (lowercase) {
-		// use lowercase replaygain tags
-		// (non-standard but used by foobar2000 and needed by some players)
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag -> setItem("----:com.apple.iTunes:replaygain_track_gain", TagLib::StringList(value));
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag -> setItem(tagname(key, RG_STRING[RG_TRACK_GAIN]), TagLib::StringList(value));
 
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag -> setItem("----:com.apple.iTunes:replaygain_track_peak", TagLib::StringList(value));
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag -> setItem(tagname(key, RG_STRING[RG_TRACK_PEAK]), TagLib::StringList(value));
 
-		// Only write album tags if in album mode (would be zero otherwise)
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag -> setItem("----:com.apple.iTunes:replaygain_album_gain", TagLib::StringList(value));
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag -> setItem(tagname(key, RG_STRING[RG_ALBUM_GAIN]), TagLib::StringList(value));
 
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag -> setItem("----:com.apple.iTunes:replaygain_album_peak", TagLib::StringList(value));
-		}
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag -> setItem(tagname(key, RG_STRING[RG_ALBUM_PEAK]), TagLib::StringList(value));
+  }
 
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag -> setItem("----:com.apple.iTunes:replaygain_reference_loudness", TagLib::StringList(value));
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag -> setItem(tagname(key, RG_STRING[RG_REFERENCE_LOUDNESS]), TagLib::StringList(value));
 
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag -> setItem("----:com.apple.iTunes:replaygain_track_range", TagLib::StringList(value));
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag -> setItem(tagname(key, RG_STRING[RG_TRACK_RANGE]), TagLib::StringList(value));
 
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag -> setItem("----:com.apple.iTunes:replaygain_album_range", TagLib::StringList(value));
-			}
-		}
-	} else {
-		// use standard-compliant uppercase replaygain tags (default)
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_GAIN", TagLib::StringList(value));
-
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_PEAK", TagLib::StringList(value));
-
-		// Only write album tags if in album mode (would be zero otherwise)
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_GAIN", TagLib::StringList(value));
-
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_PEAK", TagLib::StringList(value));
-		}
-
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_REFERENCE_LOUDNESS", TagLib::StringList(value));
-
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_TRACK_RANGE", TagLib::StringList(value));
-
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag -> setItem("----:com.apple.iTunes:REPLAYGAIN_ALBUM_RANGE", TagLib::StringList(value));
-			}
-		}
-	}
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag -> setItem(tagname(key, RG_STRING[RG_ALBUM_RANGE]), TagLib::StringList(value));
+    }
+  }
 
 	return f.save();
 }
@@ -479,13 +469,13 @@ void tag_remove_opus(TagLib::Ogg::XiphComment *tag) {
   // REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or
   // REPLAYGAIN_ALBUM_PEAK tags, […]"
 	// so we remove these if present
-	tag -> removeField("REPLAYGAIN_TRACK_GAIN");
-	tag -> removeField("REPLAYGAIN_TRACK_PEAK");
-	tag -> removeField("REPLAYGAIN_TRACK_RANGE");
-	tag -> removeField("REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeField("REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeField("REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeField("REPLAYGAIN_REFERENCE_LOUDNESS");
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 	tag -> removeField("R128_TRACK_GAIN");
 	tag -> removeField("R128_ALBUM_GAIN");
 }
@@ -526,26 +516,31 @@ bool tag_clear_opus(scan_result *scan) {
 /*** ASF/WMA ****/
 
 void tag_remove_asf(TagLib::ASF::Tag *tag) {
-	tag -> removeItem("REPLAYGAIN_TRACK_GAIN");
-	tag -> removeItem("REPLAYGAIN_TRACK_PEAK");
-	tag -> removeItem("REPLAYGAIN_TRACK_RANGE");
-	tag -> removeItem("REPLAYGAIN_ALBUM_GAIN");
-	tag -> removeItem("REPLAYGAIN_ALBUM_PEAK");
-	tag -> removeItem("REPLAYGAIN_ALBUM_RANGE");
-	tag -> removeItem("REPLAYGAIN_REFERENCE_LOUDNESS");
+	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_GAIN]);
+	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_PEAK]);
+	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_RANGE]);
+	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+	tag -> removeItem(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 
-	tag -> removeItem("replaygain_track_gain");
-	tag -> removeItem("replaygain_track_peak");
-	tag -> removeItem("replaygain_track_range");
-	tag -> removeItem("replaygain_album_gain");
-	tag -> removeItem("replaygain_album_peak");
-	tag -> removeItem("replaygain_album_range");
-	tag -> removeItem("replaygain_reference_loudness");
+	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_GAIN]);
+	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_PEAK]);
+	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_RANGE]);
+	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_GAIN]);
+	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_PEAK]);
+	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_RANGE]);
+	tag -> removeItem(RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
 	bool lowercase) {
 	char value[2048];
+  const char **RG_STRING = RG_STRING_UPPER;
+
+	if (lowercase) {
+		RG_STRING = RG_STRING_LOWER;
+	}
 
 	TagLib::ASF::File f(scan -> file);
 	TagLib::ASF::Tag *tag = f.tag();
@@ -553,68 +548,34 @@ bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
 	// remove old tags before writing new ones
 	tag_remove_asf(tag);
 
-	if (lowercase) {
-		// use lowercase replaygain tags
-		// (non-standard but used by foobar2000 & WinAmp and needed by some players)
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag -> setAttribute("replaygain_track_gain", TagLib::String(value));
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag -> setAttribute(RG_STRING[RG_TRACK_GAIN], TagLib::String(value));
 
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag -> setAttribute("replaygain_track_peak", TagLib::String(value));
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag -> setAttribute(RG_STRING[RG_TRACK_PEAK], TagLib::String(value));
 
-		// Only write album tags if in album mode (would be zero otherwise)
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag -> setAttribute("replaygain_album_gain", TagLib::String(value));
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag -> setAttribute(RG_STRING[RG_ALBUM_GAIN], TagLib::String(value));
 
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag -> setAttribute("replaygain_album_peak", TagLib::String(value));
-		}
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag -> setAttribute(RG_STRING[RG_ALBUM_PEAK], TagLib::String(value));
+  }
 
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag -> setAttribute("replaygain_reference_loudness", TagLib::String(value));
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag -> setAttribute(RG_STRING[RG_REFERENCE_LOUDNESS], TagLib::String(value));
 
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag -> setAttribute("replaygain_track_range", TagLib::String(value));
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag -> setAttribute(RG_STRING[RG_TRACK_RANGE], TagLib::String(value));
 
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag -> setAttribute("replaygain_album_range", TagLib::String(value));
-			}
-		}
-	} else {
-		// use standard-compliant uppercase replaygain tags (default)
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-		tag -> setAttribute("REPLAYGAIN_TRACK_GAIN", TagLib::String(value));
-
-		snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-		tag -> setAttribute("REPLAYGAIN_TRACK_PEAK", TagLib::String(value));
-
-		// Only write album tags if in album mode (would be zero otherwise)
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-			tag -> setAttribute("REPLAYGAIN_ALBUM_GAIN", TagLib::String(value));
-
-			snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-			tag -> setAttribute("REPLAYGAIN_ALBUM_PEAK", TagLib::String(value));
-		}
-
-		// extra tags mode -s e or -s l
-		if (mode == 'e' || mode == 'l') {
-			snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-			tag -> setAttribute("REPLAYGAIN_REFERENCE_LOUDNESS", TagLib::String(value));
-
-			snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-			tag -> setAttribute("REPLAYGAIN_TRACK_RANGE", TagLib::String(value));
-
-			if (do_album) {
-				snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-				tag -> setAttribute("REPLAYGAIN_ALBUM_RANGE", TagLib::String(value));
-			}
-		}
-	}
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag -> setAttribute(RG_STRING[RG_ALBUM_RANGE], TagLib::String(value));
+    }
+  }
 
 	return f.save();
 }
