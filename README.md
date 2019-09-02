@@ -401,6 +401,8 @@ $ which loudgain
 $ loudgain -h
 ```
 
+---
+
 ### Uppercase or lowercase 'REPLAYGAIN_*' tags?
 
 **Uppercase vs. lowercase tags** still seems to be a never-ending battle—_when will
@@ -437,6 +439,7 @@ Since we don’t live in an ideal world, my approach to the problem is as follow
 
 4. There’s only one way to get rid of the problem: **File _bug reports_ for any player you use that doesn’t handle ReplayGain tags at all or in a case-sensitive manner!** (Not here, but on the player’s bug tracker sites or forums.) If a player respects ReplayGain tags at all, **it should do so in a _case-insensitive_ manner, for as many file types as possible!**
 
+---
 
 ### Tags written (and/or deleted)
 
@@ -505,14 +508,17 @@ Interestingly enough, I found that many players can actually handle the "LU" for
 
 For MPEG-4 containers (.mp4, .m4a), these are stored under `----:com.apple.iTunes:…` but the names are the same.
 
+---
+
 ### Track and Album Peak
 
 When comparing to other (older) tools, you might find the peak values are often _higher_ than what you were used to.
 
-This is due to the fact that loudgain uses _true peak_ (not RMS peak) values, which are much more appropriate in the digital world, especially when using lossy audio formats.
+This is due to the fact that loudgain uses _true peak_ (not RMS or sample peak) values, which are much more appropriate in the digital world, especially when using lossy audio formats.
 
 loudgain uses the `libebur128` [library](https://github.com/jiixyj/libebur128) for this. It currently (v1.2.4) provides a true peak calculated using a custom polyphase FIR interpolator that will oversample 4x for sample rates < 96000 Hz, 2x for sample rates < 192000 Hz and leave the signal unchanged for 192000 Hz.
 
+---
 
 ### MP3 ID3v2.3, ID3v2.4, and APE tags
 
@@ -548,6 +554,7 @@ Using loudgain’s `-S` (`--striptags`) option, these other tag types can be rem
 
 This option has no effect on FLAC or Ogg Vorbis files.
 
+---
 
 ### Analyze audio files and output to CSV
 
@@ -780,6 +787,7 @@ If using [foobar2000](https://www.foobar2000.org/) (a very good player/organizer
 Please **give feedback** on the [issue tracker](https://github.com/Moonbase59/loudgain/issues),
 so we can finalize loudgain's Opus support. Thanks!
 
+---
 
 ### How I handle ASF/WMA (.asf, .wma) audio files
 
@@ -829,6 +837,7 @@ so we can finalize loudgain's Opus support. Thanks!
    real audio signal, they are expected to be larger than _sample peak_ or
    _RMS peak_ values. True peak values can be above 1.0.
 
+---
 
 ## loudgain makes it easy following the »Gold Standard«
 
