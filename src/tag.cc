@@ -19,7 +19,7 @@
  *  - Add "-S" mode to strip ID3v1/APEv2 tags from MP3 files.
  *  - Add "-I 3"/"-I 4" modes to select ID3v2 version to write.
  * 2019-07-31 - v0.40 - Matthias C. Hormann
- *	- Add MP4 handling
+ *  - Add MP4 handling
  * 2019-08-02 - v0.5.1 - Matthias C. Hormann
  *  - avoid unneccessary double file write on deleting+writing tags
  *  - make tag delete/write functions return true on success, false otherwise
@@ -111,231 +111,231 @@ static const char *RG_ATOM = "----:com.apple.iTunes:";
 /*** MP3 ****/
 
 static void tag_add_txxx(TagLib::ID3v2::Tag *tag, char *name, char *value) {
-	TagLib::ID3v2::UserTextIdentificationFrame *frame =
-		new TagLib::ID3v2::UserTextIdentificationFrame;
+  TagLib::ID3v2::UserTextIdentificationFrame *frame =
+    new TagLib::ID3v2::UserTextIdentificationFrame;
 
-	frame -> setDescription(name);
-	frame -> setText(value);
+  frame -> setDescription(name);
+  frame -> setText(value);
 
-	tag -> addFrame(frame);
+  tag -> addFrame(frame);
 }
 
 void tag_remove_mp3(TagLib::ID3v2::Tag *tag) {
-	TagLib::ID3v2::FrameList::Iterator it;
-	TagLib::ID3v2::FrameList frames = tag -> frameList("TXXX");
+  TagLib::ID3v2::FrameList::Iterator it;
+  TagLib::ID3v2::FrameList frames = tag -> frameList("TXXX");
 
-	for (it = frames.begin(); it != frames.end(); ++it) {
-		TagLib::ID3v2::UserTextIdentificationFrame *frame =
-		 dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    TagLib::ID3v2::UserTextIdentificationFrame *frame =
+     dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
 
-		 // this removes all variants of upper-/lower-/mixed-case tags
-		if (frame && frame -> fieldList().size() >= 2) {
-			TagLib::String desc = frame -> description().upper();
+     // this removes all variants of upper-/lower-/mixed-case tags
+    if (frame && frame -> fieldList().size() >= 2) {
+      TagLib::String desc = frame -> description().upper();
 
-			// also remove (old) reference loudness, it might be wrong after recalc
-			if ((desc == RG_STRING_UPPER[RG_TRACK_GAIN]) ||
-			    (desc == RG_STRING_UPPER[RG_TRACK_PEAK]) ||
-					(desc == RG_STRING_UPPER[RG_TRACK_RANGE]) ||
-			    (desc == RG_STRING_UPPER[RG_ALBUM_GAIN]) ||
-			    (desc == RG_STRING_UPPER[RG_ALBUM_PEAK]) ||
-					(desc == RG_STRING_UPPER[RG_ALBUM_RANGE]) ||
-			    (desc == RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]))
-				tag -> removeFrame(frame);
-		}
-	}
+      // also remove (old) reference loudness, it might be wrong after recalc
+      if ((desc == RG_STRING_UPPER[RG_TRACK_GAIN]) ||
+          (desc == RG_STRING_UPPER[RG_TRACK_PEAK]) ||
+          (desc == RG_STRING_UPPER[RG_TRACK_RANGE]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_GAIN]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_PEAK]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_RANGE]) ||
+          (desc == RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]))
+        tag -> removeFrame(frame);
+    }
+  }
 }
 
 // Even if the ReplayGain 2 standard proposes replaygain tags to be uppercase,
 // unfortunately some players only respect the lowercase variant (still).
 // So we use the "lowercase" flag to switch.
 bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
-	bool lowercase, bool strip, int id3v2version) {
-	char value[2048];
-	const char **RG_STRING = RG_STRING_UPPER;
+  bool lowercase, bool strip, int id3v2version) {
+  char value[2048];
+  const char **RG_STRING = RG_STRING_UPPER;
 
-	if (lowercase) {
-		RG_STRING = RG_STRING_LOWER;
-	}
+  if (lowercase) {
+    RG_STRING = RG_STRING_LOWER;
+  }
 
-	TagLib::MPEG::File f(scan -> file);
-	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
+  TagLib::MPEG::File f(scan -> file);
+  TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	// remove old tags before writing new ones
-	tag_remove_mp3(tag);
+  // remove old tags before writing new ones
+  tag_remove_mp3(tag);
 
-	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_GAIN]), value);
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_GAIN]), value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_PEAK]), value);
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_PEAK]), value);
 
-	// Only write album tags if in album mode (would be zero otherwise)
-	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_GAIN]), value);
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_GAIN]), value);
 
-		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_PEAK]), value);
-	}
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_PEAK]), value);
+  }
 
-	// extra tags mode -s e or -s l
-	if (mode == 'e' || mode == 'l') {
-		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_REFERENCE_LOUDNESS]), value);
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_REFERENCE_LOUDNESS]), value);
 
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_RANGE]), value);
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_RANGE]), value);
 
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_RANGE]), value);
-		}
-	}
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_RANGE]), value);
+    }
+  }
 
-	// work around bug taglib/taglib#913: strip APE before ID3v1
-	if (strip)
-		f.strip(TagLib::MPEG::File::APE);
+  // work around bug taglib/taglib#913: strip APE before ID3v1
+  if (strip)
+    f.strip(TagLib::MPEG::File::APE);
 
-	return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+  return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
 bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
-	TagLib::MPEG::File f(scan -> file);
-	TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
+  TagLib::MPEG::File f(scan -> file);
+  TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
-	tag_remove_mp3(tag);
+  tag_remove_mp3(tag);
 
-	// work around bug taglib/taglib#913: strip APE before ID3v1
-	if (strip)
-		f.strip(TagLib::MPEG::File::APE);
+  // work around bug taglib/taglib#913: strip APE before ID3v1
+  if (strip)
+    f.strip(TagLib::MPEG::File::APE);
 
-	return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+  return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
 }
 
 
 /*** FLAC ****/
 
 void tag_remove_flac(TagLib::Ogg::XiphComment *tag) {
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
-	char value[2048];
+  char value[2048];
 
-	TagLib::FLAC::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
+  TagLib::FLAC::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
-	// remove old tags before writing new ones
-	tag_remove_flac(tag);
+  // remove old tags before writing new ones
+  tag_remove_flac(tag);
 
-	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
 
-	// Only write album tags if in album mode (would be zero otherwise)
-	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
 
-		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
-	}
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
+  }
 
-	// extra tags mode -s e or -s l
-	if (mode == 'e' || mode == 'l') {
-		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
 
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
 
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
-		}
-	}
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
+    }
+  }
 
-	return f.save();
+  return f.save();
 }
 
 bool tag_clear_flac(scan_result *scan) {
-	TagLib::FLAC::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
+  TagLib::FLAC::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
-	tag_remove_flac(tag);
+  tag_remove_flac(tag);
 
-	return f.save();
+  return f.save();
 }
 
 
 /*** Ogg Vorbis ****/
 
 void tag_remove_vorbis(TagLib::Ogg::XiphComment *tag) {
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
-	char value[2048];
+  char value[2048];
 
-	TagLib::Ogg::Vorbis::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.tag();
+  TagLib::Ogg::Vorbis::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
 
-	// remove old tags before writing new ones
-	tag_remove_vorbis(tag);
+  // remove old tags before writing new ones
+  tag_remove_vorbis(tag);
 
-	snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
-	tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
 
-	snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
-	tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag -> addField(RG_STRING_UPPER[RG_TRACK_PEAK], value);
 
-	// Only write album tags if in album mode (would be zero otherwise)
-	if (do_album) {
-		snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
-		tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag -> addField(RG_STRING_UPPER[RG_ALBUM_GAIN], value);
 
-		snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
-		tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
-	}
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag -> addField(RG_STRING_UPPER[RG_ALBUM_PEAK], value);
+  }
 
-	// extra tags mode -s e or -s l
-	if (mode == 'e' || mode == 'l') {
-		snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
-		tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag -> addField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS], value);
 
-		snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
-		tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag -> addField(RG_STRING_UPPER[RG_TRACK_RANGE], value);
 
-		if (do_album) {
-			snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
-			tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
-		}
-	}
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
+    }
+  }
 
-	return f.save();
+  return f.save();
 }
 
 bool tag_clear_vorbis(scan_result *scan) {
-	TagLib::Ogg::Vorbis::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.tag();
+  TagLib::Ogg::Vorbis::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
 
-	tag_remove_vorbis(tag);
+  tag_remove_vorbis(tag);
 
-	return f.save();
+  return f.save();
 }
 
 
@@ -353,38 +353,38 @@ char *tagname(char *dest, const char *src) {
 void tag_remove_mp4(TagLib::MP4::Tag *tag) {
   char key[128];
 
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_GAIN]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_PEAK]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_RANGE]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_GAIN]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_PEAK]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_RANGE]));
-	tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_GAIN]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_PEAK]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_TRACK_RANGE]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_GAIN]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_PEAK]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_ALBUM_RANGE]));
+  tag -> removeItem(tagname(key, RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]));
 
   tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_GAIN]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_PEAK]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_RANGE]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_GAIN]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_PEAK]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_RANGE]));
-	tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_PEAK]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_TRACK_RANGE]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_GAIN]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_PEAK]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_ALBUM_RANGE]));
+  tag -> removeItem(tagname(key, RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]));
 }
 
 bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
-	bool lowercase) {
+  bool lowercase) {
   char key[128];
-	char value[2048];
+  char value[2048];
   const char **RG_STRING = RG_STRING_UPPER;
 
-	if (lowercase) {
-		RG_STRING = RG_STRING_LOWER;
-	}
+  if (lowercase) {
+    RG_STRING = RG_STRING_LOWER;
+  }
 
-	TagLib::MP4::File f(scan -> file);
-	TagLib::MP4::Tag *tag = f.tag();
+  TagLib::MP4::File f(scan -> file);
+  TagLib::MP4::Tag *tag = f.tag();
 
-	// remove old tags before writing new ones
-	tag_remove_mp4(tag);
+  // remove old tags before writing new ones
+  tag_remove_mp4(tag);
 
   snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
   tag -> setItem(tagname(key, RG_STRING[RG_TRACK_GAIN]), TagLib::StringList(value));
@@ -415,16 +415,16 @@ bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
-	return f.save();
+  return f.save();
 }
 
 bool tag_clear_mp4(scan_result *scan) {
-	TagLib::MP4::File f(scan -> file);
-	TagLib::MP4::Tag *tag = f.tag();
+  TagLib::MP4::File f(scan -> file);
+  TagLib::MP4::Tag *tag = f.tag();
 
-	tag_remove_mp4(tag);
+  tag_remove_mp4(tag);
 
-	return f.save();
+  return f.save();
 }
 
 
@@ -458,95 +458,95 @@ bool tag_clear_mp4(scan_result *scan) {
 //    requested. They are also shown in the output, just not stored into tags.
 
 int gain_to_q78num(double gain) {
-	// convert float to Q7.8 number: Q = round(f * 2^8)
-	return (int) round(gain * 256.0);		// 2^8 = 256
+  // convert float to Q7.8 number: Q = round(f * 2^8)
+  return (int) round(gain * 256.0);    // 2^8 = 256
 }
 
 void tag_remove_opus(TagLib::Ogg::XiphComment *tag) {
-	// RFC 7845 states:
-	// To avoid confusion with multiple normalization schemes, an Opus
+  // RFC 7845 states:
+  // To avoid confusion with multiple normalization schemes, an Opus
   // comment header SHOULD NOT contain any of the REPLAYGAIN_TRACK_GAIN,
   // REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or
   // REPLAYGAIN_ALBUM_PEAK tags, […]"
-	// so we remove these if present
+  // so we remove these if present
   tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
-	tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
-	tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
-	tag -> removeField("R128_TRACK_GAIN");
-	tag -> removeField("R128_ALBUM_GAIN");
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeField("R128_TRACK_GAIN");
+  tag -> removeField("R128_ALBUM_GAIN");
 }
 
 bool tag_write_opus(scan_result *scan, bool do_album, char mode, char *unit) {
-	char value[2048];
+  char value[2048];
 
-	TagLib::Ogg::Opus::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.tag();
+  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
 
-	// remove old tags before writing new ones
-	tag_remove_opus(tag);
+  // remove old tags before writing new ones
+  tag_remove_opus(tag);
 
-	snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> track_gain));
-	tag -> addField("R128_TRACK_GAIN", value);
+  snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> track_gain));
+  tag -> addField("R128_TRACK_GAIN", value);
 
-	// Only write album tags if in album mode (would be zero otherwise)
-	if (do_album) {
-		snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> album_gain));
-		tag -> addField("R128_ALBUM_GAIN", value);
-	}
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> album_gain));
+    tag -> addField("R128_ALBUM_GAIN", value);
+  }
 
-	// extra tags mode -s e or -s l
-	// no extra tags allowed in Opus
+  // extra tags mode -s e or -s l
+  // no extra tags allowed in Opus
 
-	return f.save();
+  return f.save();
 }
 
 bool tag_clear_opus(scan_result *scan) {
-	TagLib::Ogg::Opus::File f(scan -> file);
-	TagLib::Ogg::XiphComment *tag = f.tag();
+  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
 
-	tag_remove_opus(tag);
+  tag_remove_opus(tag);
 
-	return f.save();
+  return f.save();
 }
 
 /*** ASF/WMA ****/
 
 void tag_remove_asf(TagLib::ASF::Tag *tag) {
-	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_GAIN]);
-	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_PEAK]);
-	tag -> removeItem(RG_STRING_UPPER[RG_TRACK_RANGE]);
-	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_GAIN]);
-	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_PEAK]);
-	tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_RANGE]);
-	tag -> removeItem(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_GAIN]);
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeItem(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 
-	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_GAIN]);
-	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_PEAK]);
-	tag -> removeItem(RG_STRING_LOWER[RG_TRACK_RANGE]);
-	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_GAIN]);
-	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_PEAK]);
-	tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_RANGE]);
-	tag -> removeItem(RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeItem(RG_STRING_LOWER[RG_TRACK_GAIN]);
+  tag -> removeItem(RG_STRING_LOWER[RG_TRACK_PEAK]);
+  tag -> removeItem(RG_STRING_LOWER[RG_TRACK_RANGE]);
+  tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_GAIN]);
+  tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_PEAK]);
+  tag -> removeItem(RG_STRING_LOWER[RG_ALBUM_RANGE]);
+  tag -> removeItem(RG_STRING_LOWER[RG_REFERENCE_LOUDNESS]);
 }
 
 bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
-	bool lowercase) {
-	char value[2048];
+  bool lowercase) {
+  char value[2048];
   const char **RG_STRING = RG_STRING_UPPER;
 
-	if (lowercase) {
-		RG_STRING = RG_STRING_LOWER;
-	}
+  if (lowercase) {
+    RG_STRING = RG_STRING_LOWER;
+  }
 
-	TagLib::ASF::File f(scan -> file);
-	TagLib::ASF::Tag *tag = f.tag();
+  TagLib::ASF::File f(scan -> file);
+  TagLib::ASF::Tag *tag = f.tag();
 
-	// remove old tags before writing new ones
-	tag_remove_asf(tag);
+  // remove old tags before writing new ones
+  tag_remove_asf(tag);
 
   snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
   tag -> setAttribute(RG_STRING[RG_TRACK_GAIN], TagLib::String(value));
@@ -577,14 +577,14 @@ bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
-	return f.save();
+  return f.save();
 }
 
 bool tag_clear_asf(scan_result *scan) {
-	TagLib::ASF::File f(scan -> file);
-	TagLib::ASF::Tag *tag = f.tag();
+  TagLib::ASF::File f(scan -> file);
+  TagLib::ASF::Tag *tag = f.tag();
 
-	tag_remove_asf(tag);
+  tag_remove_asf(tag);
 
-	return f.save();
+  return f.save();
 }
