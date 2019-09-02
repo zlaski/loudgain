@@ -14,10 +14,14 @@
 # 2019-08-13 - v0.8:
 #            - MacOS-compatible version (no xargs -i, -r); rename to "rgbpm" (w/o ".sh")
 #            - added getopts for -h, -v and -b
+# 2019-09-01 - v0.9:
+#            - add ASF/WMA support
+# 2019-09-02 - v0.10:
+#            - add WAV support
 
 # define me
 me=`basename "$0"`
-version="0.9"
+version="0.10"
 #MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
@@ -61,7 +65,7 @@ folders below and add the recommended replay gain track & album tags to
 audio files.
 
 If using 'loudgain', $me currently supports files of type:
-  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma
+  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma, *.wav
 EOF
 if [ "$BPMCALC" = true ] ; then
 cat <<EOF
@@ -171,6 +175,11 @@ while [ "$1" != '' ] ; do
     # calculate replay gain for all ASF in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.asf" -type f -exec loudgain -L -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all WAV in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.wav" -type f -exec loudgain -I3 -L -a -k -s e {} +
     fi
 
     # calculate BPM for all MP2, MP3 or FLAC in this folder
