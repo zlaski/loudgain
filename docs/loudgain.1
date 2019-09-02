@@ -25,7 +25,13 @@ loudgain currently supports writing tags to the following file types:
 FLAC (\.flac), Ogg Vorbis (\.ogg), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 .
 .br
-Opus (\.opus) \-\- experimental support, use with care! ASF/WMA (\.asf, \.wma) \-\- experimental support, use with care!
+Opus (\.opus) \-\- experimental support, use with care!
+.
+.br
+ASF/WMA (\.asf, \.wma) \-\- experimental support, use with care!
+.
+.br
+WAV (\.wav) \-\- experimental support, use with care!
 .
 .SH "OPTIONS"
 \fB\-h, \-\-help\fR
@@ -109,7 +115,7 @@ Opus (\.opus) \-\- experimental support, use with care! ASF/WMA (\.asf, \.wma) \
 \fB\-L, \-\-lowercase\fR
 .
 .P
-\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4/ASF/WMA only; non\-standard)
+\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non\-standard)
 .
 .P
 \fB\-S, \-\-striptags\fR
@@ -121,13 +127,13 @@ Opus (\.opus) \-\- experimental support, use with care! ASF/WMA (\.asf, \.wma) \
 \fB\-I 3, \-\-id3v2version=3\fR
 .
 .P
-\~\~\~\~\~\~ Write ID3v2\.3 tags to MP2/MP3 files\.
+\~\~\~\~\~\~ Write ID3v2\.3 tags to MP2/MP3/WAV files\.
 .
 .P
 \fB\-I 4, \-\-id3v2version=4\fR
 .
 .P
-\~\~\~\~\~\~ Write ID3v2\.4 tags to MP2/MP3 files (default)\.
+\~\~\~\~\~\~ Write ID3v2\.4 tags to MP2/MP3/WAV files (default)\.
 .
 .P
 \fB\-o, \-\-output\fR

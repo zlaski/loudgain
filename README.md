@@ -102,6 +102,10 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-09-02** – **v0.6.4** released:
+  * Some code cleanup in the tagger.
+  * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_ and others.
+
 **2019-09-01** – **v0.6.3** released:
   * Added _experimental (!)_ ASF/WMA (.asf, .wma) support. Please read [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
 
@@ -839,6 +843,35 @@ so we can finalize loudgain's Opus support. Thanks!
 
 ---
 
+### How I handle WAV (.wav) audio files
+
+1. **Experimental support, use with care!** Loudgain writes ID3v2 ReplayGain tags
+   into the "ID3 " chunk. This is a format compatible with _foobar2000_, _VLC_
+   and some others.
+
+   Loudgain currently relies on _TagLib_ to do the writing. In the current implementation
+   * the _"ID3 "_ chunk _may be_ after the _"data"_ chunk (i.e., at the end of the file).
+   * the _"ID3 "_ chunk may be "left over" even if all ID3v2 tags have been deleted.
+
+2. Loudgain tries to keep all other chunks and tags intact, the `-S` (`--striptags`)
+   option is ignored.
+
+3. Since ID3v2 tags are written, the `-L` (`--lowercase`), `-I 3` (`--id3v2version=3`)
+   and `-I 4` (`--id3v2version=4`) options function normally. For WAV files,
+   it is recommended to use **ID3v2.3** tags.
+
+4. **[Uppercase vs. lowercase tags](#uppercase-or-lowercase-replaygain_-tags)**
+   is still a problem:
+
+   * **foobar2000** handles both upper- and lowercase tags _correctly_ (tested on fb2k 1.4.6).
+   * **VLC** requires _uppercase_ tags (tested on VLC 3.0.8 "Vetinari").
+
+5. The _Broadcast Wave File (BWF)_ extensions in the _"bext"_ chunk are currently _not
+   written_ (but also not destroyed). This might change in a future version (at least
+   for the loudness values of BWF v2).
+
+---
+
 ## loudgain makes it easy following the »Gold Standard«
 
 Here are my personal recommendations for being (almost) universally compatible:
@@ -852,6 +885,7 @@ $ loudgain -I3 -S -L -a -k -s e *.mp3
 $ loudgain -L -a -k -s e *.m4a
 $ loudgain -a -k -s e *.opus
 $ loudgain -L -a -k -s e *.wma
+$ loudgain -I3 -L -a -k -s e *.wav
 ```
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.

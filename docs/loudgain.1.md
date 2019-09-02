@@ -20,8 +20,9 @@ these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
   FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).  
-  Opus (.opus) -- experimental support, use with care!
-  ASF/WMA (.asf, .wma) -- experimental support, use with care!
+  Opus (.opus) -- experimental support, use with care!  
+  ASF/WMA (.asf, .wma) -- experimental support, use with care!  
+  WAV (.wav) -- experimental support, use with care!
 
 
 ## OPTIONS
@@ -94,7 +95,7 @@ Don't write ReplayGain tags (default).
 `-L, --lowercase`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA only; non-standard)
+Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard)
 
 `-S, --striptags`
 
@@ -104,12 +105,12 @@ Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
 `-I 3, --id3v2version=3`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.3 tags to MP2/MP3 files.
+Write ID3v2.3 tags to MP2/MP3/WAV files.
 
 `-I 4, --id3v2version=4`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.4 tags to MP2/MP3 files (default).
+Write ID3v2.4 tags to MP2/MP3/WAV files (default).
 
 `-o, --output`
 

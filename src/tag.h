@@ -55,6 +55,10 @@ bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase);
 bool tag_clear_asf(scan_result *scan);
 
+bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase, bool strip, int id3v2version);
+bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version);
+
 #ifdef __cplusplus
 }
 #endif

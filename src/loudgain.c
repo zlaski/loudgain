@@ -383,6 +383,45 @@ int main(int argc, char *argv[]) {
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
+					case AV_CODEC_ID_PCM_S16LE:
+					case AV_CODEC_ID_PCM_S16BE:
+					case AV_CODEC_ID_PCM_U16LE:
+					case AV_CODEC_ID_PCM_U16BE:
+					case AV_CODEC_ID_PCM_S8:
+					case AV_CODEC_ID_PCM_U8:
+					case AV_CODEC_ID_PCM_MULAW:
+					case AV_CODEC_ID_PCM_ALAW:
+					case AV_CODEC_ID_PCM_S32LE:
+					case AV_CODEC_ID_PCM_S32BE:
+					case AV_CODEC_ID_PCM_U32LE:
+					case AV_CODEC_ID_PCM_U32BE:
+					case AV_CODEC_ID_PCM_S24LE:
+					case AV_CODEC_ID_PCM_S24BE:
+					case AV_CODEC_ID_PCM_U24LE:
+					case AV_CODEC_ID_PCM_U24BE:
+					case AV_CODEC_ID_PCM_S24DAUD:
+					case AV_CODEC_ID_PCM_ZORK:
+					case AV_CODEC_ID_PCM_S16LE_PLANAR:
+					case AV_CODEC_ID_PCM_DVD:
+					case AV_CODEC_ID_PCM_F32BE:
+					case AV_CODEC_ID_PCM_F32LE:
+					case AV_CODEC_ID_PCM_F64BE:
+					case AV_CODEC_ID_PCM_F64LE:
+					case AV_CODEC_ID_PCM_BLURAY:
+					case AV_CODEC_ID_PCM_LXF:
+					case AV_CODEC_ID_S302M:
+					case AV_CODEC_ID_PCM_S8_PLANAR:
+					case AV_CODEC_ID_PCM_S24LE_PLANAR:
+					case AV_CODEC_ID_PCM_S32LE_PLANAR:
+					case AV_CODEC_ID_PCM_S16BE_PLANAR:
+					case AV_CODEC_ID_PCM_S64LE:
+					case AV_CODEC_ID_PCM_S64BE:
+					case AV_CODEC_ID_PCM_F16LE:
+					case AV_CODEC_ID_PCM_F24LE:
+						if (!tag_clear_wav(scan, strip, id3v2version))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
 					default:
 						err_printf("File type not supported");
 						break;
@@ -432,6 +471,46 @@ int main(int argc, char *argv[]) {
 					case AV_CODEC_ID_WMALOSSLESS:
 						// tag_clear_asf(scan);
 						if (!tag_write_asf(scan, do_album, mode, unit, lowercase))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
+					case AV_CODEC_ID_PCM_S16LE:
+					case AV_CODEC_ID_PCM_S16BE:
+					case AV_CODEC_ID_PCM_U16LE:
+					case AV_CODEC_ID_PCM_U16BE:
+					case AV_CODEC_ID_PCM_S8:
+					case AV_CODEC_ID_PCM_U8:
+					case AV_CODEC_ID_PCM_MULAW:
+					case AV_CODEC_ID_PCM_ALAW:
+					case AV_CODEC_ID_PCM_S32LE:
+					case AV_CODEC_ID_PCM_S32BE:
+					case AV_CODEC_ID_PCM_U32LE:
+					case AV_CODEC_ID_PCM_U32BE:
+					case AV_CODEC_ID_PCM_S24LE:
+					case AV_CODEC_ID_PCM_S24BE:
+					case AV_CODEC_ID_PCM_U24LE:
+					case AV_CODEC_ID_PCM_U24BE:
+					case AV_CODEC_ID_PCM_S24DAUD:
+					case AV_CODEC_ID_PCM_ZORK:
+					case AV_CODEC_ID_PCM_S16LE_PLANAR:
+					case AV_CODEC_ID_PCM_DVD:
+					case AV_CODEC_ID_PCM_F32BE:
+					case AV_CODEC_ID_PCM_F32LE:
+					case AV_CODEC_ID_PCM_F64BE:
+					case AV_CODEC_ID_PCM_F64LE:
+					case AV_CODEC_ID_PCM_BLURAY:
+					case AV_CODEC_ID_PCM_LXF:
+					case AV_CODEC_ID_S302M:
+					case AV_CODEC_ID_PCM_S8_PLANAR:
+					case AV_CODEC_ID_PCM_S24LE_PLANAR:
+					case AV_CODEC_ID_PCM_S32LE_PLANAR:
+					case AV_CODEC_ID_PCM_S16BE_PLANAR:
+					case AV_CODEC_ID_PCM_S64LE:
+					case AV_CODEC_ID_PCM_S64BE:
+					case AV_CODEC_ID_PCM_F16LE:
+					case AV_CODEC_ID_PCM_F24LE:
+						// tag_clear_wav(scan, strip, id3v2version);
+						if (!tag_write_wav(scan, do_album, mode, unit, lowercase, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
@@ -563,7 +642,8 @@ static inline void help(void) {
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).");
 	puts("  Opus (.opus) -- experimental support, use with care!");
-	puts("  ASF/WMA (.asf, .wma) -- experimental support, use with care!\n");
+	puts("  ASF/WMA (.asf, .wma) -- experimental support, use with care!");
+	puts("  WAV (.wav) -- experimental support, use with care!\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -599,10 +679,10 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA; non-standard)");
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA/WAV; non-standard)");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
-	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3 files");
-	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3 files (default)");
+	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3/WAV files");
+	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3/WAV files (default)");
 
 	puts("");
 
