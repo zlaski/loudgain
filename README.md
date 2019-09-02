@@ -403,11 +403,14 @@ $ loudgain -h
 
 ### Uppercase or lowercase 'REPLAYGAIN_*' tags?
 
-This has been a problem ever since, most notably in MP3 ID3v2 and MP4 tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
+**Uppercase vs. lowercase tags** still seems to be a never-ending battle—_when will
+players finally learn to handle these **case-insensitively**?_
+
+This has been a problem ever since, most notably in MP3 ID3v2, MP4 and WMA tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
 
 The ReplayGain 1 and 2.0 specs clearly state that the tags should be UPPERCASE but many taggers still write lowercase tags (foobar2000, metamp3, taggers using pre-1.2.2 Mutagen like older MusicBrainz Picard versions, and others).
 
-Unfortunately, there are lots of audio players out there that only respect _one_ case. For instance, VLC only respects uppercase (_Edit: This seems to chave changed in versions 3.x._), IDJC only respects lowercase. Only a very few go the extra effort to check for both variants of tags.
+Unfortunately, there are lots of audio players out there that only respect _one_ case. For instance, VLC only respects uppercase, IDJC only respects lowercase. Only a very few go the extra effort to check for both variants of tags.
 
 It seems that out in the field, there are more players that respect the lowercase tags than players respecting the uppercase variant, maybe due to the fact that the majority of MP3 and MP4/M4A files seem to be tagged using the lowercase ReplayGain tags—they simply adopted.
 
@@ -427,10 +430,13 @@ Since we don’t live in an ideal world, my approach to the problem is as follow
     REPLAYGAIN_TRACK_GAIN -7.02 dB
     ```
 
-3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2 or MP4/M4A tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2 and MP4/M4A; FLAC and Ogg Vorbis will still get standard uppercase tags):
+3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2, MP4/M4A or ASF/WMA tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2, MP4/M4A and ASF/WMA; FLAC and Ogg Vorbis will still get standard uppercase tags):
     ```
     replaygain_track_gain -7.02 dB
     ```
+
+4. There’s only one way to get rid of the problem: **File _bug reports_ for any player you use that doesn’t handle ReplayGain tags at all or in a case-sensitive manner!** (Not here, but on the player’s bug tracker sites or forums.) If a player respects ReplayGain tags at all, **it should do so in a _case-insensitive_ manner, for as many file types as possible!**
+
 
 ### Tags written (and/or deleted)
 
@@ -804,9 +810,20 @@ so we can finalize loudgain's Opus support. Thanks!
    REPLAYGAIN_REFERENCE_LOUDNESS
    ```
    The `-L` (`--lowercase`) switch will force these to be lowercase instead.
-   The lowercase variants are the same as used by other taggers and players,
-   like _foobar2000_ and _WinAmp_. There’s an [issue](https://tickets.metabrainz.org/projects/PICARD/issues/PICARD-1586) open for _MusicBrainz Picard_
-   to also support these tags.
+
+   **[Uppercase vs. lowercase tags](#uppercase-or-lowercase-replaygain_-tags)** still seems to be a never-ending battle—_when will
+   players finally learn to handle these **case-insensitively**?_
+
+   Here’s what I found for WMA:
+
+   * **foobar2000** handles both upper- and lowercase tags _correctly_ (tested on fb2k 1.4.6).
+   * **Winamp** handles both upper- and lowercase tags _correctly_ (tested on Winamp 5.8).
+   * **VLC** requires _uppercase_ tags (tested on VLC 3.0.8 "Vetinari").
+   * **Kodi** requires _lowercase_ tags (tested on Kodi 17.6).
+   * **Audacious** seems to _ignore_ both upper- and lowercase RG tags in WMA files (tested on Audacious 3.9).
+   * **Clementine** seems to _ignore_ both upper- and lowercase RG tags in WMA files (tested on Clementine 1.3.1).
+
+   There’s an [issue](https://tickets.metabrainz.org/projects/PICARD/issues/PICARD-1586) open for _MusicBrainz Picard_ to also support these tags. Please vote for it.
 
 4. Peak values are _true peak_ values. Due to the better approximation of the
    real audio signal, they are expected to be larger than _sample peak_ or
