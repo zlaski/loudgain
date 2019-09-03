@@ -51,6 +51,7 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
       - [Character encoding, or: Why does my smørrebrød look like "smÃ¸rrebrÃ¸d"?](#character-encoding-or-why-does-my-smørrebrød-look-like-smã¸rrebrã¸d)   
    - [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files)   
    - [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files)   
+   - [How I handle WAV (.wav) audio files](#how-i-handle-wav-wav-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
