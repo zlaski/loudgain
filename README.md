@@ -109,7 +109,7 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 **2019-09-02** – **v0.6.4** released:
   * Some code cleanup in the tagger.
-  * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_ and others.
+  * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_, _Mp3tag_ and others.
 
 **2019-09-01** – **v0.6.3** released:
   * Added _experimental (!)_ ASF/WMA (.asf, .wma) support. Please read [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
