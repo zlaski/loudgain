@@ -390,19 +390,31 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case AV_CONTAINER_ID_OGG:
+						// must separate because TagLib uses fifferent File classes
 						switch (scan->codec_id) {
-							case AV_CODEC_ID_VORBIS:
-								if (!tag_clear_vorbis(scan))
+							// Opus needs special handling (different RG tags, -23 LUFS ref.)
+							case AV_CODEC_ID_OPUS:
+								if (!tag_clear_ogg_opus(scan))
 									err_printf("Couldn't write to: %s", scan -> file);
 								break;
 
-							case AV_CODEC_ID_OPUS:
-								if (!tag_clear_opus(scan))
+							case AV_CODEC_ID_VORBIS:
+								if (!tag_clear_ogg_vorbis(scan))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_FLAC:
+								if (!tag_clear_ogg_flac(scan))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_SPEEX:
+								if (!tag_clear_ogg_speex(scan))
 									err_printf("Couldn't write to: %s", scan -> file);
 								break;
 
 							default:
-								err_printf("Codec type %x not supported in %s container",
+								err_printf("Codec 0x%x in %s container not supported",
 									scan->codec_id, scan->container);
 								break;
 						}
@@ -433,6 +445,7 @@ int main(int argc, char *argv[]) {
 			case 'e': /* same as 'i' plus extra tags */
 			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
 				switch (name_to_id(scan -> container)) {
+
 					case AV_CONTAINER_ID_MP3:
 						if (!tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
@@ -444,19 +457,31 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case AV_CONTAINER_ID_OGG:
+						// must separate because TagLib uses fifferent File classes
 						switch (scan->codec_id) {
-							case AV_CODEC_ID_VORBIS:
-								if (!tag_write_vorbis(scan, do_album, mode, unit))
+							// Opus needs special handling (different RG tags, -23 LUFS ref.)
+							case AV_CODEC_ID_OPUS:
+								if (!tag_write_ogg_opus(scan, do_album, mode, unit))
 									err_printf("Couldn't write to: %s", scan -> file);
 								break;
 
-							case AV_CODEC_ID_OPUS:
-								if (!tag_write_opus(scan, do_album, mode, unit))
+							case AV_CODEC_ID_VORBIS:
+								if (!tag_write_ogg_vorbis(scan, do_album, mode, unit))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_FLAC:
+								if (!tag_write_ogg_flac(scan, do_album, mode, unit))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_SPEEX:
+								if (!tag_write_ogg_speex(scan, do_album, mode, unit))
 									err_printf("Couldn't write to: %s", scan -> file);
 								break;
 
 							default:
-								err_printf("Codec type %x not supported in %s container",
+								err_printf("Codec 0x%x in %s container not supported",
 									scan->codec_id, scan->container);
 								break;
 						}

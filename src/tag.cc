@@ -63,6 +63,8 @@
 
 #include <flacfile.h>
 #include <vorbisfile.h>
+#include <oggflacfile.h>
+#include <speexfile.h>
 #include <xiphcomment.h>
 #include <mp4file.h>
 #include <opusfile.h>
@@ -277,9 +279,9 @@ bool tag_clear_flac(scan_result *scan) {
 }
 
 
-/*** Ogg Vorbis ****/
+/*** Ogg (Vorbis, FLAC, Speex, Opus) ****/
 
-void tag_remove_vorbis(TagLib::Ogg::XiphComment *tag) {
+void tag_remove_ogg(TagLib::Ogg::XiphComment *tag) {
   tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
   tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
   tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
@@ -289,14 +291,13 @@ void tag_remove_vorbis(TagLib::Ogg::XiphComment *tag) {
   tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
 }
 
-bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
+void tag_make_ogg(scan_result *scan, bool do_album, char mode, char *unit,
+  TagLib::Ogg::XiphComment *tag) {
+
   char value[2048];
 
-  TagLib::Ogg::Vorbis::File f(scan -> file);
-  TagLib::Ogg::XiphComment *tag = f.tag();
-
   // remove old tags before writing new ones
-  tag_remove_vorbis(tag);
+  tag_remove_ogg(tag);
 
   snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
   tag -> addField(RG_STRING_UPPER[RG_TRACK_GAIN], value);
@@ -326,15 +327,149 @@ bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
       tag -> addField(RG_STRING_UPPER[RG_ALBUM_RANGE], value);
     }
   }
+}
+
+/*** Ogg: Ogg Vorbis ***/
+
+bool tag_write_ogg_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
+  TagLib::Ogg::Vorbis::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_make_ogg(scan, do_album, mode, unit, tag);
 
   return f.save();
 }
 
-bool tag_clear_vorbis(scan_result *scan) {
+bool tag_clear_ogg_vorbis(scan_result *scan) {
   TagLib::Ogg::Vorbis::File f(scan -> file);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
-  tag_remove_vorbis(tag);
+  tag_remove_ogg(tag);
+
+  return f.save();
+}
+
+/*** Ogg: Ogg FLAC ***/
+
+bool tag_write_ogg_flac(scan_result *scan, bool do_album, char mode, char *unit) {
+  TagLib::Ogg::FLAC::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_make_ogg(scan, do_album, mode, unit, tag);
+
+  return f.save();
+}
+
+bool tag_clear_ogg_flac(scan_result *scan) {
+  TagLib::Ogg::FLAC::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_remove_ogg(tag);
+
+  return f.save();
+}
+
+/*** Ogg: Ogg Speex ***/
+
+bool tag_write_ogg_speex(scan_result *scan, bool do_album, char mode, char *unit) {
+  TagLib::Ogg::Speex::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_make_ogg(scan, do_album, mode, unit, tag);
+
+  return f.save();
+}
+
+bool tag_clear_ogg_speex(scan_result *scan) {
+  TagLib::Ogg::Speex::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_remove_ogg(tag);
+
+  return f.save();
+}
+
+/*** Ogg: Opus ****/
+
+// Opus Notes:
+//
+// 1. Opus ONLY uses R128_TRACK_GAIN and (optionally) R128_ALBUM_GAIN
+//    as an ADDITIONAL offset to the header's 'output_gain'.
+// 2. Encoders and muxes set 'output_gain' to zero, so a non-zero 'output_gain' in
+//    the header i supposed to be a change AFTER encoding/muxing.
+// 3. We assume that FFmpeg's avformat does already apply 'output_gain' (???)
+//    so we get get pre-gained data and only have to calculate the difference.
+// 4. Opus adheres to EBU-R128, so the loudness reference is ALWAYS -23 LUFS.
+//    This means we have to adapt for possible `-d n` (`--pregain=n`) changes.
+//    This also means players have to add an extra +5 dB to reach the loudness
+//    ReplayGain 2.0 prescribes (-18 LUFS).
+// 5. Opus R128_* tags use ASCII-encoded Q7.8 numbers with max. 6 places including
+//    the minus sign, and no unit.
+//    See https://en.wikipedia.org/wiki/Q_(number_format)
+// 6. RFC 7845 states: "To avoid confusion with multiple normalization schemes, an
+//    Opus comment header SHOULD NOT contain any of the REPLAYGAIN_TRACK_GAIN,
+//    REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or REPLAYGAIN_ALBUM_PEAK tags, […]"
+//    So we remove REPLAYGAIN_* tags if any are present.
+// 7. RFC 7845 states: "Peak normalizations are difficult to calculate reliably
+//    for lossy codecs because of variation in excursion heights due to decoder
+//    differences. In the authors' investigations, they were not applied
+//    consistently or broadly enough to merit inclusion here."
+//    So there are NO "Peak" type tags. The (oversampled) true peak levels that
+//    libebur128 calculates for us are STILL used for clipping prevention if so
+//    requested. They are also shown in the output, just not stored into tags.
+
+int gain_to_q78num(double gain) {
+  // convert float to Q7.8 number: Q = round(f * 2^8)
+  return (int) round(gain * 256.0);    // 2^8 = 256
+}
+
+void tag_remove_ogg_opus(TagLib::Ogg::XiphComment *tag) {
+  // RFC 7845 states:
+  // To avoid confusion with multiple normalization schemes, an Opus
+  // comment header SHOULD NOT contain any of the REPLAYGAIN_TRACK_GAIN,
+  // REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or
+  // REPLAYGAIN_ALBUM_PEAK tags, […]"
+  // so we remove these if present
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+  tag -> removeField("R128_TRACK_GAIN");
+  tag -> removeField("R128_ALBUM_GAIN");
+}
+
+bool tag_write_ogg_opus(scan_result *scan, bool do_album, char mode, char *unit) {
+  char value[2048];
+
+  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  // remove old tags before writing new ones
+  tag_remove_ogg_opus(tag);
+
+  snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> track_gain));
+  tag -> addField("R128_TRACK_GAIN", value);
+
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> album_gain));
+    tag -> addField("R128_ALBUM_GAIN", value);
+  }
+
+  // extra tags mode -s e or -s l
+  // no extra tags allowed in Opus
+
+  return f.save();
+}
+
+bool tag_clear_ogg_opus(scan_result *scan) {
+  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::XiphComment *tag = f.tag();
+
+  tag_remove_ogg_opus(tag);
 
   return f.save();
 }
@@ -428,91 +563,6 @@ bool tag_clear_mp4(scan_result *scan) {
   return f.save();
 }
 
-
-/*** Opus ****/
-
-// Opus Notes:
-//
-// 1. Opus ONLY uses R128_TRACK_GAIN and (optionally) R128_ALBUM_GAIN
-//    as an ADDITIONAL offset to the header's 'output_gain'.
-// 2. Encoders and muxes set 'output_gain' to zero, so a non-zero 'output_gain' in
-//    the header i supposed to be a change AFTER encoding/muxing.
-// 3. We assume that FFmpeg's avformat does already apply 'output_gain' (???)
-//    so we get get pre-gained data and only have to calculate the difference.
-// 4. Opus adheres to EBU-R128, so the loudness reference is ALWAYS -23 LUFS.
-//    This means we have to adapt for possible `-d n` (`--pregain=n`) changes.
-//    This also means players have to add an extra +5 dB to reach the loudness
-//    ReplayGain 2.0 prescribes (-18 LUFS).
-// 5. Opus R128_* tags use ASCII-encoded Q7.8 numbers with max. 6 places including
-//    the minus sign, and no unit.
-//    See https://en.wikipedia.org/wiki/Q_(number_format)
-// 6. RFC 7845 states: "To avoid confusion with multiple normalization schemes, an
-//    Opus comment header SHOULD NOT contain any of the REPLAYGAIN_TRACK_GAIN,
-//    REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or REPLAYGAIN_ALBUM_PEAK tags, […]"
-//    So we remove REPLAYGAIN_* tags if any are present.
-// 7. RFC 7845 states: "Peak normalizations are difficult to calculate reliably
-//    for lossy codecs because of variation in excursion heights due to decoder
-//    differences. In the authors' investigations, they were not applied
-//    consistently or broadly enough to merit inclusion here."
-//    So there are NO "Peak" type tags. The (oversampled) true peak levels that
-//    libebur128 calculates for us are STILL used for clipping prevention if so
-//    requested. They are also shown in the output, just not stored into tags.
-
-int gain_to_q78num(double gain) {
-  // convert float to Q7.8 number: Q = round(f * 2^8)
-  return (int) round(gain * 256.0);    // 2^8 = 256
-}
-
-void tag_remove_opus(TagLib::Ogg::XiphComment *tag) {
-  // RFC 7845 states:
-  // To avoid confusion with multiple normalization schemes, an Opus
-  // comment header SHOULD NOT contain any of the REPLAYGAIN_TRACK_GAIN,
-  // REPLAYGAIN_TRACK_PEAK, REPLAYGAIN_ALBUM_GAIN, or
-  // REPLAYGAIN_ALBUM_PEAK tags, […]"
-  // so we remove these if present
-  tag -> removeField(RG_STRING_UPPER[RG_TRACK_GAIN]);
-  tag -> removeField(RG_STRING_UPPER[RG_TRACK_PEAK]);
-  tag -> removeField(RG_STRING_UPPER[RG_TRACK_RANGE]);
-  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_GAIN]);
-  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_PEAK]);
-  tag -> removeField(RG_STRING_UPPER[RG_ALBUM_RANGE]);
-  tag -> removeField(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
-  tag -> removeField("R128_TRACK_GAIN");
-  tag -> removeField("R128_ALBUM_GAIN");
-}
-
-bool tag_write_opus(scan_result *scan, bool do_album, char mode, char *unit) {
-  char value[2048];
-
-  TagLib::Ogg::Opus::File f(scan -> file);
-  TagLib::Ogg::XiphComment *tag = f.tag();
-
-  // remove old tags before writing new ones
-  tag_remove_opus(tag);
-
-  snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> track_gain));
-  tag -> addField("R128_TRACK_GAIN", value);
-
-  // Only write album tags if in album mode (would be zero otherwise)
-  if (do_album) {
-    snprintf(value, sizeof(value), "%d", gain_to_q78num(scan -> album_gain));
-    tag -> addField("R128_ALBUM_GAIN", value);
-  }
-
-  // extra tags mode -s e or -s l
-  // no extra tags allowed in Opus
-
-  return f.save();
-}
-
-bool tag_clear_opus(scan_result *scan) {
-  TagLib::Ogg::Opus::File f(scan -> file);
-  TagLib::Ogg::XiphComment *tag = f.tag();
-
-  tag_remove_opus(tag);
-
-  return f.save();
-}
 
 /*** ASF/WMA ****/
 

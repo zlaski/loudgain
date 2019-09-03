@@ -39,17 +39,21 @@ bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version);
 bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit);
 bool tag_clear_flac(scan_result *scan);
 
-bool tag_write_vorbis(scan_result *scan, bool do_album, char mode, char *unit);
-bool tag_clear_vorbis(scan_result *scan);
+bool tag_write_ogg_vorbis(scan_result *scan, bool do_album, char mode, char *unit);
+bool tag_clear_ogg_vorbis(scan_result *scan);
+
+bool tag_write_ogg_flac(scan_result *scan, bool do_album, char mode, char *unit);
+bool tag_clear_ogg_flac(scan_result *scan);
+
+bool tag_write_ogg_speex(scan_result *scan, bool do_album, char mode, char *unit);
+bool tag_clear_ogg_speex(scan_result *scan);
+
+bool tag_write_ogg_opus(scan_result *scan, bool do_album, char mode, char *unit);
+bool tag_clear_ogg_opus(scan_result *scan);
 
 bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase);
 bool tag_clear_mp4(scan_result *scan);
-
-bool tag_write_opus(scan_result *scan, bool do_album, char mode, char *unit);
-bool tag_clear_opus(scan_result *scan);
-
-int gain_to_q78num(double gain);
 
 bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase);
@@ -58,6 +62,8 @@ bool tag_clear_asf(scan_result *scan);
 bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase, bool strip, int id3v2version);
 bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version);
+
+int gain_to_q78num(double gain);
 
 #ifdef __cplusplus
 }
