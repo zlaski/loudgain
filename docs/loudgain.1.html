@@ -57,6 +57,8 @@
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
+    <a href="#RECOMMENDATIONS">RECOMMENDATIONS</a>
+    <a href="#BUGS">BUGS</a>
     <a href="#AUTHORS">AUTHORS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
   </div>
@@ -90,121 +92,75 @@ write ReplayGain <em>tags</em> if so requested. It is up to the player to interp
 these. (In some players, you need to enable this feature.)</p>
 
 <p>loudgain currently supports writing tags to the following file types:<br />
-  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a),<br />
-  Opus (.opus).
-  Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav).</p>
+FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).</p>
+
+<p>Experimental support, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv).</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
-<p><code>-h, --help</code></p>
+<dl>
+<dt><code>-h, --help</code></dt><dd><p>Show this help.</p></dd>
+<dt><code>-v, --version</code></dt><dd><p>Show version number.</p></dd>
+<dt><code>-r, --track</code></dt><dd><p>Calculate track gain only (default).</p></dd>
+<dt><code>-a, --album</code></dt><dd><p>Calculate album gain (and track gain).</p></dd>
+<dt><code>-c, --clip</code></dt><dd><p>Ignore clipping warnings.</p></dd>
+<dt><code>-k, --noclip</code></dt><dd><p>Lower track/album gain to avoid clipping (&lt;= -1 dBTP).</p></dd>
+<dt><code>-K n, --maxtpl=n</code></dt><dd><p>Avoid clipping; max. true peak level = n dBTP.</p></dd>
+<dt><code>-d n, --pregain=n</code></dt><dd><p>Apply n dB/LU pre-gain value (-5 for -23 LUFS target).</p></dd>
+<dt><code>-s d, --tagmode=d</code></dt><dd><p>Delete ReplayGain tags from files.</p></dd>
+<dt><code>-s i, --tagmode=i</code></dt><dd><p>Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3; Vorbis Comments for FLAC,
+Ogg, Speex and Opus; iTunes-type metadata for MP4/M4A; WMA tags for ASF/WMA;
+APEv2 tags for WavPack.</p></dd>
+<dt><code>-s e, --tagmode=e</code></dt><dd><p>like '-s i', plus extra tags (reference, ranges).</p></dd>
+<dt><code>-s l, --tagmode=l</code></dt><dd><p>like '-s e', but LU units instead of dB.</p></dd>
+<dt><code>-s s, --tagmode=s</code></dt><dd><p>Don't write ReplayGain tags (default).</p></dd>
+<dt><code>-L, --lowercase</code></dt><dd><p>Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard).</p></dd>
+<dt><code>-S, --striptags</code></dt><dd><p>Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
+Strip tag types other than APEv2 from WavPack files (i.e. ID3v1).</p></dd>
+<dt><code>-I 3, --id3v2version=3</code></dt><dd><p>Write ID3v2.3 tags to MP2/MP3/WAV files.</p></dd>
+<dt><code>-I 4, --id3v2version=4</code></dt><dd><p>Write ID3v2.4 tags to MP2/MP3/WAV files (default).</p></dd>
+<dt><code>-o, --output</code></dt><dd><p>Database-friendly tab-delimited list output (mp3gain-compatible).</p></dd>
+<dt><code>-O, --output-new</code></dt><dd><p>Database-friendly new format tab-delimited list output. Ideal for analysis
+of files if redirected to a CSV file.</p></dd>
+<dt><code>-q, --quiet</code></dt><dd><p>Don't print scanning status messages.</p></dd>
+</dl>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Show this help.</p>
 
-<p><code>-v, --version</code></p>
+<h2 id="RECOMMENDATIONS">RECOMMENDATIONS</h2>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Show version number.</p>
+<p>To give you a head start, here are my personal recommendations for being (almost)
+universally compatible.</p>
 
-<p><code>-r, --track</code></p>
+<p>Use loudgain on a »one album per folder« basis; standard RG2 settings but
+lowercase ReplayGain tags; clipping prevention on; strip obsolete tag types
+from MP3 and WavPack files; use ID3v2.3 for MP3s; store extended tags:</p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate track gain only (default).</p>
+<pre><code>$ loudgain -a -k -s e *.flac
+$ loudgain -a -k -s e *.ogg
+$ loudgain -I3 -S -L -a -k -s e *.mp3
+$ loudgain -L -a -k -s e *.m4a
+$ loudgain -a -k -s e *.opus
+$ loudgain -L -a -k -s e *.wma
+$ loudgain -I3 -L -a -k -s e *.wav
+$ loudgain -S -a -k -s e *.wv
+</code></pre>
 
-<p><code>-a, --album</code></p>
+<p>I’ve been happy with these settings for many years now. Your mileage may vary.</p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate album gain (and track gain).</p>
+<h2 id="BUGS">BUGS</h2>
 
-<p><code>-c, --clip</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Ignore clipping warnings.</p>
-
-<p><code>-k, --noclip</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Lower track/album gain to avoid clipping (&lt;= -1 dBTP).</p>
-
-<p><code>-K n, --maxtpl=n</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Avoid clipping; max. true peak level = n dBTP.</p>
-
-<p><code>-d n, --pregain=n</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Apply n dB/LU pre-gain value (-5 for -23 LUFS target).</p>
-
-<p><code>-s d, --tagmode=d</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Delete ReplayGain tags from files.</p>
-
-<p><code>-s i, --tagmode=i</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3, Vorbis Comments for FLAC, Ogg Vorbis and Opus, iTunes-type metadata for MP4, WMA tags for ASF/WMA.</p>
-
-<p><code>-s e, --tagmode=e</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-like '-s i', plus extra tags (reference, ranges).</p>
-
-<p><code>-s l, --tagmode=l</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-like '-s e', but LU units instead of dB.</p>
-
-<p><code>-s s, --tagmode=s</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Don't write ReplayGain tags (default).</p>
-
-<p><code>-L, --lowercase</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard)</p>
-
-<p><code>-S, --striptags</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).</p>
-
-<p><code>-I 3, --id3v2version=3</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.3 tags to MP2/MP3/WAV files.</p>
-
-<p><code>-I 4, --id3v2version=4</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.4 tags to MP2/MP3/WAV files (default).</p>
-
-<p><code>-o, --output</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Database-friendly tab-delimited list output (mp3gain-compatible).</p>
-
-<p><code>-O, --output-new</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Database-friendly new format tab-delimited list output.</p>
-
-<p><code>-q, --quiet</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Don't print scanning status messages.</p>
+<p><strong>loudgain</strong> is maintained on GitHub. Please report all bugs to the issue tracker
+at https://github.com/Moonbase59/loudgain/issues.</p>
 
 <h2 id="AUTHORS">AUTHORS</h2>
 
-<p>Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#111;&#58;&#97;&#x6c;&#x65;&#115;&#115;&#97;&#x6e;&#100;&#114;&#x6f;&#x40;&#103;&#104;&#x65;&#x64;&#x69;&#110;&#x69;&#46;&#109;&#x65;" data-bare-link="true">&#x61;&#108;&#x65;&#x73;&#115;&#x61;&#110;&#100;&#x72;&#111;&#x40;&#x67;&#x68;&#x65;&#x64;&#105;&#110;&#x69;&#46;&#x6d;&#101;</a><br />
-Matthias C. Hormann <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#111;&#x3a;&#109;&#104;&#111;&#x72;&#109;&#97;&#110;&#110;&#x40;&#x67;&#x6d;&#120;&#x2e;&#100;&#x65;" data-bare-link="true">&#x6d;&#x68;&#111;&#x72;&#x6d;&#x61;&#x6e;&#110;&#x40;&#103;&#x6d;&#x78;&#46;&#100;&#x65;</a></p>
+<p>Matthias C. Hormann <a href="&#109;&#97;&#105;&#x6c;&#x74;&#111;&#x3a;&#x6d;&#x68;&#x6f;&#x72;&#109;&#x61;&#110;&#110;&#x40;&#x67;&#x6d;&#x78;&#x2e;&#x64;&#x65;" data-bare-link="true">&#x6d;&#104;&#111;&#114;&#109;&#97;&#x6e;&#110;&#x40;&#x67;&#109;&#120;&#46;&#x64;&#101;</a><br />
+Alessandro Ghedini <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#58;&#97;&#108;&#x65;&#x73;&#x73;&#97;&#110;&#100;&#114;&#x6f;&#x40;&#103;&#104;&#x65;&#x64;&#x69;&#x6e;&#105;&#46;&#x6d;&#101;" data-bare-link="true">&#x61;&#108;&#x65;&#115;&#x73;&#x61;&#x6e;&#100;&#x72;&#x6f;&#64;&#x67;&#104;&#101;&#x64;&#x69;&#110;&#x69;&#x2e;&#109;&#101;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2014 Alessandro Ghedini <a href="&#x6d;&#97;&#x69;&#108;&#116;&#x6f;&#58;&#97;&#108;&#x65;&#x73;&#x73;&#x61;&#x6e;&#x64;&#x72;&#111;&#64;&#x67;&#x68;&#x65;&#x64;&#105;&#x6e;&#105;&#x2e;&#109;&#x65;" data-bare-link="true">&#x61;&#108;&#101;&#x73;&#x73;&#x61;&#x6e;&#x64;&#x72;&#x6f;&#x40;&#x67;&#104;&#x65;&#100;&#x69;&#110;&#x69;&#46;&#109;&#x65;</a><br />
-Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#109;&#x68;&#x6f;&#114;&#109;&#x61;&#x6e;&#x6e;&#x40;&#103;&#109;&#120;&#x2e;&#x64;&#x65;" data-bare-link="true">&#x6d;&#104;&#x6f;&#114;&#109;&#97;&#x6e;&#110;&#x40;&#x67;&#x6d;&#x78;&#46;&#x64;&#101;</a></p>
+<p>Copyright (C) 2019 Matthias C. Hormann <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x6d;&#x68;&#x6f;&#114;&#109;&#97;&#x6e;&#x6e;&#x40;&#103;&#x6d;&#120;&#x2e;&#100;&#101;" data-bare-link="true">&#x6d;&#104;&#x6f;&#114;&#109;&#97;&#x6e;&#110;&#x40;&#x67;&#109;&#120;&#x2e;&#x64;&#x65;</a> (versions > 0.1)<br />
+Copyright (C) 2014 Alessandro Ghedini <a href="&#109;&#x61;&#105;&#108;&#x74;&#111;&#58;&#97;&#108;&#101;&#115;&#x73;&#97;&#x6e;&#x64;&#114;&#x6f;&#x40;&#x67;&#x68;&#101;&#100;&#x69;&#110;&#x69;&#46;&#x6d;&#x65;" data-bare-link="true">&#x61;&#108;&#101;&#115;&#x73;&#x61;&#110;&#x64;&#x72;&#111;&#x40;&#x67;&#104;&#101;&#x64;&#x69;&#x6e;&#105;&#x2e;&#109;&#101;</a> (v0.1)</p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 

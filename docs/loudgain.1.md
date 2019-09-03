@@ -19,121 +19,114 @@ write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
-  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a),  
-  Opus (.opus).
-  Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav).
+FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).
+
+Experimental support, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv).
 
 
 ## OPTIONS
 
-`-h, --help`
+* `-h, --help`:
+  Show this help.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Show this help.
+* `-v, --version`:
+  Show version number.
 
-`-v, --version`
+* `-r, --track`:
+  Calculate track gain only (default).
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Show version number.
+* `-a, --album`:
+  Calculate album gain (and track gain).
 
-`-r, --track`
+* `-c, --clip`:
+  Ignore clipping warnings.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate track gain only (default).
+* `-k, --noclip`:
+  Lower track/album gain to avoid clipping (<= -1 dBTP).
 
-`-a, --album`
+* `-K n, --maxtpl=n`:
+  Avoid clipping; max. true peak level = n dBTP.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Calculate album gain (and track gain).
+* `-d n, --pregain=n`:
+  Apply n dB/LU pre-gain value (-5 for -23 LUFS target).
 
-`-c, --clip`
+* `-s d, --tagmode=d`:
+  Delete ReplayGain tags from files.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Ignore clipping warnings.
+* `-s i, --tagmode=i`:
+  Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3; Vorbis Comments for FLAC,
+  Ogg, Speex and Opus; iTunes-type metadata for MP4/M4A; WMA tags for ASF/WMA;
+  APEv2 tags for WavPack.
 
-`-k, --noclip`
+* `-s e, --tagmode=e`:
+  like '-s i', plus extra tags (reference, ranges).
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Lower track/album gain to avoid clipping (<= -1 dBTP).
+* `-s l, --tagmode=l`:
+  like '-s e', but LU units instead of dB.
 
-`-K n, --maxtpl=n`
+* `-s s, --tagmode=s`:
+  Don't write ReplayGain tags (default).
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Avoid clipping; max. true peak level = n dBTP.
+* `-L, --lowercase`:
+  Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard).
 
-`-d n, --pregain=n`
+* `-S, --striptags`:
+  Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
+  Strip tag types other than APEv2 from WavPack files (i.e. ID3v1).
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Apply n dB/LU pre-gain value (-5 for -23 LUFS target).
+* `-I 3, --id3v2version=3`:
+  Write ID3v2.3 tags to MP2/MP3/WAV files.
 
-`-s d, --tagmode=d`
+* `-I 4, --id3v2version=4`:
+  Write ID3v2.4 tags to MP2/MP3/WAV files (default).
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Delete ReplayGain tags from files.
+* `-o, --output`:
+  Database-friendly tab-delimited list output (mp3gain-compatible).
 
-`-s i, --tagmode=i`
+* `-O, --output-new`:
+  Database-friendly new format tab-delimited list output. Ideal for analysis
+  of files if redirected to a CSV file.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3, Vorbis Comments for FLAC, Ogg Vorbis and Opus, iTunes-type metadata for MP4, WMA tags for ASF/WMA.
+* `-q, --quiet`:
+  Don't print scanning status messages.
 
-`-s e, --tagmode=e`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-like '-s i', plus extra tags (reference, ranges).
+## RECOMMENDATIONS
 
-`-s l, --tagmode=l`
+To give you a head start, here are my personal recommendations for being (almost)
+universally compatible.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-like '-s e', but LU units instead of dB.
+Use loudgain on a »one album per folder« basis; standard RG2 settings but
+lowercase ReplayGain tags; clipping prevention on; strip obsolete tag types
+from MP3 and WavPack files; use ID3v2.3 for MP3s; store extended tags:
 
-`-s s, --tagmode=s`
+    $ loudgain -a -k -s e *.flac
+    $ loudgain -a -k -s e *.ogg
+    $ loudgain -I3 -S -L -a -k -s e *.mp3
+    $ loudgain -L -a -k -s e *.m4a
+    $ loudgain -a -k -s e *.opus
+    $ loudgain -L -a -k -s e *.wma
+    $ loudgain -I3 -L -a -k -s e *.wav
+    $ loudgain -S -a -k -s e *.wv
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Don't write ReplayGain tags (default).
+I’ve been happy with these settings for many years now. Your mileage may vary.
 
-`-L, --lowercase`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard)
+## BUGS
 
-`-S, --striptags`
+**loudgain** is maintained on GitHub. Please report all bugs to the issue tracker
+at https://github.com/Moonbase59/loudgain/issues.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
 
-`-I 3, --id3v2version=3`
+## AUTHORS
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.3 tags to MP2/MP3/WAV files.
+Matthias C. Hormann <mhormann@gmx.de>  
+Alessandro Ghedini <alessandro@ghedini.me>
 
-`-I 4, --id3v2version=4`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Write ID3v2.4 tags to MP2/MP3/WAV files (default).
+## COPYRIGHT
 
-`-o, --output`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Database-friendly tab-delimited list output (mp3gain-compatible).
-
-`-O, --output-new`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Database-friendly new format tab-delimited list output.
-
-`-q, --quiet`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Don't print scanning status messages.
-
-## AUTHORS ##
-
-Alessandro Ghedini <alessandro@ghedini.me>  
-Matthias C. Hormann <mhormann@gmx.de>
-
-## COPYRIGHT ##
-
-Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>  
-Everything after v0.1: Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
+Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de> (versions > 0.1)  
+Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me> (v0.1)
 
 This program is released under the 2 clause BSD license.

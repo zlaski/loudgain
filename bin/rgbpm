@@ -18,10 +18,12 @@
 #            - add ASF/WMA support
 # 2019-09-02 - v0.10:
 #            - add WAV support
+# 2ß10-09-03 - v0.11:
+#            - add additional file types (Ogg and WavPack)
 
 # define me
 me=`basename "$0"`
-version="0.10"
+version="0.11"
 #MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
@@ -138,11 +140,28 @@ while [ "$1" != '' ] ; do
       find "$FOLDER" -maxdepth 1 -iname "*.flac" -type f -exec metaflac --add-replay-gain {} +
     fi
 
-    # calculate replay gain for all OGG in this folder
+    # calculate replay gain for all Ogg Vorbis in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -exec loudgain -a -k -s e {} +
     else
       find "$FOLDER" -maxdepth 1 -iname "*.ogg" -type f -exec vorbisgain -a {} +
+    fi
+
+    # calculate replay gain for all Ogg FLAC in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.oga" -type f -exec loudgain -a -k -s e {} +
+    else
+      find "$FOLDER" -maxdepth 1 -iname "*.oga" -type f -exec vorbisgain -a {} +
+    fi
+
+    # calculate replay gain for all Ogg Speex in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.spx" -type f -exec loudgain -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all Ogg Opus in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -exec loudgain -a -k -s e {} +
     fi
 
     # calculate replay gain for all MP2 in this folder
@@ -162,11 +181,6 @@ while [ "$1" != '' ] ; do
       find "$FOLDER" -maxdepth 1 -iname "*.m4a" -type f -exec loudgain -L -a -k -s e {} +
     fi
 
-    # calculate replay gain for all OPUS in this folder
-    if [ "$LOUDGAIN" = true ] ; then
-      find "$FOLDER" -maxdepth 1 -iname "*.opus" -type f -exec loudgain -a -k -s e {} +
-    fi
-
     # calculate replay gain for all WMA in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.wma" -type f -exec loudgain -L -a -k -s e {} +
@@ -180,6 +194,11 @@ while [ "$1" != '' ] ; do
     # calculate replay gain for all WAV in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.wav" -type f -exec loudgain -I3 -L -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all WavPack in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.wv" -type f -exec loudgain -S -a -k -s e {} +
     fi
 
     # calculate BPM for all MP2, MP3 or FLAC in this folder

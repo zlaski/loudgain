@@ -22,142 +22,133 @@ loudgain will \fInot\fR modify the actual audio data, but instead just write Rep
 loudgain currently supports writing tags to the following file types:
 .
 .br
-FLAC (\.flac), Ogg Vorbis (\.ogg), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a),
+FLAC (\.flac), Ogg (\.ogg, \.oga, \.spx, \.opus), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
 .
-.br
-Opus (\.opus)\. Experimental, use with care: ASF/WMA (\.asf, \.wma), WAV (\.wav)\.
+.P
+Experimental support, use with care: ASF/WMA (\.asf, \.wma), WAV (\.wav), WavPack (\.wv)\.
 .
 .SH "OPTIONS"
+.
+.TP
 \fB\-h, \-\-help\fR
+Show this help\.
 .
-.P
-\~\~\~\~\~\~ Show this help\.
-.
-.P
+.TP
 \fB\-v, \-\-version\fR
+Show version number\.
 .
-.P
-\~\~\~\~\~\~ Show version number\.
-.
-.P
+.TP
 \fB\-r, \-\-track\fR
+Calculate track gain only (default)\.
 .
-.P
-\~\~\~\~\~\~ Calculate track gain only (default)\.
-.
-.P
+.TP
 \fB\-a, \-\-album\fR
+Calculate album gain (and track gain)\.
 .
-.P
-\~\~\~\~\~\~ Calculate album gain (and track gain)\.
-.
-.P
+.TP
 \fB\-c, \-\-clip\fR
+Ignore clipping warnings\.
 .
-.P
-\~\~\~\~\~\~ Ignore clipping warnings\.
-.
-.P
+.TP
 \fB\-k, \-\-noclip\fR
+Lower track/album gain to avoid clipping (<= \-1 dBTP)\.
 .
-.P
-\~\~\~\~\~\~ Lower track/album gain to avoid clipping (<= \-1 dBTP)\.
-.
-.P
+.TP
 \fB\-K n, \-\-maxtpl=n\fR
+Avoid clipping; max\. true peak level = n dBTP\.
 .
-.P
-\~\~\~\~\~\~ Avoid clipping; max\. true peak level = n dBTP\.
-.
-.P
+.TP
 \fB\-d n, \-\-pregain=n\fR
+Apply n dB/LU pre\-gain value (\-5 for \-23 LUFS target)\.
 .
-.P
-\~\~\~\~\~\~ Apply n dB/LU pre\-gain value (\-5 for \-23 LUFS target)\.
-.
-.P
+.TP
 \fB\-s d, \-\-tagmode=d\fR
+Delete ReplayGain tags from files\.
 .
-.P
-\~\~\~\~\~\~ Delete ReplayGain tags from files\.
-.
-.P
+.TP
 \fB\-s i, \-\-tagmode=i\fR
+Write ReplayGain 2\.0 tags to files\. ID3v2 for MP2/MP3; Vorbis Comments for FLAC, Ogg, Speex and Opus; iTunes\-type metadata for MP4/M4A; WMA tags for ASF/WMA; APEv2 tags for WavPack\.
 .
-.P
-\~\~\~\~\~\~ Write ReplayGain 2\.0 tags to files\. ID3v2 for MP2/MP3, Vorbis Comments for FLAC, Ogg Vorbis and Opus, iTunes\-type metadata for MP4, WMA tags for ASF/WMA\.
-.
-.P
+.TP
 \fB\-s e, \-\-tagmode=e\fR
+like \'\-s i\', plus extra tags (reference, ranges)\.
 .
-.P
-\~\~\~\~\~\~ like \'\-s i\', plus extra tags (reference, ranges)\.
-.
-.P
+.TP
 \fB\-s l, \-\-tagmode=l\fR
+like \'\-s e\', but LU units instead of dB\.
 .
-.P
-\~\~\~\~\~\~ like \'\-s e\', but LU units instead of dB\.
-.
-.P
+.TP
 \fB\-s s, \-\-tagmode=s\fR
+Don\'t write ReplayGain tags (default)\.
 .
-.P
-\~\~\~\~\~\~ Don\'t write ReplayGain tags (default)\.
-.
-.P
+.TP
 \fB\-L, \-\-lowercase\fR
+Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non\-standard)\.
 .
-.P
-\~\~\~\~\~\~ Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non\-standard)
-.
-.P
+.TP
 \fB\-S, \-\-striptags\fR
+Strip tag types other than ID3v2 from MP2/MP3 files (i\.e\. ID3v1, APEv2)\. Strip tag types other than APEv2 from WavPack files (i\.e\. ID3v1)\.
 .
-.P
-\~\~\~\~\~\~ Strip tag types other than ID3v2 from MP2/MP3 files (i\.e\. ID3v1, APEv2)\.
-.
-.P
+.TP
 \fB\-I 3, \-\-id3v2version=3\fR
+Write ID3v2\.3 tags to MP2/MP3/WAV files\.
 .
-.P
-\~\~\~\~\~\~ Write ID3v2\.3 tags to MP2/MP3/WAV files\.
-.
-.P
+.TP
 \fB\-I 4, \-\-id3v2version=4\fR
+Write ID3v2\.4 tags to MP2/MP3/WAV files (default)\.
 .
-.P
-\~\~\~\~\~\~ Write ID3v2\.4 tags to MP2/MP3/WAV files (default)\.
-.
-.P
+.TP
 \fB\-o, \-\-output\fR
+Database\-friendly tab\-delimited list output (mp3gain\-compatible)\.
 .
-.P
-\~\~\~\~\~\~ Database\-friendly tab\-delimited list output (mp3gain\-compatible)\.
-.
-.P
+.TP
 \fB\-O, \-\-output\-new\fR
+Database\-friendly new format tab\-delimited list output\. Ideal for analysis of files if redirected to a CSV file\.
 .
-.P
-\~\~\~\~\~\~ Database\-friendly new format tab\-delimited list output\.
-.
-.P
+.TP
 \fB\-q, \-\-quiet\fR
+Don\'t print scanning status messages\.
+.
+.SH "RECOMMENDATIONS"
+To give you a head start, here are my personal recommendations for being (almost) universally compatible\.
 .
 .P
-\~\~\~\~\~\~ Don\'t print scanning status messages\.
+Use loudgain on a »one album per folder« basis; standard RG2 settings but lowercase ReplayGain tags; clipping prevention on; strip obsolete tag types from MP3 and WavPack files; use ID3v2\.3 for MP3s; store extended tags:
+.
+.IP "" 4
+.
+.nf
+
+$ loudgain \-a \-k \-s e *\.flac
+$ loudgain \-a \-k \-s e *\.ogg
+$ loudgain \-I3 \-S \-L \-a \-k \-s e *\.mp3
+$ loudgain \-L \-a \-k \-s e *\.m4a
+$ loudgain \-a \-k \-s e *\.opus
+$ loudgain \-L \-a \-k \-s e *\.wma
+$ loudgain \-I3 \-L \-a \-k \-s e *\.wav
+$ loudgain \-S \-a \-k \-s e *\.wv
+.
+.fi
+.
+.IP "" 0
+.
+.P
+I’ve been happy with these settings for many years now\. Your mileage may vary\.
+.
+.SH "BUGS"
+\fBloudgain\fR is maintained on GitHub\. Please report all bugs to the issue tracker at https://github\.com/Moonbase59/loudgain/issues\.
 .
 .SH "AUTHORS"
-Alessandro Ghedini \fIalessandro@ghedini\.me\fR
-.
-.br
 Matthias C\. Hormann \fImhormann@gmx\.de\fR
 .
+.br
+Alessandro Ghedini \fIalessandro@ghedini\.me\fR
+.
 .SH "COPYRIGHT"
-Copyright (C) 2014 Alessandro Ghedini \fIalessandro@ghedini\.me\fR
+Copyright (C) 2019 Matthias C\. Hormann \fImhormann@gmx\.de\fR (versions > 0\.1)
 .
 .br
-Everything after v0\.1: Copyright (C) 2019 Matthias C\. Hormann \fImhormann@gmx\.de\fR
+Copyright (C) 2014 Alessandro Ghedini \fIalessandro@ghedini\.me\fR (v0\.1)
 .
 .P
 This program is released under the 2 clause BSD license\.

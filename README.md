@@ -52,6 +52,7 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
    - [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files)   
    - [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files)   
    - [How I handle WAV (.wav) audio files](#how-i-handle-wav-wav-audio-files)   
+   - [How I handle WavPack (.wv) audio files](#how-i-handle-wavpack-wv-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
@@ -82,7 +83,8 @@ these. (_Hint:_ In some players, you need to enable this feature.)
 
 **Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac`,
 `aacgain` and others in order to write ReplayGain 2.0 compatible loudness tags
-into MP2, MP3, Ogg Vorbis, FLAC, M4A/MP4 (AAC/ALAC audio) and Opus files, respectively.
+into MP2, MP3, Ogg, FLAC, M4A/MP4 (AAC/ALAC audio), Opus, ASF/WMA, WAV and
+WavPack files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
 and uses _LU_ and _LUFS_ units. The proposed ReplayGain 2.0 standard tries to
@@ -103,6 +105,13 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-09-03** – **v0.6.6** released:
+  * Add support for more codecs in the Ogg container. Loudgain now supports Ogg Vorbis,
+  Ogg FLAC, Speex and Opus.
+  * Add experimental support for WavPack (.wv) files. Read [How I handle WavPack (.wv) audio files](#how-i-handle-wavpack-wv-audio-files).
+  * Updated the program’s help (`loudgain -h`) and the man page (`man loudgain`).
+  * Updated `rgbpm` to handle the new file types.
+
 **2019-09-03** – **v0.6.5** released:
   * Rework file type detection: Add container format, since relying on the codec
   alone isn’t safe enough to determine which tag type to write. This will also
@@ -110,7 +119,7 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 **2019-09-02** – **v0.6.4** released:
   * Some code cleanup in the tagger.
-  * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_, _Mp3tag_ and others.
+  * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_, _Mp3tag_ and others. Read [How I handle WAV (.wav) audio files](#how-i-handle-wav-wav-audio-files).
 
 **2019-09-01** – **v0.6.3** released:
   * Added _experimental (!)_ ASF/WMA (.asf, .wma) support. Please read [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files) and give feedback on [GitHub](https://github.com/Moonbase59/loudgain/issues)!
@@ -878,11 +887,31 @@ so we can finalize loudgain's Opus support. Thanks!
 
 ---
 
+### How I handle WavPack (.wv) audio files
+
+1. **Experimental support, use with care!** Loudgain writes _APEv2_ ReplayGain tags
+   to WavPack files. This is a format compatible with _foobar2000_, _Mp3tag_,
+   _VLC_ and nearly all others.
+
+2. Per default, loudgain keeps other tags (ID3) intact, but I don’t recommend
+   using these. The `-S` (`--striptags`) option allows to remove ID3v1 tags.
+
+3. In theory, lowercase and even mixed-case tags can be written into APEv2 tags,
+   but the WavPack authors have thankfully specified that the tags must be _read_
+   in a case-insensitive manner. That’s why loudgain ignores the `-L` (`--lowercase`)
+   option and only writes standard-compatible **uppercase** tags. (Existing lowercase
+   tags will be removed to avoid confusion and potential problems.)
+
+4. loudgain works on the »one file/one program« basis, and the EBU speaks of an
+   »integrated program loudness« anyway. So possibly embedded cue sheets are ignored.
+
+---
+
 ## loudgain makes it easy following the »Gold Standard«
 
 Here are my personal recommendations for being (almost) universally compatible:
 
-Use loudgain on a »one album per folder« basis, standard RG2 settings but _lowercase_ ReplayGain tags, clipping prevention on, strip obsolete tag types from MP3 files, use ID3v2.3 for MP3s, store extended tags:
+Use loudgain on a »one album per folder« basis, standard RG2 settings but _lowercase_ ReplayGain tags, clipping prevention on, strip obsolete tag types from MP3 and WavPack files, use ID3v2.3 for MP3s, store extended tags:
 
 ```bash
 $ loudgain -a -k -s e *.flac
@@ -892,6 +921,7 @@ $ loudgain -L -a -k -s e *.m4a
 $ loudgain -a -k -s e *.opus
 $ loudgain -L -a -k -s e *.wma
 $ loudgain -I3 -L -a -k -s e *.wav
+$ loudgain -S -a -k -s e *.wv
 ```
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.
