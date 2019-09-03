@@ -418,7 +418,7 @@ $ loudgain -h
 **Uppercase vs. lowercase tags** still seems to be a never-ending battle—_when will
 players finally learn to handle these **case-insensitively**?_
 
-This has been a problem ever since, most notably in MP3 ID3v2, MP4 and WMA tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
+This has been a problem ever since, most notably in MP3 ID3v2, MP4, WMA and WAV tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
 
 The ReplayGain 1 and 2.0 specs clearly state that the tags should be UPPERCASE but many taggers still write lowercase tags (foobar2000, metamp3, taggers using pre-1.2.2 Mutagen like older MusicBrainz Picard versions, and others).
 
@@ -442,7 +442,7 @@ Since we don’t live in an ideal world, my approach to the problem is as follow
     REPLAYGAIN_TRACK_GAIN -7.02 dB
     ```
 
-3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2, MP4/M4A or ASF/WMA tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2, MP4/M4A and ASF/WMA; FLAC and Ogg Vorbis will still get standard uppercase tags):
+3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2, MP4/M4A or ASF/WMA tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2, MP4/M4A, ASF/WMA and WAV; FLAC and Ogg Vorbis will still get standard uppercase tags):
     ```
     replaygain_track_gain -7.02 dB
     ```
