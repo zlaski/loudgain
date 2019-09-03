@@ -19,10 +19,9 @@ write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
-  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).  
-  Opus (.opus) -- experimental support, use with care!  
-  ASF/WMA (.asf, .wma) -- experimental support, use with care!  
-  WAV (.wav) -- experimental support, use with care!
+  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a),  
+  Opus (.opus).
+  Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav).
 
 
 ## OPTIONS

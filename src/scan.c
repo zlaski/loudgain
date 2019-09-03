@@ -55,10 +55,11 @@ static void scan_frame(ebur128_state *ebur128, AVFrame *frame,
                        SwrContext *swr);
 static void scan_av_log(void *avcl, int level, const char *fmt, va_list args);
 
-static ebur128_state **scan_states   = NULL;
-static enum AVCodecID *scan_codecs   = NULL;
-static char          **scan_files    = NULL;
-static int             scan_nb_files = 0;
+static ebur128_state **scan_states     = NULL;
+static enum AVCodecID *scan_codecs     = NULL;
+static char          **scan_files      = NULL;
+static char          **scan_containers = NULL;
+static int             scan_nb_files   = 0;
 
 #define LUFS_TO_RG(L) (-18 - L)
 
@@ -83,6 +84,10 @@ int scan_init(unsigned nb_files) {
 	if (scan_files == NULL)
 		fail_printf("OOM");
 
+  scan_containers = malloc(sizeof(char *) * scan_nb_files);
+	if (scan_containers == NULL)
+		fail_printf("OOM");
+
 	scan_codecs = malloc(sizeof(enum AVCodecID) * scan_nb_files);
 	if (scan_codecs == NULL)
 		fail_printf("OOM");
@@ -96,6 +101,7 @@ void scan_deinit() {
 	for (i = 0; i < scan_nb_files; i++) {
 		ebur128_destroy(&scan_states[i]);
 		free(scan_files[i]);
+    free(scan_containers[i]);
 	}
 
 	free(scan_states);
@@ -137,6 +143,8 @@ int scan_file(const char *file, unsigned index) {
 
 		fail_printf("Could not open input: %s", errbuf);
 	}
+  scan_containers[index] = strdup(container->iformat->name);
+  ok_printf("Container: %s [%s]", container->iformat->long_name, container->iformat->name);
 
 	rc = avformat_find_stream_info(container, NULL);
 	if (rc < 0) {
@@ -303,6 +311,7 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
     pre_gain = pre_gain - 5.0f;
 
 	result -> file                 = scan_files[index];
+  result -> container            = scan_containers[index];
 	result -> codec_id             = scan_codecs[index];
 
 	result -> track_gain           = LUFS_TO_RG(global) + pre_gain;
@@ -318,6 +327,15 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
   result -> loudness_reference   = LUFS_TO_RG(-pre_gain);
 
 	return result;
+}
+
+int scan_album_has_different_containers() {
+  int i;
+  int different_containers = 0;
+  for (i = 0; i < scan_nb_files; i++) {
+    different_containers = (scan_containers[0] != scan_containers[i]);
+  }
+  return different_containers;
 }
 
 int scan_album_has_different_codecs() {

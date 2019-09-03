@@ -107,6 +107,36 @@ static struct option long_opts[] = {
 	{ 0, 0, 0, 0 }
 };
 
+enum AV_CONTAINER_ID {
+    AV_CONTAINER_ID_MP3,
+		AV_CONTAINER_ID_FLAC,
+		AV_CONTAINER_ID_OGG,
+		AV_CONTAINER_ID_MP4,
+		AV_CONTAINER_ID_ASF,
+		AV_CONTAINER_ID_WAV
+};
+
+// FFmpeg container short names
+static const char *AV_CONTAINER_NAME[] = {
+    "mp3",
+    "flac",
+    "ogg",
+    "mov,mp4,m4a,3gp,3g2,mj2",
+    "asf",
+    "wav"
+};
+
+int name_to_id(const char *str) {
+	int i;
+	for (i = 0;  i < sizeof(AV_CONTAINER_NAME) / sizeof(AV_CONTAINER_NAME[0]);  i++) {
+		if (!strcmp (str, AV_CONTAINER_NAME[i])) {
+			return i;
+		}
+	}
+	return -1; // error
+}
+
+
 bool warn_ebu            = false;
 int  ebur128_v_major     = 0;
 int  ebur128_v_minor     = 0;
@@ -271,7 +301,7 @@ int main(int argc, char *argv[]) {
 	// check for different file (codec) types in an album and warn
 	// (including Opus might mess up album gain)
 	if (do_album) {
-		if (scan_album_has_different_codecs()) {
+		if (scan_album_has_different_containers() || scan_album_has_different_codecs()) {
 			warn_printf("You have different file types in the same album!");
 			if (scan_album_has_opus())
 				fail_printf("Cannot calculate correct album gain when mixing Opus and non-Opus files!");
@@ -347,83 +377,54 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'd': /* delete tags */
-				switch (scan -> codec_id) {
-					case AV_CODEC_ID_MP2:
-					case AV_CODEC_ID_MP3:
+				switch (name_to_id(scan -> container)) {
+
+					case AV_CONTAINER_ID_MP3:
 						if (!tag_clear_mp3(scan, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_FLAC:
+					case AV_CONTAINER_ID_FLAC:
 						if (!tag_clear_flac(scan))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_VORBIS:
-						if (!tag_clear_vorbis(scan))
-							err_printf("Couldn't write to: %s", scan -> file);
+					case AV_CONTAINER_ID_OGG:
+						switch (scan->codec_id) {
+							case AV_CODEC_ID_VORBIS:
+								if (!tag_clear_vorbis(scan))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_OPUS:
+								if (!tag_clear_opus(scan))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							default:
+								err_printf("Codec type %x not supported in %s container",
+									scan->codec_id, scan->container);
+								break;
+						}
 						break;
 
-					case AV_CODEC_ID_AAC:
-					case AV_CODEC_ID_ALAC:
+					case AV_CONTAINER_ID_MP4:
 						if (!tag_clear_mp4(scan))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_OPUS:
-						if (!tag_clear_opus(scan))
-							err_printf("Couldn't write to: %s", scan -> file);
-						break;
-
-					case AV_CODEC_ID_WMAV1:
-					case AV_CODEC_ID_WMAV2:
-					case AV_CODEC_ID_WMAPRO:
-					case AV_CODEC_ID_WMALOSSLESS:
+					case AV_CONTAINER_ID_ASF:
 						if (!tag_clear_asf(scan))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_PCM_S16LE:
-					case AV_CODEC_ID_PCM_S16BE:
-					case AV_CODEC_ID_PCM_U16LE:
-					case AV_CODEC_ID_PCM_U16BE:
-					case AV_CODEC_ID_PCM_S8:
-					case AV_CODEC_ID_PCM_U8:
-					case AV_CODEC_ID_PCM_MULAW:
-					case AV_CODEC_ID_PCM_ALAW:
-					case AV_CODEC_ID_PCM_S32LE:
-					case AV_CODEC_ID_PCM_S32BE:
-					case AV_CODEC_ID_PCM_U32LE:
-					case AV_CODEC_ID_PCM_U32BE:
-					case AV_CODEC_ID_PCM_S24LE:
-					case AV_CODEC_ID_PCM_S24BE:
-					case AV_CODEC_ID_PCM_U24LE:
-					case AV_CODEC_ID_PCM_U24BE:
-					case AV_CODEC_ID_PCM_S24DAUD:
-					case AV_CODEC_ID_PCM_ZORK:
-					case AV_CODEC_ID_PCM_S16LE_PLANAR:
-					case AV_CODEC_ID_PCM_DVD:
-					case AV_CODEC_ID_PCM_F32BE:
-					case AV_CODEC_ID_PCM_F32LE:
-					case AV_CODEC_ID_PCM_F64BE:
-					case AV_CODEC_ID_PCM_F64LE:
-					case AV_CODEC_ID_PCM_BLURAY:
-					case AV_CODEC_ID_PCM_LXF:
-					case AV_CODEC_ID_S302M:
-					case AV_CODEC_ID_PCM_S8_PLANAR:
-					case AV_CODEC_ID_PCM_S24LE_PLANAR:
-					case AV_CODEC_ID_PCM_S32LE_PLANAR:
-					case AV_CODEC_ID_PCM_S16BE_PLANAR:
-					case AV_CODEC_ID_PCM_S64LE:
-					case AV_CODEC_ID_PCM_S64BE:
-					case AV_CODEC_ID_PCM_F16LE:
-					case AV_CODEC_ID_PCM_F24LE:
+					case AV_CONTAINER_ID_WAV:
 						if (!tag_clear_wav(scan, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					default:
-						err_printf("File type not supported");
+						err_printf("File type not supported: %s", scan->container);
 						break;
 				}
 				break;
@@ -431,91 +432,53 @@ int main(int argc, char *argv[]) {
 			case 'i': /* ID3v2 tags */
 			case 'e': /* same as 'i' plus extra tags */
 			case 'l': /* same as 'e' but in LU/LUFS units (instead of 'dB')*/
-				switch (scan -> codec_id) {
-					case AV_CODEC_ID_MP2:
-					case AV_CODEC_ID_MP3:
-						// tag_clear_mp3(scan, strip, id3v2version);
+				switch (name_to_id(scan -> container)) {
+					case AV_CONTAINER_ID_MP3:
 						if (!tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_FLAC:
-						// tag_clear_flac(scan);
+					case AV_CONTAINER_ID_FLAC:
 						if (!tag_write_flac(scan, do_album, mode, unit))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_VORBIS:
-						// tag_clear_vorbis(scan);
-						if (!tag_write_vorbis(scan, do_album, mode, unit))
-							err_printf("Couldn't write to: %s", scan -> file);
+					case AV_CONTAINER_ID_OGG:
+						switch (scan->codec_id) {
+							case AV_CODEC_ID_VORBIS:
+								if (!tag_write_vorbis(scan, do_album, mode, unit))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							case AV_CODEC_ID_OPUS:
+								if (!tag_write_opus(scan, do_album, mode, unit))
+									err_printf("Couldn't write to: %s", scan -> file);
+								break;
+
+							default:
+								err_printf("Codec type %x not supported in %s container",
+									scan->codec_id, scan->container);
+								break;
+						}
 						break;
 
-					case AV_CODEC_ID_AAC:
-					case AV_CODEC_ID_ALAC:
-						// tag_clear_mp4(scan);
+					case AV_CONTAINER_ID_MP4:
 						if (!tag_write_mp4(scan, do_album, mode, unit, lowercase))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_OPUS:
-						// tag_clear_opus(scan);
-						if (!tag_write_opus(scan, do_album, mode, unit))
-							err_printf("Couldn't write to: %s", scan -> file);
-						break;
-
-					// ASF/WMA: WMAVOICE is *not* supported
-					case AV_CODEC_ID_WMAV1:
-					case AV_CODEC_ID_WMAV2:
-					case AV_CODEC_ID_WMAPRO:
-					case AV_CODEC_ID_WMALOSSLESS:
-						// tag_clear_asf(scan);
+					case AV_CONTAINER_ID_ASF:
 						if (!tag_write_asf(scan, do_album, mode, unit, lowercase))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
-					case AV_CODEC_ID_PCM_S16LE:
-					case AV_CODEC_ID_PCM_S16BE:
-					case AV_CODEC_ID_PCM_U16LE:
-					case AV_CODEC_ID_PCM_U16BE:
-					case AV_CODEC_ID_PCM_S8:
-					case AV_CODEC_ID_PCM_U8:
-					case AV_CODEC_ID_PCM_MULAW:
-					case AV_CODEC_ID_PCM_ALAW:
-					case AV_CODEC_ID_PCM_S32LE:
-					case AV_CODEC_ID_PCM_S32BE:
-					case AV_CODEC_ID_PCM_U32LE:
-					case AV_CODEC_ID_PCM_U32BE:
-					case AV_CODEC_ID_PCM_S24LE:
-					case AV_CODEC_ID_PCM_S24BE:
-					case AV_CODEC_ID_PCM_U24LE:
-					case AV_CODEC_ID_PCM_U24BE:
-					case AV_CODEC_ID_PCM_S24DAUD:
-					case AV_CODEC_ID_PCM_ZORK:
-					case AV_CODEC_ID_PCM_S16LE_PLANAR:
-					case AV_CODEC_ID_PCM_DVD:
-					case AV_CODEC_ID_PCM_F32BE:
-					case AV_CODEC_ID_PCM_F32LE:
-					case AV_CODEC_ID_PCM_F64BE:
-					case AV_CODEC_ID_PCM_F64LE:
-					case AV_CODEC_ID_PCM_BLURAY:
-					case AV_CODEC_ID_PCM_LXF:
-					case AV_CODEC_ID_S302M:
-					case AV_CODEC_ID_PCM_S8_PLANAR:
-					case AV_CODEC_ID_PCM_S24LE_PLANAR:
-					case AV_CODEC_ID_PCM_S32LE_PLANAR:
-					case AV_CODEC_ID_PCM_S16BE_PLANAR:
-					case AV_CODEC_ID_PCM_S64LE:
-					case AV_CODEC_ID_PCM_S64BE:
-					case AV_CODEC_ID_PCM_F16LE:
-					case AV_CODEC_ID_PCM_F24LE:
-						// tag_clear_wav(scan, strip, id3v2version);
+					case AV_CONTAINER_ID_WAV:
 						if (!tag_write_wav(scan, do_album, mode, unit, lowercase, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
 					default:
-						err_printf("File type not supported");
+						err_printf("File type not supported: %s", scan->container);
 						break;
 				}
 				break;
@@ -640,10 +603,9 @@ static inline void help(void) {
 	puts("[OPTIONS] FILES...\n");
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
-	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).");
-	puts("  Opus (.opus) -- experimental support, use with care!");
-	puts("  ASF/WMA (.asf, .wma) -- experimental support, use with care!");
-	puts("  WAV (.wav) -- experimental support, use with care!\n");
+	puts("  FLAC (.flac), Ogg Vorbis (.ogg), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a),");
+	puts("  Opus (.opus).");
+	puts("  Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);

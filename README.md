@@ -102,6 +102,11 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 
 ## NEWS, CHANGELOG
 
+**2019-09-03** – **v0.6.5** released:
+  * Rework file type detection: Add container format, since relying on the codec
+  alone isn’t safe enough to determine which tag type to write. This will also
+  handle files with incorrect extensions correctly.
+
 **2019-09-02** – **v0.6.4** released:
   * Some code cleanup in the tagger.
   * Added rudimentary WAV file tagging support (by writing ID3v2 tags into the "ID3 " chunk). This is a format understood by _foobar2000_, _VLC_ and others.
@@ -846,8 +851,8 @@ so we can finalize loudgain's Opus support. Thanks!
 ### How I handle WAV (.wav) audio files
 
 1. **Experimental support, use with care!** Loudgain writes ID3v2 ReplayGain tags
-   into the "ID3 " chunk. This is a format compatible with _foobar2000_, _VLC_
-   and some others.
+   into the "ID3 " chunk. This is a format compatible with _foobar2000_, _Mp3tag_,
+   _VLC_ and some others.
 
    Loudgain currently relies on _TagLib_ to do the writing. In the current implementation
    * the _"ID3 "_ chunk _may be_ after the _"data"_ chunk (i.e., at the end of the file).
