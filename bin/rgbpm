@@ -20,6 +20,8 @@
 #            - add WAV support
 # 2ß10-09-03 - v0.11:
 #            - add additional file types (Ogg and WavPack)
+# 2019-09-04 - v0.12:
+#            - add AIFF support (*.aif and *.aiff)
 
 # define me
 me=`basename "$0"`
@@ -67,7 +69,7 @@ folders below and add the recommended replay gain track & album tags to
 audio files.
 
 If using 'loudgain', $me currently supports files of type:
-  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma, *.wav
+  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma, *.wav, *.wv, *.aiff
 EOF
 if [ "$BPMCALC" = true ] ; then
 cat <<EOF
@@ -194,6 +196,16 @@ while [ "$1" != '' ] ; do
     # calculate replay gain for all WAV in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.wav" -type f -exec loudgain -I3 -L -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all AIFF in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.aiff" -type f -exec loudgain -I3 -L -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all AIF in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.aif" -type f -exec loudgain -I3 -L -a -k -s e {} +
     fi
 
     # calculate replay gain for all WavPack in this folder

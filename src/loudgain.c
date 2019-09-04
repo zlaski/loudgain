@@ -114,7 +114,8 @@ enum AV_CONTAINER_ID {
 		AV_CONTAINER_ID_MP4,
 		AV_CONTAINER_ID_ASF,
 		AV_CONTAINER_ID_WAV,
-		AV_CONTAINER_ID_WV
+		AV_CONTAINER_ID_WV,
+		AV_CONTAINER_ID_AIFF
 };
 
 // FFmpeg container short names
@@ -125,7 +126,8 @@ static const char *AV_CONTAINER_NAME[] = {
     "mov,mp4,m4a,3gp,3g2,mj2",
     "asf",
     "wav",
-		"wv"
+		"wv",
+		"aiff"
 };
 
 int name_to_id(const char *str) {
@@ -437,6 +439,11 @@ int main(int argc, char *argv[]) {
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
+					case AV_CONTAINER_ID_AIFF:
+						if (!tag_clear_aiff(scan, strip, id3v2version))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
 					case AV_CONTAINER_ID_WV:
 						if (!tag_clear_wavpack(scan, strip))
 							err_printf("Couldn't write to: %s", scan -> file);
@@ -506,6 +513,11 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_WAV:
 						if (!tag_write_wav(scan, do_album, mode, unit, lowercase, strip, id3v2version))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
+					case AV_CONTAINER_ID_AIFF:
+						if (!tag_write_aiff(scan, do_album, mode, unit, lowercase, strip, id3v2version))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
@@ -643,7 +655,7 @@ static inline void help(void) {
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3),");
 	puts("  MP4 (.mp4, .m4a).");
-	puts("  Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv).\n");
+	puts("  Experimental: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv), AIFF (.aiff, .aif).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -679,7 +691,7 @@ static inline void help(void) {
 
 	puts("");
 
-	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA/WAV)");
+	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA/WAV/AIFF)");
 	CMD_CONT("This is non-standard but sometimes needed");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
 	CMD_CONT("Strip tag types other than APEv2 from WavPack");

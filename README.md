@@ -1,6 +1,6 @@
 # loudgain
 
-**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus/ASF/WMA audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
+**loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus/ASF/WMA/WAV/WavPack/AIFF audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
 
@@ -52,6 +52,7 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
    - [How I handle Opus (.opus) audio files](#how-i-handle-opus-opus-audio-files)   
    - [How I handle ASF/WMA (.asf, .wma) audio files](#how-i-handle-asfwma-asf-wma-audio-files)   
    - [How I handle WAV (.wav) audio files](#how-i-handle-wav-wav-audio-files)   
+   - [How I handle AIFF (.aiff, .aif, .snd) audio files](#how-i-handle-aiff-aiff-aif-snd-audio-files)   
    - [How I handle WavPack (.wv) audio files](#how-i-handle-wavpack-wv-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
@@ -83,7 +84,7 @@ these. (_Hint:_ In some players, you need to enable this feature.)
 
 **Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac`,
 `aacgain` and others in order to write ReplayGain 2.0 compatible loudness tags
-into MP2, MP3, Ogg, FLAC, M4A/MP4 (AAC/ALAC audio), Opus, ASF/WMA, WAV and
+into MP2, MP3, Ogg, FLAC, M4A/MP4 (AAC/ALAC audio), Opus, ASF/WMA, WAV, AIFF and
 WavPack files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
@@ -104,6 +105,10 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-09-04** – **v0.6.7** released:
+  * Adds support for AIFF files. The "Audio Interchange File Format" is mostly used on Apple Macs.
+  * Updated `rgbpm` to version 0.12.
 
 **2019-09-03** – **v0.6.6** released:
   * Add support for more codecs in the Ogg container. Loudgain now supports Ogg Vorbis,
@@ -884,6 +889,25 @@ so we can finalize loudgain's Opus support. Thanks!
 5. The _Broadcast Wave File (BWF)_ extensions in the _"bext"_ chunk are currently _not
    written_ (but also not destroyed). This might change in a future version (at least
    for the loudness values of BWF v2).
+
+---
+
+### How I handle AIFF (.aiff, .aif, .snd) audio files
+
+1. **Experimental support, use with care!** Loudgain writes ID3v2 ReplayGain tags
+   into the "ID3 " chunk. This is a format compatible with _foobar2000_, _Mp3tag_,
+   _VLC_ and some others.
+
+2. Since ID3v2 tags are written, the `-L` (`--lowercase`) option functions normally.
+
+3. The `-S` (`--striptags`), `-I 3` (`--id3v2version=3`) and `-I 4` (`--id3v2version=4`)
+   options are ignored, even when specified.
+
+4. **[Uppercase vs. lowercase tags](#uppercase-or-lowercase-replaygain_-tags)**
+   is still a problem:
+
+   * **foobar2000** handles both upper- and lowercase tags _correctly_ (tested on fb2k 1.4.6).
+   * **VLC** requires _uppercase_ tags (tested on VLC 3.0.8 "Vetinari").
 
 ---
 

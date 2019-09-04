@@ -54,9 +54,9 @@ Experimental support, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (
   Delete ReplayGain tags from files.
 
 * `-s i, --tagmode=i`:
-  Write ReplayGain 2.0 tags to files. ID3v2 for MP2/MP3; Vorbis Comments for FLAC,
-  Ogg, Speex and Opus; iTunes-type metadata for MP4/M4A; WMA tags for ASF/WMA;
-  APEv2 tags for WavPack.
+  Write ReplayGain 2.0 tags to files. ID3v2 for MP2, MP3, WAV and AIFF; Vorbis
+  Comments for FLAC, Ogg, Speex and Opus; iTunes-type metadata for MP4/M4A;
+  WMA tags for ASF/WMA; APEv2 tags for WavPack.
 
 * `-s e, --tagmode=e`:
   like '-s i', plus extra tags (reference, ranges).
@@ -68,7 +68,8 @@ Experimental support, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (
   Don't write ReplayGain tags (default).
 
 * `-L, --lowercase`:
-  Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV only; non-standard).
+  Force lowercase 'REPLAYGAIN_*' tags (MP2/MP3/MP4/ASF/WMA/WAV/AIFF only).
+  This is non-standard, but sometimes needed.
 
 * `-S, --striptags`:
   Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
@@ -107,9 +108,14 @@ from MP3 and WavPack files; use ID3v2.3 for MP3s; store extended tags:
     $ loudgain -a -k -s e *.opus
     $ loudgain -L -a -k -s e *.wma
     $ loudgain -I3 -L -a -k -s e *.wav
+    $ loudgain -I3 -L -a -k -s e *.aiff
     $ loudgain -S -a -k -s e *.wv
 
 I’ve been happy with these settings for many years now. Your mileage may vary.
+
+For easy mass-tagging, there is a bash script called `rgbpm` included with loudgain,
+which follows above recommendations. You can make a copy, put that into your
+personal `~/bin` folder and modify it to whatever _you_ need.
 
 
 ## BUGS

@@ -71,6 +71,7 @@
 #include <opusfile.h>
 #include <asffile.h>
 #include <wavfile.h>
+#include <aifffile.h>
 #include <wavpackfile.h>
 
 #include "scan.h"
@@ -670,7 +671,7 @@ void tag_remove_wav(TagLib::ID3v2::Tag *tag) {
   }
 }
 
-// Experimental WAV file tagging within an "id3 " chunk
+// Experimental WAV file tagging within an "ID3 " chunk
 bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase, bool strip, int id3v2version) {
   char value[2048];
@@ -727,6 +728,95 @@ bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version) {
 
   // no stripping
   return f.save(TagLib::RIFF::WAV::File::AllTags, false, id3v2version);
+}
+
+
+/*** AIFF ****/
+
+// id3v2version and strip currently unimplemented since no TagLib support
+
+void tag_remove_aiff(TagLib::ID3v2::Tag *tag) {
+  TagLib::ID3v2::FrameList::Iterator it;
+  TagLib::ID3v2::FrameList frames = tag -> frameList("TXXX");
+
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    TagLib::ID3v2::UserTextIdentificationFrame *frame =
+     dynamic_cast<TagLib::ID3v2::UserTextIdentificationFrame*>(*it);
+
+     // this removes all variants of upper-/lower-/mixed-case tags
+    if (frame && frame -> fieldList().size() >= 2) {
+      TagLib::String desc = frame -> description().upper();
+
+      // also remove (old) reference loudness, it might be wrong after recalc
+      if ((desc == RG_STRING_UPPER[RG_TRACK_GAIN]) ||
+          (desc == RG_STRING_UPPER[RG_TRACK_PEAK]) ||
+          (desc == RG_STRING_UPPER[RG_TRACK_RANGE]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_GAIN]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_PEAK]) ||
+          (desc == RG_STRING_UPPER[RG_ALBUM_RANGE]) ||
+          (desc == RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]))
+        tag -> removeFrame(frame);
+    }
+  }
+}
+
+// Experimental AIFF file tagging within an "ID3 " chunk
+bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase, bool strip, int id3v2version) {
+  char value[2048];
+  const char **RG_STRING = RG_STRING_UPPER;
+
+  if (lowercase) {
+    RG_STRING = RG_STRING_LOWER;
+  }
+
+  TagLib::RIFF::AIFF::File f(scan -> file);
+  TagLib::ID3v2::Tag *tag = f.tag();
+
+  // remove old tags before writing new ones
+  tag_remove_aiff(tag);
+
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_GAIN]), value);
+
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_PEAK]), value);
+
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_GAIN]), value);
+
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_PEAK]), value);
+  }
+
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_REFERENCE_LOUDNESS]), value);
+
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_TRACK_RANGE]), value);
+
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag_add_txxx(tag, const_cast<char *>(RG_STRING[RG_ALBUM_RANGE]), value);
+    }
+  }
+
+  // no stripping
+  return f.save();
+}
+
+bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version) {
+  TagLib::RIFF::AIFF::File f(scan -> file);
+  TagLib::ID3v2::Tag *tag = f.tag();
+
+  tag_remove_aiff(tag);
+
+  // no stripping
+  return f.save();
 }
 
 
