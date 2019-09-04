@@ -70,6 +70,7 @@
 #include <mp4file.h>
 #include <opusfile.h>
 #include <asffile.h>
+#include <rifffile.h>
 #include <wavfile.h>
 #include <aifffile.h>
 #include <wavpackfile.h>
@@ -806,6 +807,9 @@ bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
   }
 
   // no stripping
+  // unfortunately, TagLib::RIFF::AIFF::File::save() doesn’t provide
+  // the "Tags, strip, id3v2version" parameters,
+  // so all files will get the default ID3v2.4 tags. :-(
   return f.save();
 }
 
@@ -816,6 +820,9 @@ bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version) {
   tag_remove_aiff(tag);
 
   // no stripping
+  // unfortunately, TagLib::RIFF::AIFF::File::save() doesn’t provide
+  // the "Tags, strip, id3v2version" parameters,
+  // so all files will get the default ID3v2.4 tags.
   return f.save();
 }
 

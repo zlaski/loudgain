@@ -898,6 +898,10 @@ so we can finalize loudgain's Opus support. Thanks!
    into the "ID3 " chunk. This is a format compatible with _foobar2000_, _Mp3tag_,
    _VLC_ and some others.
 
+   **Note:** Due to a deficiency in _TagLib_, only _ID3v2.4_ tags can currently
+   be written, albeit iTunes and dBPowerAmp can only handle ID3v2.2 or ID3v2.3.
+   Please vote for [TagLib issue #922](https://github.com/taglib/taglib/issues/922).
+
 2. Since ID3v2 tags are written, the `-L` (`--lowercase`) option functions normally.
 
 3. The `-S` (`--striptags`), `-I 3` (`--id3v2version=3`) and `-I 4` (`--id3v2version=4`)
