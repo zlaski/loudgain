@@ -21,7 +21,8 @@ these. (In some players, you need to enable this feature.)
 loudgain currently supports writing tags to the following file types:  
 FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).
 
-Experimental support, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv).
+Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv),
+AIFF (.aiff, .aif, .snd).
 
 
 ## OPTIONS
