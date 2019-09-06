@@ -22,10 +22,12 @@
 #            - add additional file types (Ogg and WavPack)
 # 2019-09-04 - v0.12:
 #            - add AIFF support (*.aif and *.aiff)
+# 2019-09-06 - v0.13:
+#            - add APE (Monkey’s Audio) support
 
 # define me
 me=`basename "$0"`
-version="0.12"
+version="0.13"
 #MUSICDIR="$HOME/Musik/Today/"
 MUSICDIR=""
 
@@ -69,7 +71,7 @@ folders below and add the recommended replay gain track & album tags to
 audio files.
 
 If using 'loudgain', $me currently supports files of type:
-  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma, *.wav, *.wv, *.aiff
+  *.flac, *.ogg, *.mp2, *.mp3, *.m4a, *.opus, *.asf, *.wma, *.wav, *.wv, *.aiff, *.ape
 EOF
 if [ "$BPMCALC" = true ] ; then
 cat <<EOF
@@ -211,6 +213,11 @@ while [ "$1" != '' ] ; do
     # calculate replay gain for all WavPack in this folder
     if [ "$LOUDGAIN" = true ] ; then
       find "$FOLDER" -maxdepth 1 -iname "*.wv" -type f -exec loudgain -S -a -k -s e {} +
+    fi
+
+    # calculate replay gain for all APE in this folder
+    if [ "$LOUDGAIN" = true ] ; then
+      find "$FOLDER" -maxdepth 1 -iname "*.ape" -type f -exec loudgain -S -a -k -s e {} +
     fi
 
     # calculate BPM for all MP2, MP3 or FLAC in this folder

@@ -19,10 +19,10 @@ write ReplayGain _tags_ if so requested. It is up to the player to interpret
 these. (In some players, you need to enable this feature.)
 
 loudgain currently supports writing tags to the following file types:  
-FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a).
+FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3), MP4 (.mp4, .m4a),
+ASF/WMA (.asf, .wma), WavPack (.wv), APE (.ape).
 
-Experimental, use with care: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv),
-AIFF (.aiff, .aif, .snd).
+Experimental, use with care: WAV (.wav), AIFF (.aiff, .aif, .snd).
 
 
 ## OPTIONS
@@ -74,7 +74,7 @@ AIFF (.aiff, .aif, .snd).
 
 * `-S, --striptags`:
   Strip tag types other than ID3v2 from MP2/MP3 files (i.e. ID3v1, APEv2).
-  Strip tag types other than APEv2 from WavPack files (i.e. ID3v1).
+  Strip tag types other than APEv2 from WavPack/APE files (i.e. ID3v1).
 
 * `-I 3, --id3v2version=3`:
   Write ID3v2.3 tags to MP2/MP3/WAV files.
@@ -111,6 +111,7 @@ from MP3 and WavPack files; use ID3v2.3 for MP3s; store extended tags:
     $ loudgain -I3 -L -a -k -s e *.wav
     $ loudgain -I3 -L -a -k -s e *.aiff
     $ loudgain -S -a -k -s e *.wv
+    $ loudgain -S -a -k -s e *.ape
 
 I’ve been happy with these settings for many years now. Your mileage may vary.
 

@@ -54,6 +54,7 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
    - [How I handle WAV (.wav) audio files](#how-i-handle-wav-wav-audio-files)   
    - [How I handle AIFF (.aiff, .aif, .snd) audio files](#how-i-handle-aiff-aiff-aif-snd-audio-files)   
    - [How I handle WavPack (.wv) audio files](#how-i-handle-wavpack-wv-audio-files)   
+   - [How I handle APE (.ape) audio files](#how-i-handle-ape-ape-audio-files)   
 - [loudgain makes it easy following the »Gold Standard«](#loudgain-makes-it-easy-following-the-»gold-standard«)   
 - [Quality over speed](#quality-over-speed)   
 - [AUTHORS](#authors)   
@@ -84,8 +85,8 @@ these. (_Hint:_ In some players, you need to enable this feature.)
 
 **Note:** loudgain can be used instead of `mp3gain`, `vorbisgain`, `metaflac`,
 `aacgain` and others in order to write ReplayGain 2.0 compatible loudness tags
-into MP2, MP3, Ogg, FLAC, M4A/MP4 (AAC/ALAC audio), Opus, ASF/WMA, WAV, AIFF and
-WavPack files, respectively.
+into MP2, MP3, Ogg, FLAC, M4A/MP4 (AAC/ALAC audio), Opus, ASF/WMA, WAV, AIFF,
+WavPack and APE files, respectively.
 
 **Note:** EBU R128 recommends a program (integrated) target loudness of -23 LUFS
 and uses _LU_ and _LUFS_ units. The proposed ReplayGain 2.0 standard tries to
@@ -105,6 +106,12 @@ Also my heartfelt thanks to _Alessandro Ghedini_ who had the original idea back 
 ---
 
 ## NEWS, CHANGELOG
+
+**2019-09-06** – **v0.6.8** released:
+  * Adds support for Monkey’s Audio (APE) files. Read [How I handle APE (.ape) audio files](#how-i-handle-ape-ape-audio-files).
+  * Fixes "You have different file types in the same album" bug (#9).
+  * Real case-independent ReplayGain tag removal code (#10).
+  * Updated `rgbpm` to v0.13 (adds APE).
 
 **2019-09-04** – **v0.6.7** released:
   * Adds support for AIFF files. The "Audio Interchange File Format" is mostly used on Apple Macs.
@@ -432,11 +439,11 @@ $ loudgain -h
 **Uppercase vs. lowercase tags** still seems to be a never-ending battle—_when will
 players finally learn to handle these **case-insensitively**?_
 
-This has been a problem ever since, most notably in MP3 ID3v2, MP4, WMA and WAV tags, because these are case-sensitive. FLAC and Ogg Vorbis use Vorbis Comments to store tags, these can be upper-, lower- or mixed case per definition and MUST be treated equal.
+This has been a problem ever since, most notably in MP3 ID3v2, MP4, WMA, WAV, AIFF, WavPack and APE tags, because these are case-sensitive. FLAC, Ogg, WavPack and APE use tags that can be upper-, lower- or mixed case but MUST be treated equal.
 
 The ReplayGain 1 and 2.0 specs clearly state that the tags should be UPPERCASE but many taggers still write lowercase tags (foobar2000, metamp3, taggers using pre-1.2.2 Mutagen like older MusicBrainz Picard versions, and others).
 
-Unfortunately, there are lots of audio players out there that only respect _one_ case. For instance, VLC only respects uppercase, IDJC only respects lowercase. Only a very few go the extra effort to check for both variants of tags.
+Unfortunately, there are lots of audio players out there that only respect _one_ case. For instance, VLC only respects uppercase, IDJC and KODI only respect lowercase. Only a very few go the extra effort to check for both variants of tags.
 
 It seems that out in the field, there are more players that respect the lowercase tags than players respecting the uppercase variant, maybe due to the fact that the majority of MP3 and MP4/M4A files seem to be tagged using the lowercase ReplayGain tags—they simply adopted.
 
@@ -456,7 +463,7 @@ Since we don’t live in an ideal world, my approach to the problem is as follow
     REPLAYGAIN_TRACK_GAIN -7.02 dB
     ```
 
-3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2, MP4/M4A or ASF/WMA tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2, MP4/M4A, ASF/WMA and WAV; FLAC and Ogg Vorbis will still get standard uppercase tags):
+3. For the seemingly unavoidable cases where you _do_ indeed need lowercase ReplayGain tags in MP3 ID3v2, MP4/M4A, ASF/WMA, WAV or AIFF tags, I introduced a new option `-L` (`--lowercase`) that will _force_ writing the lowercase variant (but _only_ in MP3 ID3v2, MP4/M4A, ASF/WMA, WAV, AIFF; FLAC, Ogg, WavPack and APE will still get standard uppercase tags):
     ```
     replaygain_track_gain -7.02 dB
     ```
@@ -815,9 +822,9 @@ so we can finalize loudgain's Opus support. Thanks!
 
 ### How I handle ASF/WMA (.asf, .wma) audio files
 
-1. **Experimental support, use with care!** Supported are _WMAv1_, _WMAv2_, _WMA Pro_ and
-   _WMA Lossless_ formats. _WMA Voice_ is currently not supported, since the
-   FFmpeg libraries don’t (yet) decode it.
+1. Supported are _WMAv1_, _WMAv2_, _WMA Pro_ and _WMA Lossless_ formats.
+   _WMA Voice_ is currently not supported, since the FFmpeg libraries don’t
+   (yet) decode it.
 
 2. loudgain will neither read nor write the following Microsoft-specifc tags:
    ```
@@ -889,12 +896,12 @@ so we can finalize loudgain's Opus support. Thanks!
 5. The _Broadcast Wave File (BWF)_ extensions in the _"bext"_ chunk are currently _not
    written_ (but also not destroyed). This might change in a future version (at least
    for the loudness values of BWF v2).
-   
+
 6. **`ID3 ` vs. `id3 ` chunk.** In some cases, files might already contain an
    `id3 ` (lowercase) chunk, or even _both_ `id3 ` and `ID3 ` chunks. In such cases, loudgain
    will read ID3v2 tags from these chunks, try to _merge_ them, and then remove
    the now obsolete `id3 ` (lowercase) chunk in favour of _one_ `ID3 ` (uppercase) chunk.
-  
+
    Other potentially existing chunks like `id32` or `ID32` are ignored.
 
 ---
@@ -924,16 +931,15 @@ so we can finalize loudgain's Opus support. Thanks!
    `id3 ` (lowercase) chunk, or even _both_ `id3 ` and `ID3 ` chunks. In such cases, loudgain
    will read ID3v2 tags from these chunks, try to _merge_ them, and then remove
    the now obsolete `id3 ` (lowercase) chunk in favour of _one_ `ID3 ` (uppercase) chunk.
-   
+
    Other potentially existing chunks like `id32` or `ID32` are ignored.
 
 ---
 
 ### How I handle WavPack (.wv) audio files
 
-1. **Experimental support, use with care!** Loudgain writes _APEv2_ ReplayGain tags
-   to WavPack files. This is a format compatible with _foobar2000_, _Mp3tag_,
-   _VLC_ and nearly all others.
+1. Loudgain writes _APEv2_ ReplayGain tags to WavPack files. This is a format
+   compatible with _foobar2000_, _Mp3tag_, _VLC_ and nearly all others.
 
 2. Per default, loudgain keeps other tags (ID3) intact, but I don’t recommend
    using these. The `-S` (`--striptags`) option allows to remove ID3v1 tags.
@@ -946,6 +952,23 @@ so we can finalize loudgain's Opus support. Thanks!
 
 4. loudgain works on the »one file/one program« basis, and the EBU speaks of an
    »integrated program loudness« anyway. So possibly embedded cue sheets are ignored.
+
+---
+
+### How I handle APE (.ape) audio files
+
+1. Loudgain writes _APEv2_ ReplayGain tags to APE files. This is a format
+   compatible with _foobar2000_, _Mp3tag_, _VLC_ and nearly all others.
+
+2. Per default, loudgain keeps other tags (ID3) intact, but I don’t recommend
+   using these. The `-S` (`--striptags`) option allows to remove ID3v1 tags.
+
+3. In theory, lowercase and even mixed-case tags can be written into APEv2 tags,
+   but duplicates with different case aren’t allowed. Applications should read
+   APE tags in a case-insensitive manner. That’s why loudgain ignores the
+   `-L` (`--lowercase`) option for APE files and only writes **uppercase** tags.
+   (Existing lowercase/mixed-case ReplayGain tags will be removed to avoid
+   confusion and potential problems.)
 
 ---
 
@@ -963,7 +986,9 @@ $ loudgain -L -a -k -s e *.m4a
 $ loudgain -a -k -s e *.opus
 $ loudgain -L -a -k -s e *.wma
 $ loudgain -I3 -L -a -k -s e *.wav
+$ loudgain -I3 -L -a -k -s e *.aiff
 $ loudgain -S -a -k -s e *.wv
+$ loudgain -S -a -k -s e *.ape
 ```
 
 I’ve been happy with these settings for many, many years now, and colleagues have been using these settings on a cumulated base of almost a million tracks.

@@ -74,6 +74,7 @@
 #include <wavfile.h>
 #include <aifffile.h>
 #include <wavpackfile.h>
+#include <apefile.h>
 
 #include "scan.h"
 #include "tag.h"
@@ -899,6 +900,90 @@ bool tag_clear_wavpack(scan_result *scan, bool strip) {
   TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
 
   tag_remove_wavpack(tag);
+
+  if (strip)
+    f.strip(TagLib::WavPack::File::TagTypes::ID3v1);
+
+  return f.save();
+}
+
+
+/*** APE (Monkey’s Audio) ***/
+
+// We COULD also use ID3 tags, but we stick with APEv2 tags,
+// since that is the native format.
+// APEv2 tags can be mixed case, but they should be read case-insensitively,
+// so we currently ignore -L (--lowercase) and only write uppercase tags.
+// TagLib handles APE case-insensitively and uses only UPPERCASE keys.
+// Existing ID3 tags can be removed by using -S (--striptags).
+
+void tag_remove_ape(TagLib::APE::Tag *tag) {
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_GAIN]);
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_PEAK]);
+  tag -> removeItem(RG_STRING_UPPER[RG_TRACK_RANGE]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_GAIN]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_PEAK]);
+  tag -> removeItem(RG_STRING_UPPER[RG_ALBUM_RANGE]);
+  tag -> removeItem(RG_STRING_UPPER[RG_REFERENCE_LOUDNESS]);
+}
+
+bool tag_write_ape(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase, bool strip) {
+  char value[2048];
+  const char **RG_STRING = RG_STRING_UPPER;
+
+  // ignore lowercase for now: CAN be written but keys should be read case-insensitively
+  // if (lowercase) {
+  //   RG_STRING = RG_STRING_LOWER;
+  // }
+
+  TagLib::APE::File f(scan -> file);
+  TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
+
+  // remove old tags before writing new ones
+  tag_remove_ape(tag);
+
+  snprintf(value, sizeof(value), "%.2f %s", scan -> track_gain, unit);
+  tag -> addValue(RG_STRING[RG_TRACK_GAIN], TagLib::String(value), true);
+
+  snprintf(value, sizeof(value), "%.6f", scan -> track_peak);
+  tag -> addValue(RG_STRING[RG_TRACK_PEAK], TagLib::String(value), true);
+
+  // Only write album tags if in album mode (would be zero otherwise)
+  if (do_album) {
+    snprintf(value, sizeof(value), "%.2f %s", scan -> album_gain, unit);
+    tag -> addValue(RG_STRING[RG_ALBUM_GAIN], TagLib::String(value), true);
+
+    snprintf(value, sizeof(value), "%.6f", scan -> album_peak);
+    tag -> addValue(RG_STRING[RG_ALBUM_PEAK], TagLib::String(value), true);
+  }
+
+  // extra tags mode -s e or -s l
+  if (mode == 'e' || mode == 'l') {
+    snprintf(value, sizeof(value), "%.2f LUFS", scan -> loudness_reference);
+    tag -> addValue(RG_STRING[RG_REFERENCE_LOUDNESS], TagLib::String(value), true);
+
+    snprintf(value, sizeof(value), "%.2f %s", scan -> track_loudness_range, unit);
+    tag -> addValue(RG_STRING[RG_TRACK_RANGE], TagLib::String(value), true);
+
+    if (do_album) {
+      snprintf(value, sizeof(value), "%.2f %s", scan -> album_loudness_range, unit);
+      tag -> addValue(RG_STRING[RG_ALBUM_RANGE], TagLib::String(value), true);
+    }
+  }
+
+  if (strip)
+    f.strip(TagLib::APE::File::TagTypes::ID3v1);
+
+  return f.save();
+}
+
+bool tag_clear_ape(scan_result *scan, bool strip) {
+
+  TagLib::WavPack::File f(scan -> file);
+  TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
+
+  tag_remove_ape(tag);
 
   if (strip)
     f.strip(TagLib::WavPack::File::TagTypes::ID3v1);

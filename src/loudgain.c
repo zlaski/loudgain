@@ -115,7 +115,8 @@ enum AV_CONTAINER_ID {
 		AV_CONTAINER_ID_ASF,
 		AV_CONTAINER_ID_WAV,
 		AV_CONTAINER_ID_WV,
-		AV_CONTAINER_ID_AIFF
+		AV_CONTAINER_ID_AIFF,
+		AV_CONTAINER_ID_APE
 };
 
 // FFmpeg container short names
@@ -127,7 +128,8 @@ static const char *AV_CONTAINER_NAME[] = {
     "asf",
     "wav",
 		"wv",
-		"aiff"
+		"aiff",
+		"ape"
 };
 
 int name_to_id(const char *str) {
@@ -449,6 +451,11 @@ int main(int argc, char *argv[]) {
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
+					case AV_CONTAINER_ID_APE:
+						if (!tag_clear_ape(scan, strip))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
 					default:
 						err_printf("File type not supported: %s", scan->container);
 						break;
@@ -523,6 +530,11 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_WV:
 						if (!tag_write_wavpack(scan, do_album, mode, unit, lowercase, strip))
+							err_printf("Couldn't write to: %s", scan -> file);
+						break;
+
+					case AV_CONTAINER_ID_APE:
+						if (!tag_write_ape(scan, do_album, mode, unit, lowercase, strip))
 							err_printf("Couldn't write to: %s", scan -> file);
 						break;
 
@@ -654,8 +666,8 @@ static inline void help(void) {
 
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3),");
-	puts("  MP4 (.mp4, .m4a).");
-	puts("  Experimental: ASF/WMA (.asf, .wma), WAV (.wav), WavPack (.wv), AIFF (.aiff, .aif).\n");
+	puts("  MP4 (.mp4, .m4a), ASF/WMA (.asf, .wma), WavPack (.wv), APE (.ape).");
+	puts("  Experimental: WAV (.wav), AIFF (.aiff, .aif).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -694,7 +706,7 @@ static inline void help(void) {
 	CMD_HELP("--lowercase", "-L", "Force lowercase tags (MP2/MP3/MP4/WMA/WAV/AIFF)");
 	CMD_CONT("This is non-standard but sometimes needed");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
-	CMD_CONT("Strip tag types other than APEv2 from WavPack");
+	CMD_CONT("Strip tag types other than APEv2 from WavPack/APE");
 	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3/WAV files");
 	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3/WAV files (default)");
 

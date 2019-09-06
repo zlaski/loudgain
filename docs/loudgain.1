@@ -22,10 +22,10 @@ loudgain will \fInot\fR modify the actual audio data, but instead just write Rep
 loudgain currently supports writing tags to the following file types:
 .
 .br
-FLAC (\.flac), Ogg (\.ogg, \.oga, \.spx, \.opus), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a)\.
+FLAC (\.flac), Ogg (\.ogg, \.oga, \.spx, \.opus), MP2 (\.mp2), MP3 (\.mp3), MP4 (\.mp4, \.m4a), ASF/WMA (\.asf, \.wma), WavPack (\.wv), APE (\.ape)\.
 .
 .P
-Experimental, use with care: ASF/WMA (\.asf, \.wma), WAV (\.wav), WavPack (\.wv), AIFF (\.aiff, \.aif, \.snd)\.
+Experimental, use with care: WAV (\.wav), AIFF (\.aiff, \.aif, \.snd)\.
 .
 .SH "OPTIONS"
 .
@@ -87,7 +87,7 @@ Force lowercase \'REPLAYGAIN_*\' tags (MP2/MP3/MP4/ASF/WMA/WAV/AIFF only)\. This
 .
 .TP
 \fB\-S, \-\-striptags\fR
-Strip tag types other than ID3v2 from MP2/MP3 files (i\.e\. ID3v1, APEv2)\. Strip tag types other than APEv2 from WavPack files (i\.e\. ID3v1)\.
+Strip tag types other than ID3v2 from MP2/MP3 files (i\.e\. ID3v1, APEv2)\. Strip tag types other than APEv2 from WavPack/APE files (i\.e\. ID3v1)\.
 .
 .TP
 \fB\-I 3, \-\-id3v2version=3\fR
@@ -128,6 +128,7 @@ $ loudgain \-L \-a \-k \-s e *\.wma
 $ loudgain \-I3 \-L \-a \-k \-s e *\.wav
 $ loudgain \-I3 \-L \-a \-k \-s e *\.aiff
 $ loudgain \-S \-a \-k \-s e *\.wv
+$ loudgain \-S \-a \-k \-s e *\.ape
 .
 .fi
 .

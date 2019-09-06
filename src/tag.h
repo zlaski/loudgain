@@ -71,6 +71,10 @@ bool tag_write_wavpack(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase, bool strip);
 bool tag_clear_wavpack(scan_result *scan, bool strip);
 
+bool tag_write_ape(scan_result *scan, bool do_album, char mode, char *unit,
+  bool lowercase, bool strip);
+bool tag_clear_ape(scan_result *scan, bool strip);
+
 int gain_to_q78num(double gain);
 
 #ifdef __cplusplus
