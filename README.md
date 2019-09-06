@@ -889,6 +889,13 @@ so we can finalize loudgain's Opus support. Thanks!
 5. The _Broadcast Wave File (BWF)_ extensions in the _"bext"_ chunk are currently _not
    written_ (but also not destroyed). This might change in a future version (at least
    for the loudness values of BWF v2).
+   
+6. **`ID3 ` vs. `id3 ` chunk.** In some cases, files might already contain an
+   `id3 ` (lowercase) chunk, or even _both_ `id3 ` and `ID3 ` chunks. In such cases, loudgain
+   will read ID3v2 tags from these chunks, try to _merge_ them, and then remove
+   the now obsolete `id3 ` (lowercase) chunk in favour of _one_ `ID3 ` (uppercase) chunk.
+  
+   Other potentially existing chunks like `id32` or `ID32` are ignored.
 
 ---
 
@@ -912,6 +919,13 @@ so we can finalize loudgain's Opus support. Thanks!
 
    * **foobar2000** handles both upper- and lowercase tags _correctly_ (tested on fb2k 1.4.6).
    * **VLC** requires _uppercase_ tags (tested on VLC 3.0.8 "Vetinari").
+
+5. **`ID3 ` vs. `id3 ` chunk.** In some cases, files might already contain an
+   `id3 ` (lowercase) chunk, or even _both_ `id3 ` and `ID3 ` chunks. In such cases, loudgain
+   will read ID3v2 tags from these chunks, try to _merge_ them, and then remove
+   the now obsolete `id3 ` (lowercase) chunk in favour of _one_ `ID3 ` (uppercase) chunk.
+   
+   Other potentially existing chunks like `id32` or `ID32` are ignored.
 
 ---
 
