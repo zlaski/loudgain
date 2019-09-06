@@ -331,20 +331,20 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 
 int scan_album_has_different_containers() {
   int i;
-  int different_containers = 0;
   for (i = 0; i < scan_nb_files; i++) {
-    different_containers = (scan_containers[0] != scan_containers[i]);
+    if (strcmp(scan_containers[0], scan_containers[i]))
+      return 1; // true
   }
-  return different_containers;
+  return 0; // false
 }
 
 int scan_album_has_different_codecs() {
   int i;
-  int different_codecs = 0;
   for (i = 0; i < scan_nb_files; i++) {
-    different_codecs = (scan_codecs[0] != scan_codecs[i]);
+    if (scan_codecs[0] != scan_codecs[i])
+      return 1; // true
   }
-  return different_codecs;
+  return 0; // false
 }
 
 int scan_album_has_opus() {
