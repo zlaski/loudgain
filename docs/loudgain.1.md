@@ -57,7 +57,7 @@ Experimental, use with care: WAV (.wav), AIFF (.aiff, .aif, .snd).
 * `-s i, --tagmode=i`:
   Write ReplayGain 2.0 tags to files. ID3v2 for MP2, MP3, WAV and AIFF; Vorbis
   Comments for FLAC, Ogg, Speex and Opus; iTunes-type metadata for MP4/M4A;
-  WMA tags for ASF/WMA; APEv2 tags for WavPack.
+  WMA tags for ASF/WMA; APEv2 tags for WavPack and APE.
 
 * `-s e, --tagmode=e`:
   like '-s i', plus extra tags (reference, ranges).
