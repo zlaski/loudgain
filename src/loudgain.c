@@ -667,7 +667,7 @@ static inline void help(void) {
 	printf("%s %s supports writing tags to the following file types:\n", PROJECT_NAME, PROJECT_VER);
 	puts("  FLAC (.flac), Ogg (.ogg, .oga, .spx, .opus), MP2 (.mp2), MP3 (.mp3),");
 	puts("  MP4 (.mp4, .m4a), ASF/WMA (.asf, .wma), WavPack (.wv), APE (.ape).");
-	puts("  Experimental: WAV (.wav), AIFF (.aiff, .aif).\n");
+	puts("  Experimental: WAV (.wav), AIFF (.aiff, .aif, .snd).\n");
 
 	if (warn_ebu) {
 		printf("%sWarning:%s Your EBU R128 library (libebur128) is version %s.\n", COLOR_RED, COLOR_OFF, ebur128_version);
@@ -707,8 +707,8 @@ static inline void help(void) {
 	CMD_CONT("This is non-standard but sometimes needed");
 	CMD_HELP("--striptags", "-S", "Strip tag types other than ID3v2 from MP2/MP3");
 	CMD_CONT("Strip tag types other than APEv2 from WavPack/APE");
-	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3/WAV files");
-	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3/WAV files (default)");
+	CMD_HELP("--id3v2version=3", "-I 3", "Write ID3v2.3 tags to MP2/MP3/WAV/AIFF");
+	CMD_HELP("--id3v2version=4", "-I 4", "Write ID3v2.4 tags to MP2/MP3/WAV/AIFF (default)");
 
 	puts("");
 

@@ -77,10 +77,10 @@ Experimental, use with care: WAV (.wav), AIFF (.aiff, .aif, .snd).
   Strip tag types other than APEv2 from WavPack/APE files (i.e. ID3v1).
 
 * `-I 3, --id3v2version=3`:
-  Write ID3v2.3 tags to MP2/MP3/WAV files.
+  Write ID3v2.3 tags to MP2/MP3/WAV/AIFF files.
 
 * `-I 4, --id3v2version=4`:
-  Write ID3v2.4 tags to MP2/MP3/WAV files (default).
+  Write ID3v2.4 tags to MP2/MP3/WAV/AIFF files (default).
 
 * `-o, --output`:
   Database-friendly tab-delimited list output (mp3gain-compatible).
