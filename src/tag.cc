@@ -56,6 +56,10 @@
 
 #include <taglib.h>
 
+#define TAGLIB_VERSION (TAGLIB_MAJOR_VERSION * 10000 \
+                        + TAGLIB_MINOR_VERSION * 100 \
+                        + TAGLIB_PATCH_VERSION)
+
 #include <textidentificationframe.h>
 
 #include <mpegfile.h>
@@ -204,7 +208,13 @@ bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
   if (strip)
     f.strip(TagLib::MPEG::File::APE);
 
+#if TAGLIB_VERSION >= 11200
+  return f.save(TagLib::MPEG::File::ID3v2,
+    strip ? TagLib::MPEG::File::StripOthers : TagLib::MPEG::File::StripNone,
+    id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+#endif
 }
 
 bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
@@ -217,7 +227,13 @@ bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
   if (strip)
     f.strip(TagLib::MPEG::File::APE);
 
+#if TAGLIB_VERSION >= 11200
+  return f.save(TagLib::MPEG::File::ID3v2,
+    strip ? TagLib::MPEG::File::StripOthers : TagLib::MPEG::File::StripNone,
+    id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save(TagLib::MPEG::File::ID3v2, strip, id3v2version);
+#endif
 }
 
 
@@ -490,10 +506,17 @@ TagLib::String tagname(TagLib::String key) {
 
 void tag_remove_mp4(TagLib::MP4::Tag *tag) {
   TagLib::String desc;
-  TagLib::MP4::ItemListMap &items = tag->itemListMap();
+#if TAGLIB_VERSION >= 11200
+  TagLib::MP4::ItemMap items = tag->itemMap();
 
-  for(TagLib::MP4::ItemListMap::Iterator item = items.begin();
+  for(TagLib::MP4::ItemMap::Iterator item = items.begin();
       item != items.end(); ++item)
+#else
+TagLib::MP4::ItemListMap &items = tag->itemListMap();
+
+for(TagLib::MP4::ItemListMap::Iterator item = items.begin();
+    item != items.end(); ++item)
+#endif
   {
     desc = item->first.upper();
     if ((desc == tagname(RG_STRING_UPPER[RG_TRACK_GAIN]).upper()) ||
@@ -715,7 +738,13 @@ bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
   }
 
   // no stripping
+#if TAGLIB_VERSION >= 11200
+  return f.save(TagLib::RIFF::WAV::File::AllTags,
+    TagLib::RIFF::WAV::File::StripNone,
+    id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save(TagLib::RIFF::WAV::File::AllTags, false, id3v2version);
+#endif
 }
 
 bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version) {
@@ -725,7 +754,13 @@ bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version) {
   tag_remove_wav(tag);
 
   // no stripping
+#if TAGLIB_VERSION >= 11200
+  return f.save(TagLib::RIFF::WAV::File::AllTags,
+    TagLib::RIFF::WAV::File::StripNone,
+    id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save(TagLib::RIFF::WAV::File::AllTags, false, id3v2version);
+#endif
 }
 
 
@@ -804,10 +839,11 @@ bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
   }
 
   // no stripping
-  // unfortunately, TagLib::RIFF::AIFF::File::save() doesn’t provide
-  // the "Tags, strip, id3v2version" parameters,
-  // so all files will get the default ID3v2.4 tags. :-(
+#if TAGLIB_VERSION >= 11200
+  return f.save(id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save();
+#endif
 }
 
 bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version) {
@@ -817,10 +853,11 @@ bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version) {
   tag_remove_aiff(tag);
 
   // no stripping
-  // unfortunately, TagLib::RIFF::AIFF::File::save() doesn’t provide
-  // the "Tags, strip, id3v2version" parameters,
-  // so all files will get the default ID3v2.4 tags.
+#if TAGLIB_VERSION >= 11200
+  return f.save(id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
+#else
   return f.save();
+#endif
 }
 
 
