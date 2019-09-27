@@ -25,6 +25,9 @@ _**Windows 10 users:** Read [Installation on Windows 10 (Linux bash)](#installat
 - [Installation on Windows 10 (Linux bash)](#installation-on-windows-10-linux-bash)   
 - [DEPENDENCIES](#dependencies)   
 - [BUILDING](#building)   
+- [Mass tagging](#mass-tagging)   
+   - [Avoiding recalculation](#avoiding-recalculation)   
+   - [User example script](#user-example-script)   
 - [TECHNICAL DETAILS (advanced users stuff)](#technical-details-advanced-users-stuff)   
    - [Things in the `bin`folder](#things-in-the-binfolder)   
       - [rgbpm – Folder-based loudness and BPM scanning](#rgbpm-–-folder-based-loudness-and-bpm-scanning)   
@@ -387,6 +390,39 @@ $ ln -s loudgain.static loudgain
 You can then move `loudgain`, `loudgain.static` and `rgbpm` to your target user’s `~/bin` folder.
 
 Beware this is a kludge only to be used if all else fails. (For example, you _can_ build on Ubuntu 18.04/Linux Mint 19 but really _need_ loudgain to work on Ubuntu 14.04/Linux Mint 17.3. That’s what I used it for.)
+
+---
+
+## Mass tagging
+
+You may want to (re-)tag a whole collection, or at least all folders beneath a certain folder. Most people follow a "one album = one folder" approach.
+
+Loudgain itself doesn’t do any kind of folder traversal internally—it just takes all files given on the commandline and works on them. But it is quite easy to write a little wrapper script in _Python_ or _bash_ to handle tagging many folders. One such script, `rgbpm`, is included as an example you can build upon.
+
+Simply copy it over to a feasible place like `/usr/local/bin` or your personal `~/bin` folder, study the code and modify to your heart’s content. As delivered, `rgbpm` follows my tagging recommendations.
+
+Personally, I also have quite a strict workflow, so mass-tagging is never needed:
+* Buy or rip files, one folder per release.
+* In case of MP3, use [MP3 Diags](http://mp3diags.sourceforge.net/) to repair them.
+* Use `rgbpm` to store ReplayGain and BPM data into the files.
+* Use [MusicBrainz Picard](https://picard.musicbrainz.org/) to correctly tag the files and move them into my final library.
+* Never touch them again using any tools whatsoever. (Well, except read-only playout, of course.)
+
+### Avoiding recalculation
+
+Loudgain does deliberately _not_ provide a means to avoid re-calculation, because doing that safely and reliably is almost impossible. For example, just checking for `REPLAYGAIN_TRACK_GAIN` would be unsafe, because we wouldn’t know about missing peaks, we wouldn’t know what algorithm was used to arrive at the stored value, we wouldn’t know about album gain, we wouldn’t know if _clipping prevention_ or _pre-gain_ had been used to arrive at these values. Ditto for checking `REPLAYGAIN_ALBUM_GAIN`: We don’t know if a single track has been added or removed in the meantime, so the values needed to be recalculated, file types in a folder might be mixed, and whatever else. The user could also wish to store the extended tags (loudness range and reference), so we also needed to check for these and compare to what has been specified on the commandline. Same for peak values: We don’t know if the stored values were _sample peak_, _RMS peak_, or _true peak_ values, and what algorithm was used to calculate them.
+
+So all in all, we could _never_ be sure the stored values are correct in any way. That’s why loudgain (and rgbpm) don’t provide a means for "skipping" and thus gaining a little performance advantage at the cost of possibly having wrong values in the files.
+
+This is why loudgain insists on recalculation every time: To give you the most exact results. Every time.
+
+There is a discussion going on about this in [issue #7](https://github.com/Moonbase59/loudgain/issues/7).
+
+### User example script
+
+There might be the case that you _always_ use loudgain in a consistent manner, have a large collection, and somehow _still_ want to skip unneeded recalculations.
+
+User [@flittermice](https://github.com/flittermice) uses small hidden "flag" files in each folder to prevent recalculating. He has modified `rgbpm` for his needs and [shared it with us](https://github.com/Moonbase59/loudgain/files/3659582/Musik_loudgain-recursive.sh.txt). Maybe you can use this or adapt it for your needs. More about this script in [issue #7](https://github.com/Moonbase59/loudgain/issues/7#issuecomment-535654751).
 
 ---
 
