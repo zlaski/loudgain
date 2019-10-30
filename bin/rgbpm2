@@ -29,6 +29,7 @@ def loudgain(args):
     """
     print("Working on {} ...".format(os.path.abspath(os.path.join(args[0],
         '*' + args[1]))))
+    sys.stdout.flush()
     try:
         retcode = subprocess.check_call(['loudgain', '-q'] + args[2:],
             stdout=open(os.devnull, 'wb'))
@@ -105,6 +106,7 @@ def main():
             stderr=subprocess.STDOUT)
         print("Using loudgain v{}, max. {} parallel processes.".format(
             output.split()[1], numproc))
+        sys.stdout.flush()
     except OSError as e:
         if e.errno == errno.ENOENT:
             # handle file not found error.
@@ -126,6 +128,7 @@ def main():
                 for dir in dirs:
                     if fnmatch.fnmatch(dir, exclude):
                         print("Excluding  {}".format(os.path.join(root, dir)))
+                        sys.stdout.flush()
                         dirs.remove(dir)
             # add files with known extensions to cluster
             for file in files:
