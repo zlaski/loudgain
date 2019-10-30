@@ -512,10 +512,10 @@ void tag_remove_mp4(TagLib::MP4::Tag *tag) {
   for(TagLib::MP4::ItemMap::Iterator item = items.begin();
       item != items.end(); ++item)
 #else
-TagLib::MP4::ItemListMap &items = tag->itemListMap();
+  TagLib::MP4::ItemListMap &items = tag->itemListMap();
 
-for(TagLib::MP4::ItemListMap::Iterator item = items.begin();
-    item != items.end(); ++item)
+  for(TagLib::MP4::ItemListMap::Iterator item = items.begin();
+      item != items.end(); ++item)
 #endif
   {
     desc = item->first.upper();
