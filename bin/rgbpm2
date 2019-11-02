@@ -120,6 +120,7 @@ def main():
     # Traverse folders, set up list of files.
     # dict: {folder: {filetype: [files]}}
     cluster = dict()
+    stat_excluded_folders = 0
     for folder in args.folder:
         for root, dirs, files in os.walk(os.path.abspath(os.path.join(
             os.getcwd(), folder)), followlinks=args.follow_links, topdown=True):
@@ -130,12 +131,19 @@ def main():
                         print("Excluding  {}".format(os.path.join(root, dir)))
                         sys.stdout.flush()
                         dirs.remove(dir)
+                        stat_excluded_folders += 1
             # add files with known extensions to cluster
             for file in files:
                 fileName, fileExt = os.path.splitext(file)
                 if fileExt.lower() in extensions:
                     cluster.setdefault(root, {}).setdefault(fileExt.lower(),
                         []).append(file)
+
+    # statitics
+    stat_folders = len(cluster)
+    stat_extensions = { ext for folder in cluster for ext in cluster[folder] }
+    stat_files = 0
+    stat_files = sum(1 for folder in cluster for ext in cluster[folder] for f in cluster[folder][ext])
 
     # set up the tasks for multiprocesssing
     # a task is one loudgain invocation (one folder, same file type)
@@ -146,6 +154,15 @@ def main():
             for file in cluster[folder][ext]:
                 filelist.append(os.path.join(folder, file))
             tasks.append([folder] + [ext] + extensions[ext] + filelist)
+
+    stat_tasks = len(tasks)
+
+    print("Excluded {} folders.".format(stat_excluded_folders))
+    print("Working on {} folders containing {} files, requiring {} tasks."
+        .format(stat_folders, stat_files, stat_tasks))
+    print("Found files of type: {}".format(", ".join(sorted(stat_extensions))))
+    print("=== START ===")
+    sys.stdout.flush()
 
     # Set up the parallel task pool
     # The initializer function prevents child processes from being aborted
@@ -166,12 +183,18 @@ def main():
             print("KeyboardInterrupt, all processes aborted!", file=sys.stderr)
             exit(1)
 
-    # print(results.get())
+    print("=== END ===")
+    print("Excluded {} folders.".format(stat_excluded_folders))
+    print("Worked on {} folders containing {} files, requiring {} tasks."
+        .format(stat_folders, stat_files, stat_tasks))
+    print("Found files of type: {}".format(", ".join(sorted(stat_extensions))))
+
     if not all(ret == 0 for ret in results.get()):
         print("Errors occurred!", file=sys.stderr)
+    sys.stdout.flush()
 
 
-__version_info__ = ('0', '14')
+__version_info__ = ('0', '15')
 __version__ = '.'.join(__version_info__)
 
 APPNAME = "rgbpm2 " + __version__
