@@ -1,5 +1,7 @@
 # loudgain
 
+_**Imortant note:** I don’t currently have enough time to work on loudgain, but I intend to come back and take care of all the great suggestions and PR’s you made! In the meantime, I’d be happy if someone really knowledgeable could help, ideally someone who could explain a) how to set up a co-maintainership here, b) would take care of some issues & PR’s, and c) probably be able to make this an official Debian/Ubuntu/Mint package. Thanks for all your support!_
+
 **loudgain** is a versatile ReplayGain 2.0 loudness normalizer, based on the EBU R128/ITU BS.1770 standard (-18 LUFS) and supports FLAC/Ogg/MP2/MP3/MP4/M4A/ALAC/Opus/ASF/WMA/WAV/WavPack/AIFF/APE audio files. It uses the well-known `mp3gain` commandline syntax but will never modify the actual audio data.
 
 Just what you ever wanted: The best of mp3gain, ReplayGain 2.0 and Linux combined. **Spread the word!**
