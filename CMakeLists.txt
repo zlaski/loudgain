@@ -1,9 +1,10 @@
 # loudgain CMakeLists.txt
 # Copyright (C) 2014 Alessandro Ghedini <alessandro@ghedini.me>
 # Modifications Copyright (C) 2019 Matthias C. Hormann <mhormann@gmx.de>
+# Modifications Copyright (C) 2022 Ziemowit Laski <zlaski@ziemas.net>
 # This file is released under the 2 clause BSD license, see COPYING
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.23)
 PROJECT(loudgain C CXX)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/" ${CMAKE_MODULE_PATH})
