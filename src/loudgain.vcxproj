@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)akibld-con.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="loudgain.c" />
+    <ClCompile Include="printf.c" />
+    <ClCompile Include="scan.c" />
+    <ClCompile Include="tag.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lg-util.h" />
+    <ClInclude Include="printf.h" />
+    <ClInclude Include="scan.h" />
+    <ClInclude Include="tag.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3DF747E8-AB1B-443A-AB11-072EE2ED8E21}</ProjectGuid>
+    <RootNamespace>loudgain</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
