@@ -69,8 +69,8 @@ int scan_init(unsigned nb_files) {
 	 * It is now useless
 	 * https://github.com/FFmpeg/FFmpeg/blob/70d25268c21cbee5f08304da95be1f647c630c15/doc/APIchanges#L86
 	 */
-  if (avformat_version() < AV_VERSION_INT(58,9,100))
-    av_register_all();
+    if (avformat_version() < AV_VERSION_INT(58, 9, 100))
+        fail_printf("av_register_all()");
 
 	av_log_set_callback(scan_av_log);
 
@@ -125,7 +125,7 @@ int scan_file(const char *file, unsigned index) {
 
 	ebur128_state **ebur128 = &scan_states[index];
 
-	int buffer_size = 192000 + AV_INPUT_BUFFER_PADDING_SIZE;
+    enum { buffer_size = 192000 + AV_INPUT_BUFFER_PADDING_SIZE };
 
 	uint8_t buffer[buffer_size];
 

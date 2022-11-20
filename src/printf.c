@@ -105,14 +105,19 @@ void sysf_printf(const char *fmt, ...) {
 	int rc;
 	va_list args;
 
-	_free_ char *format = NULL;
+	char *format = NULL;
 
 	rc = asprintf(&format, "%s: %s", fmt, strerror(errno));
-	if (rc < 0) fail_printf("OOM");
+    if (rc < 0) {
+        freep(&format);
+        fail_printf("OOM");
+    }
 
 	va_start(args, fmt);
 	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args);
 	va_end(args);
+
+    freep(&format);
 
 	_exit(EXIT_FAILURE);
 }

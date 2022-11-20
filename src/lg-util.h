@@ -32,9 +32,6 @@
 #include <unistd.h>
 #include "printf.h"
 
-#define _free_ __attribute__((cleanup(freep)))
-#define _close_ __attribute__((cleanup(closep)))
-
 static inline void freep(void *p) {
 	if (p == NULL)
 		return;
