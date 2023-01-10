@@ -69,8 +69,9 @@ int scan_init(unsigned nb_files) {
 	 * It is now useless
 	 * https://github.com/FFmpeg/FFmpeg/blob/70d25268c21cbee5f08304da95be1f647c630c15/doc/APIchanges#L86
 	 */
-  if (avformat_version() < AV_VERSION_INT(58,9,100))
-    av_register_all();
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100)
+	av_register_all();
+#endif
 
 	av_log_set_callback(scan_av_log);
 
@@ -115,7 +116,7 @@ int scan_file(const char *file, unsigned index) {
 
 	AVFormatContext *container = NULL;
 
-	AVCodec *codec;
+	const AVCodec *codec;
 	AVCodecContext *ctx;
 
 	AVFrame *frame;
