@@ -176,6 +176,11 @@ int main(int argc, char *argv[]) {
 	bool strip          = false; // MP3 ID3v2: strip other tag types?
 	int  id3v2version   = 4;     // MP3 ID3v2 version to write; can be 3 or 4
 
+	if (argc <= 1) {
+		help();
+		return 0;
+	}
+    
 	// libebur128 version check -- versions before 1.2.4 aren’t recommended
 	ebur128_get_version(&ebur128_v_major, &ebur128_v_minor, &ebur128_v_patch);
 	snprintf(ebur128_version, sizeof(ebur128_version), "%d.%d.%d",
