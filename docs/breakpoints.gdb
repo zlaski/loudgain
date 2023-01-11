@@ -1,0 +1,9 @@
+b tag_write_mp3
+b scan_get_track_result
+b scan_frame
+b scan_file
+b tag_add_txxx
+b ebur128_loudness_global
+b ebur128_energy_shortterm
+b ebur128_add_frames_short
+b scan.c:265

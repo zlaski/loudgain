@@ -1,0 +1,60 @@
+d:\git\zlaski\loudgain>find-text -i replaygain
+bin\rgbpm2
+debian\control
+docs\loudgain.1
+docs\loudgain.1.html
+docs\loudgain.1.md
+MP3_Normalization.mhtml
+README.md
+src\loudgain.c
+src\tag.cc
+
+d:\git\zlaski\loudgain>find-text -i mp3gain
+bin\rgbpm
+debian\control
+docs\loudgain.1
+docs\loudgain.1.html
+docs\loudgain.1.md
+MP3_Normalization.mhtml
+README.md
+src\loudgain.c
+
+d:\git\zlaski\libebur128>find-text -i replaygain
+
+d:\git\zlaski\libebur128>find-text -i mp3gain
+
+d:\git\zlaski\ffmpeg>find-text -i replaygain
+Changelog
+doc\APIchanges
+doc\config.texi
+doc\filters.texi
+ffbuild\config.mak
+libavcodec\avpacket.c
+libavcodec\decode.c
+libavcodec\packet.h
+libavfilter\af_ashowinfo.c
+libavfilter\af_replaygain.c
+libavfilter\af_volume.c
+libavfilter\af_volume.h
+libavfilter\allfilters.c
+libavfilter\f_sidedata.c
+libavfilter\Makefile
+libavformat\aiffdec.c
+libavformat\dump.c
+libavformat\flacdec.c
+libavformat\Makefile
+libavformat\mov.c
+libavformat\mp3dec.c
+libavformat\mp3enc.c
+libavformat\mpc8.c
+libavformat\oggparsevorbis.c
+libavformat\replaygain.c
+libavformat\replaygain.h
+libavutil\frame.c
+libavutil\frame.h
+libavutil\Makefile
+libavutil\replaygain.h
+tests\ref\fate\wavpack-cuesheet-tags
+
+d:\git\zlaski\ffmpeg>find-text -i mp3gain
+libavformat\mp3enc.c
