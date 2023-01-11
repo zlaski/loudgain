@@ -188,8 +188,8 @@ int scan_file(const char *file, unsigned index) {
       ctx->bits_per_raw_sample > 0 ? ctx->bits_per_raw_sample : ctx->bits_per_coded_sample);
   }
   av_get_channel_layout_string(infobuf, sizeof(infobuf), -1, ctx->channel_layout);
-  ok_printf("Stream #%d: %s, %s%d Hz, %d ch, %s",
-    stream_id, codec->long_name, infotext, ctx->sample_rate, ctx->channels, infobuf);
+  ok_printf("Stream #%d: %s, %s%d Hz, %d bps, %d ch, %s",
+    stream_id, codec->long_name, infotext, ctx->sample_rate, ctx->bit_rate, ctx->channels, infobuf);
 
 	scan_codecs[index] = codec -> id;
 
