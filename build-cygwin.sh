@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 #### THIS IS THE TOP-LEVEL loudgain SCRIPT ####
 

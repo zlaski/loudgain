@@ -280,6 +280,8 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 
 	scan_result *result = NULL;
 	ebur128_state *ebur128 = NULL;
+    
+    char output_file[256], *extptr;
 
 	if (index >= scan_nb_files) {
 		err_printf("Index too high");
@@ -312,6 +314,13 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
     pre_gain = pre_gain - 5.0f;
 
 	result -> file                 = scan_files[index];
+
+    extptr = result->file + strlen(result->file);
+    while (*--extptr != '.');
+    *extptr++ = 0;
+    sprintf(output_file, "%s.loudgain.%s", result->file, extptr);
+    result->file = strdup(output_file);
+
   result -> container            = scan_containers[index];
 	result -> codec_id             = scan_codecs[index];
 
