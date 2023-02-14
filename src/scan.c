@@ -185,11 +185,11 @@ int scan_file(const char *file, unsigned index) {
   // only show bits/sample where it makes sense
   infotext[0] = '\0';
   if (ctx->bits_per_raw_sample > 0 || ctx->bits_per_coded_sample > 0) {
-    snprintf(infotext, sizeof(infotext), "%d bit, ",
+    snprintf(infotext, sizeof(infotext), "%d bit ",
       ctx->bits_per_raw_sample > 0 ? ctx->bits_per_raw_sample : ctx->bits_per_coded_sample);
   }
   av_get_channel_layout_string(infobuf, sizeof(infobuf), -1, ctx->channel_layout);
-  ok_printf("Stream #%d: %s, %s%d Hz, %d bps, %d ch, %s",
+  ok_printf("Stream #%d: %s %s%d Hz %d bps %d ch %s",
     stream_id, codec->long_name, infotext, ctx->sample_rate, ctx->bit_rate, ctx->channels, infobuf);
 
 	scan_codecs[index] = codec -> id;
@@ -281,7 +281,7 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 	scan_result *result = NULL;
 	ebur128_state *ebur128 = NULL;
     
-    char output_file[256], *extptr;
+    char outfile1[256], outfile2[256], *extptr;
 
 	if (index >= scan_nb_files) {
 		err_printf("Index too high");
@@ -315,11 +315,12 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
 
 	result -> file                 = scan_files[index];
 
-    extptr = result->file + strlen(result->file);
+    strcpy(outfile1, result->file);
+    extptr = outfile1 + strlen(outfile1);
     while (*--extptr != '.');
     *extptr++ = 0;
-    sprintf(output_file, "%s.loudgain.%s", result->file, extptr);
-    result->file = strdup(output_file);
+    sprintf(outfile2, "%s.loudgain.%s", outfile1, extptr);
+    result->outfile = strdup(outfile2);
 
   result -> container            = scan_containers[index];
 	result -> codec_id             = scan_codecs[index];

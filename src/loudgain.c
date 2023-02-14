@@ -152,6 +152,7 @@ unsigned swr_ver         = 0;
 char     swr_version[15] = "";
 unsigned lavf_ver         = 0;
 char     lavf_version[15] = "";
+bool did_write = false;
 
 static inline void help(void);
 static inline void version(void);
@@ -392,12 +393,12 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_MP3:
 						if (!tag_clear_mp3(scan, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_FLAC:
 						if (!tag_clear_flac(scan))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_OGG:
@@ -406,22 +407,22 @@ int main(int argc, char *argv[]) {
 							// Opus needs special handling (different RG tags, -23 LUFS ref.)
 							case AV_CODEC_ID_OPUS:
 								if (!tag_clear_ogg_opus(scan))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_VORBIS:
 								if (!tag_clear_ogg_vorbis(scan))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_FLAC:
 								if (!tag_clear_ogg_flac(scan))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_SPEEX:
 								if (!tag_clear_ogg_speex(scan))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							default:
@@ -433,32 +434,32 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_MP4:
 						if (!tag_clear_mp4(scan))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_ASF:
 						if (!tag_clear_asf(scan))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_WAV:
 						if (!tag_clear_wav(scan, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_AIFF:
 						if (!tag_clear_aiff(scan, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_WV:
 						if (!tag_clear_wavpack(scan, strip))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_APE:
 						if (!tag_clear_ape(scan, strip))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					default:
@@ -474,12 +475,12 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_MP3:
 						if (!tag_write_mp3(scan, do_album, mode, unit, lowercase, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_FLAC:
 						if (!tag_write_flac(scan, do_album, mode, unit))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_OGG:
@@ -488,22 +489,22 @@ int main(int argc, char *argv[]) {
 							// Opus needs special handling (different RG tags, -23 LUFS ref.)
 							case AV_CODEC_ID_OPUS:
 								if (!tag_write_ogg_opus(scan, do_album, mode, unit))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_VORBIS:
 								if (!tag_write_ogg_vorbis(scan, do_album, mode, unit))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_FLAC:
 								if (!tag_write_ogg_flac(scan, do_album, mode, unit))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							case AV_CODEC_ID_SPEEX:
 								if (!tag_write_ogg_speex(scan, do_album, mode, unit))
-									err_printf("Couldn't write to: %s", scan -> file);
+									err_printf("Couldn't write to: %s", scan -> outfile);
 								break;
 
 							default:
@@ -515,32 +516,32 @@ int main(int argc, char *argv[]) {
 
 					case AV_CONTAINER_ID_MP4:
 						if (!tag_write_mp4(scan, do_album, mode, unit, lowercase))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_ASF:
 						if (!tag_write_asf(scan, do_album, mode, unit, lowercase))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_WAV:
 						if (!tag_write_wav(scan, do_album, mode, unit, lowercase, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_AIFF:
 						if (!tag_write_aiff(scan, do_album, mode, unit, lowercase, strip, id3v2version))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_WV:
 						if (!tag_write_wavpack(scan, do_album, mode, unit, lowercase, strip))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					case AV_CONTAINER_ID_APE:
 						if (!tag_write_ape(scan, do_album, mode, unit, lowercase, strip))
-							err_printf("Couldn't write to: %s", scan -> file);
+							err_printf("Couldn't write to: %s", scan -> outfile);
 						break;
 
 					default:
@@ -570,71 +571,66 @@ int main(int argc, char *argv[]) {
 
 		if (tab_output) {
 			// output old-style mp3gain-compatible list
-			printf("%s\t", scan -> file);
-			printf("%d\t", 0);
-			printf("%.2f\t", scan -> track_gain);
-			printf("%.6f\t", scan -> track_peak * 32768.0);
-			printf("%d\t", 0);
-			printf("%d\n", 0);
-
-			if (warn_clip && will_clip)
-				err_printf("The track will clip");
+			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", scan -> file, scan->outfile);
+			printf("MP3 gain: %d\n", 0);
+			printf("dB gain: %.2f\n", scan -> track_gain);
+			printf("Max amplitude: %.6f\n", scan -> track_peak * 32768.0);
+			printf("Max global gain: %d\n", 0);
+			printf("Min global gain: %d\n", 0);
+			if (warn_clip) printf("Will clip: %s\n", will_clip ? "Y" : "N");
+            printf("\n");
 
 			if ((i == (nb_files - 1)) && do_album) {
-				printf("%s\t", "Album");
-				printf("%d\t", 0);
-				printf("%.2f\t", scan -> album_gain);
-				printf("%.6f\t", scan -> album_peak * 32768.0);
-				printf("%d\t", 0);
-				printf("%d\n", 0);
+				printf("Album:\n");
+				printf("MP3 gain: %d\n", 0);
+				printf("dB gain: %.2f\n", scan -> album_gain);
+				printf("Max amplitude: %.6f\n", scan -> album_peak * 32768.0);
+				printf("Max global gain: %d\n", 0);
+				printf("Min global gain: %d\n\n", 0);
 			}
 		} else if (tab_output_new) {
 			// output new style list: File;Loudness;Range;Gain;Reference;Peak;Peak dBTP;Clipping;Clip-prevent
-			printf("%s\t", scan -> file);
-			printf("%.2f LUFS\t", scan -> track_loudness);
-			printf("%.2f %s\t", scan -> track_loudness_range, unit);
-			printf("%.6f\t", scan -> track_peak);
-			printf("%.2f dBTP\t", 20.0 * log10(scan -> track_peak));
-			printf("%.2f LUFS\t", scan -> loudness_reference);
-			printf("%s\t", will_clip ? "Y" : "N");
-			printf("%s\t", tclip ? "Y" : "N");
-			printf("%.2f %s\t", scan -> track_gain, unit);
-			printf("%.6f\t", tnew);
-			printf("%.2f dBTP\n", 20.0 * log10(tnew));
+			printf(did_write? "Track: %s --> %s\n": "\nTrack: %s\n", scan -> file, scan->outfile);
+			printf("Loudness: %.2f LUFS\n", scan -> track_loudness);
+			printf("Range: %.2f %s\n", scan -> track_loudness_range, unit);
+			printf("True peak: %.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
+			printf("Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
+			if (warn_clip) printf("Will clip: %s\n", will_clip ? "Y" : "N");
+			if (warn_clip) printf("Clip prevent: %s\n", tclip ? "Y" : "N");
+			printf("Gain: %.2f %s\n", scan -> track_gain, unit);
+			printf("New peak: %.6f (%.2f dBTP)\n\n", tnew, 20.0 * log10(tnew));
 
 			if ((i == (nb_files - 1)) && do_album) {
-				printf("%s\t", "Album");
-				printf("%.2f LUFS\t", scan -> album_loudness);
-				printf("%.2f %s\t", scan -> album_loudness_range, unit);
-				printf("%.6f\t", scan -> album_peak);
-				printf("%.2f dBTP\t", 20.0 * log10(scan -> album_peak));
-				printf("%.2f LUFS\t", scan -> loudness_reference);
-				printf("%s\t", (!aclip && (again > apeak)) ? "Y" : "N");
-				printf("%s\t", aclip ? "Y" : "N");
-				printf("%.2f %s\t", scan -> album_gain, unit);
-				printf("%.6f\t", anew);
-				printf("%.2f dBTP\n", 20.0 * log10(anew));
+				printf("Album:\n");
+				printf("Loudness: %.2f LUFS\n", scan -> album_loudness);
+				printf("Range: %.2f %s\n", scan -> album_loudness_range, unit);
+				printf("True peak: %.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
+				printf("Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
+				if (warn_clip) printf("Will clip: %s\n", (!aclip && (again > apeak)) ? "Y" : "N");
+				if (warn_clip) printf("Clip prevent: %s\n", aclip ? "Y" : "N");
+				printf("Gain: %.2f %s\n", scan -> album_gain, unit);
+				printf("New peak: %.6f (%.2f dBTP)\n\n", anew, 20.0 * log10(anew));
 			}
 		} else {
 			// output something human-readable
-			printf("\nTrack: %s\n", scan -> file);
+			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", scan -> file, scan->outfile);
 
-			printf(" Loudness: %8.2f LUFS\n", scan -> track_loudness);
-			printf(" Range:    %8.2f %s\n", scan -> track_loudness_range, unit);
-			printf(" Peak:     %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
+			printf(" Loudness:  %8.2f LUFS\n", scan -> track_loudness);
+			printf(" Range:     %8.2f %s\n", scan -> track_loudness_range, unit);
+			printf(" Peak:      %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
 			if (scan -> codec_id == AV_CODEC_ID_OPUS) {
 				// also show the Q7.8 number that goes into R128_TRACK_GAIN
-				printf(" Gain:     %8.2f %s (%d)%s\n", scan -> track_gain, unit,
+				printf(" Gain:      %8.2f %s (%d)%s\n", scan -> track_gain, unit,
 				 gain_to_q78num(scan -> track_gain),
-				 tclip ? " (corrected to prevent clipping)" : "");
+				 warn_clip && tclip ? " (corrected to prevent clipping)" : "");
 			} else {
-				printf(" Gain:     %8.2f %s%s\n", scan -> track_gain, unit,
-				 tclip ? " (corrected to prevent clipping)" : "");
+				printf(" Gain:      %8.2f %s%s\n", scan -> track_gain, unit,
+				 warn_clip && tclip ? " (corrected to prevent clipping)" : "");
 			}
 
-			if (warn_clip && will_clip)
-				err_printf("The track will clip");
-
+			if (warn_clip) printf(" Will clip: %s\n", will_clip ? "Y" : "N");
+            printf("\n");
+            
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("\nAlbum:\n");
 
@@ -645,10 +641,10 @@ int main(int argc, char *argv[]) {
 					// also show the Q7.8 number that goes into R128_ALBUM_GAIN
 					printf(" Gain:     %8.2f %s (%d)%s\n", scan -> album_gain, unit,
 					gain_to_q78num(scan -> album_gain),
-						aclip ? " (corrected to prevent clipping)" : "");
+						warn_clip && aclip ? " (corrected to prevent clipping)" : "");
 				} else {
 					printf(" Gain:     %8.2f %s%s\n", scan -> album_gain, unit,
-						aclip ? " (corrected to prevent clipping)" : "");
+						warn_clip && aclip ? " (corrected to prevent clipping)" : "");
 				}
 			}
 		}

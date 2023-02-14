@@ -169,7 +169,7 @@ bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
     RG_STRING = RG_STRING_LOWER;
   }
 
-  TagLib::MPEG::File f(scan -> file);
+  TagLib::MPEG::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
   // remove old tags before writing new ones
@@ -208,6 +208,8 @@ bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
   if (strip)
     f.strip(TagLib::MPEG::File::APE);
 
+  did_write = true;
+
 #if TAGLIB_VERSION >= 11200
   return f.save(TagLib::MPEG::File::ID3v2,
     strip ? TagLib::MPEG::File::StripOthers : TagLib::MPEG::File::StripNone,
@@ -218,7 +220,7 @@ bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
 }
 
 bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
-  TagLib::MPEG::File f(scan -> file);
+  TagLib::MPEG::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.ID3v2Tag(true);
 
   tag_remove_mp3(tag);
@@ -226,6 +228,8 @@ bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version) {
   // work around bug taglib/taglib#913: strip APE before ID3v1
   if (strip)
     f.strip(TagLib::MPEG::File::APE);
+
+  did_write = true;
 
 #if TAGLIB_VERSION >= 11200
   return f.save(TagLib::MPEG::File::ID3v2,
@@ -252,7 +256,7 @@ void tag_remove_flac(TagLib::Ogg::XiphComment *tag) {
 bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
   char value[2048];
 
-  TagLib::FLAC::File f(scan -> file);
+  TagLib::FLAC::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
   // remove old tags before writing new ones
@@ -287,14 +291,18 @@ bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit) {
     }
   }
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_flac(scan_result *scan) {
-  TagLib::FLAC::File f(scan -> file);
+  TagLib::FLAC::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.xiphComment(true);
 
   tag_remove_flac(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -353,19 +361,23 @@ void tag_make_ogg(scan_result *scan, bool do_album, char mode, char *unit,
 /*** Ogg: Ogg Vorbis ***/
 
 bool tag_write_ogg_vorbis(scan_result *scan, bool do_album, char mode, char *unit) {
-  TagLib::Ogg::Vorbis::File f(scan -> file);
+  TagLib::Ogg::Vorbis::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_make_ogg(scan, do_album, mode, unit, tag);
+
+  did_write = true;
 
   return f.save();
 }
 
 bool tag_clear_ogg_vorbis(scan_result *scan) {
-  TagLib::Ogg::Vorbis::File f(scan -> file);
+  TagLib::Ogg::Vorbis::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_remove_ogg(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -373,19 +385,23 @@ bool tag_clear_ogg_vorbis(scan_result *scan) {
 /*** Ogg: Ogg FLAC ***/
 
 bool tag_write_ogg_flac(scan_result *scan, bool do_album, char mode, char *unit) {
-  TagLib::Ogg::FLAC::File f(scan -> file);
+  TagLib::Ogg::FLAC::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_make_ogg(scan, do_album, mode, unit, tag);
+
+  did_write = true;
 
   return f.save();
 }
 
 bool tag_clear_ogg_flac(scan_result *scan) {
-  TagLib::Ogg::FLAC::File f(scan -> file);
+  TagLib::Ogg::FLAC::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_remove_ogg(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -393,19 +409,23 @@ bool tag_clear_ogg_flac(scan_result *scan) {
 /*** Ogg: Ogg Speex ***/
 
 bool tag_write_ogg_speex(scan_result *scan, bool do_album, char mode, char *unit) {
-  TagLib::Ogg::Speex::File f(scan -> file);
+  TagLib::Ogg::Speex::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_make_ogg(scan, do_album, mode, unit, tag);
+
+  did_write = true;
 
   return f.save();
 }
 
 bool tag_clear_ogg_speex(scan_result *scan) {
-  TagLib::Ogg::Speex::File f(scan -> file);
+  TagLib::Ogg::Speex::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_remove_ogg(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -465,7 +485,7 @@ void tag_remove_ogg_opus(TagLib::Ogg::XiphComment *tag) {
 bool tag_write_ogg_opus(scan_result *scan, bool do_album, char mode, char *unit) {
   char value[2048];
 
-  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::Opus::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   // remove old tags before writing new ones
@@ -483,14 +503,18 @@ bool tag_write_ogg_opus(scan_result *scan, bool do_album, char mode, char *unit)
   // extra tags mode -s e or -s l
   // no extra tags allowed in Opus
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_ogg_opus(scan_result *scan) {
-  TagLib::Ogg::Opus::File f(scan -> file);
+  TagLib::Ogg::Opus::File f(scan -> outfile);
   TagLib::Ogg::XiphComment *tag = f.tag();
 
   tag_remove_ogg_opus(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -539,7 +563,7 @@ bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
     RG_STRING = RG_STRING_LOWER;
   }
 
-  TagLib::MP4::File f(scan -> file);
+  TagLib::MP4::File f(scan -> outfile);
   TagLib::MP4::Tag *tag = f.tag();
 
   // remove old tags before writing new ones
@@ -574,14 +598,18 @@ bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_mp4(scan_result *scan) {
-  TagLib::MP4::File f(scan -> file);
+  TagLib::MP4::File f(scan -> outfile);
   TagLib::MP4::Tag *tag = f.tag();
 
   tag_remove_mp4(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -617,7 +645,7 @@ bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
     RG_STRING = RG_STRING_LOWER;
   }
 
-  TagLib::ASF::File f(scan -> file);
+  TagLib::ASF::File f(scan -> outfile);
   TagLib::ASF::Tag *tag = f.tag();
 
   // remove old tags before writing new ones
@@ -652,14 +680,18 @@ bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_asf(scan_result *scan) {
-  TagLib::ASF::File f(scan -> file);
+  TagLib::ASF::File f(scan -> outfile);
   TagLib::ASF::Tag *tag = f.tag();
 
   tag_remove_asf(tag);
+
+  did_write = true;
 
   return f.save();
 }
@@ -702,7 +734,7 @@ bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
     RG_STRING = RG_STRING_LOWER;
   }
 
-  TagLib::RIFF::WAV::File f(scan -> file);
+  TagLib::RIFF::WAV::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.ID3v2Tag();
 
   // remove old tags before writing new ones
@@ -737,6 +769,8 @@ bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
+  did_write = true;
+
   // no stripping
 #if TAGLIB_VERSION >= 11200
   return f.save(TagLib::RIFF::WAV::File::AllTags,
@@ -748,10 +782,12 @@ bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
 }
 
 bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version) {
-  TagLib::RIFF::WAV::File f(scan -> file);
+  TagLib::RIFF::WAV::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.ID3v2Tag();
 
   tag_remove_wav(tag);
+
+  did_write = true;
 
   // no stripping
 #if TAGLIB_VERSION >= 11200
@@ -803,7 +839,7 @@ bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
     RG_STRING = RG_STRING_LOWER;
   }
 
-  TagLib::RIFF::AIFF::File f(scan -> file);
+  TagLib::RIFF::AIFF::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.tag();
 
   // remove old tags before writing new ones
@@ -838,6 +874,8 @@ bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
     }
   }
 
+  did_write = true;
+
   // no stripping
 #if TAGLIB_VERSION >= 11200
   return f.save(id3v2version == 3 ? TagLib::ID3v2::v3 : TagLib::ID3v2::v4);
@@ -847,10 +885,12 @@ bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
 }
 
 bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version) {
-  TagLib::RIFF::AIFF::File f(scan -> file);
+  TagLib::RIFF::AIFF::File f(scan -> outfile);
   TagLib::ID3v2::Tag *tag = f.tag();
 
   tag_remove_aiff(tag);
+
+  did_write = true;
 
   // no stripping
 #if TAGLIB_VERSION >= 11200
@@ -890,7 +930,7 @@ bool tag_write_wavpack(scan_result *scan, bool do_album, char mode, char *unit,
   //   RG_STRING = RG_STRING_LOWER;
   // }
 
-  TagLib::WavPack::File f(scan -> file);
+  TagLib::WavPack::File f(scan -> outfile);
   TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
 
   // remove old tags before writing new ones
@@ -928,18 +968,22 @@ bool tag_write_wavpack(scan_result *scan, bool do_album, char mode, char *unit,
   if (strip)
     f.strip(TagLib::WavPack::File::TagTypes::ID3v1);
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_wavpack(scan_result *scan, bool strip) {
 
-  TagLib::WavPack::File f(scan -> file);
+  TagLib::WavPack::File f(scan -> outfile);
   TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
 
   tag_remove_wavpack(tag);
 
   if (strip)
     f.strip(TagLib::WavPack::File::TagTypes::ID3v1);
+
+  did_write = true;
 
   return f.save();
 }
@@ -974,7 +1018,7 @@ bool tag_write_ape(scan_result *scan, bool do_album, char mode, char *unit,
   //   RG_STRING = RG_STRING_LOWER;
   // }
 
-  TagLib::APE::File f(scan -> file);
+  TagLib::APE::File f(scan -> outfile);
   TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
 
   // remove old tags before writing new ones
@@ -1012,18 +1056,22 @@ bool tag_write_ape(scan_result *scan, bool do_album, char mode, char *unit,
   if (strip)
     f.strip(TagLib::APE::File::TagTypes::ID3v1);
 
+  did_write = true;
+
   return f.save();
 }
 
 bool tag_clear_ape(scan_result *scan, bool strip) {
 
-  TagLib::WavPack::File f(scan -> file);
+  TagLib::WavPack::File f(scan -> outfile);
   TagLib::APE::Tag *tag = f.APETag(true); // create if none exists
 
   tag_remove_ape(tag);
 
   if (strip)
     f.strip(TagLib::WavPack::File::TagTypes::ID3v1);
+
+  did_write = true;
 
   return f.save();
 }

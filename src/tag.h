@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+extern bool did_write;
+
 bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
   bool lowercase, bool strip, int id3v2version);
 bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version);

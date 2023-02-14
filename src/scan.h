@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 typedef struct {
-	char *file;
+	char *file, *outfile;
 	char *container;
 	int   codec_id;
 
