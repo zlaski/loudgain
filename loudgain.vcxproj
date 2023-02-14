@@ -18,4 +18,9 @@
     <ClInclude Include="src\scan.h" />
     <ClInclude Include="src\tag.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libebur128\libebur128.vcxproj">
+      <Project>{bfc9089f-29a2-4bf6-be56-45398f8a0d2f}</Project>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
