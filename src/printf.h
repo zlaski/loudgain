@@ -50,6 +50,8 @@ extern void sysf_printf(const char *fmt, ...);
 
 extern void progress_bar(unsigned ctrl, unsigned long x, unsigned long n, unsigned w);
 
+extern const char *no_dir(const char *name);
+
 #ifdef __cplusplus
 }
 #endif

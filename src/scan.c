@@ -189,7 +189,7 @@ int scan_file(const char *file, unsigned index) {
       ctx->bits_per_raw_sample > 0 ? ctx->bits_per_raw_sample : ctx->bits_per_coded_sample);
   }
   av_get_channel_layout_string(infobuf, sizeof(infobuf), -1, ctx->channel_layout);
-  ok_printf("Stream #%d: %s %s%d Hz %d bps %d ch %s",
+  ok_printf("Stream #%d: %s %s%dHz %dbps %dch %s",
     stream_id, codec->long_name, infotext, ctx->sample_rate, ctx->bit_rate, ctx->channels, infobuf);
 
 	scan_codecs[index] = codec -> id;
@@ -319,7 +319,7 @@ scan_result *scan_get_track_result(unsigned index, double pre_gain) {
     extptr = outfile1 + strlen(outfile1);
     while (*--extptr != '.');
     *extptr++ = 0;
-    sprintf(outfile2, "%s.loudgain.%s", outfile1, extptr);
+    snprintf(outfile2, sizeof(outfile2), "%s.loudgain.%s", outfile1, extptr);
     result->outfile = strdup(outfile2);
 
   result -> container            = scan_containers[index];

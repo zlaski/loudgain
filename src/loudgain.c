@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) {
 	scan_init(nb_files);
 
 	for (i = optind; i < argc; i++) {
-		ok_printf("Scanning '%s' ...", argv[i]);
+		ok_printf("Scanning '%s' ...", no_dir(argv[i]));
 
 		scan_file(argv[i], i - optind);
 	}
@@ -319,12 +319,6 @@ int main(int argc, char *argv[]) {
 				fail_printf("Cannot calculate correct album gain when mixing Opus and non-Opus files!");
 		}
 	}
-
-	if (tab_output)
-		printf("File\tMP3 gain\tdB gain\tMax Amplitude\tMax global_gain\tMin global_gain\n");
-
-	if (tab_output_new)
-		printf("File\tLoudness\tRange\tTrue_Peak\tTrue_Peak_dBTP\tReference\tWill_clip\tClip_prevent\tGain\tNew_Peak\tNew_Peak_dBTP\n");
 
 	for (i = 0; i < nb_files; i++) {
 		bool will_clip = false;
@@ -571,7 +565,7 @@ int main(int argc, char *argv[]) {
 
 		if (tab_output) {
 			// output old-style mp3gain-compatible list
-			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", scan -> file, scan->outfile);
+			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
 			printf("MP3 gain: %d\n", 0);
 			printf("dB gain: %.2f\n", scan -> track_gain);
 			printf("Max amplitude: %.6f\n", scan -> track_peak * 32768.0);
@@ -590,7 +584,7 @@ int main(int argc, char *argv[]) {
 			}
 		} else if (tab_output_new) {
 			// output new style list: File;Loudness;Range;Gain;Reference;Peak;Peak dBTP;Clipping;Clip-prevent
-			printf(did_write? "Track: %s --> %s\n": "\nTrack: %s\n", scan -> file, scan->outfile);
+			printf(did_write? "Track: %s --> %s\n": "\nTrack: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
 			printf("Loudness: %.2f LUFS\n", scan -> track_loudness);
 			printf("Range: %.2f %s\n", scan -> track_loudness_range, unit);
 			printf("True peak: %.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
@@ -613,7 +607,7 @@ int main(int argc, char *argv[]) {
 			}
 		} else {
 			// output something human-readable
-			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", scan -> file, scan->outfile);
+			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
 
 			printf(" Loudness:  %8.2f LUFS\n", scan -> track_loudness);
 			printf(" Range:     %8.2f %s\n", scan -> track_loudness_range, unit);
@@ -628,7 +622,7 @@ int main(int argc, char *argv[]) {
 				 warn_clip && tclip ? " (corrected to prevent clipping)" : "");
 			}
 
-			if (warn_clip) printf(" Will clip: %s\n", will_clip ? "Y" : "N");
+			if (warn_clip) printf(" Will clip:        %s\n", will_clip ? "Y" : "N");
             printf("\n");
             
 			if ((i == (nb_files - 1)) && do_album) {

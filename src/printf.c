@@ -195,3 +195,9 @@ static void get_screen_size(int fd, unsigned *w, unsigned *h) {
 	if (h != NULL)
 		*h = ws.ws_row;
 }
+
+const char *no_dir(const char *name) {
+    const char *nd = name + strlen(name);
+    while(nd > name && !strchr("/\\:", nd[-1])) { --nd; }
+    return nd;
+}
