@@ -19,6 +19,9 @@
     <ClInclude Include="src\tag.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ffmpeg\libavcodec\libavcodec.vcxproj">
+      <Project>{1c885f89-2f8a-44d6-8b89-5e07fed1c1cc}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\libebur128\libebur128.vcxproj">
       <Project>{bfc9089f-29a2-4bf6-be56-45398f8a0d2f}</Project>
     </ProjectReference>
