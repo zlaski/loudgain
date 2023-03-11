@@ -566,50 +566,51 @@ int main(int argc, char *argv[]) {
 		if (tab_output) {
 			// output old-style mp3gain-compatible list
 			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
-			printf("MP3 gain: %d\n", 0);
-			printf("dB gain: %.2f\n", scan -> track_gain);
-			printf("Max amplitude: %.6f\n", scan -> track_peak * 32768.0);
-			printf("Max global gain: %d\n", 0);
-			printf("Min global gain: %d\n", 0);
-			if (warn_clip) printf("Will clip: %s\n", will_clip ? "Y" : "N");
+			printf(" MP3 gain: %d\n", 0);
+			printf(" dB gain: %.2f\n", scan -> track_gain);
+			printf(" Max amplitude: %.6f\n", scan -> track_peak * 32768.0);
+			printf(" Max global gain: %d\n", 0);
+			printf(" Min global gain: %d\n", 0);
+			if (warn_clip) printf(" Will clip: %s\n", will_clip ? "Y" : "N");
             printf("\n");
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("Album:\n");
-				printf("MP3 gain: %d\n", 0);
-				printf("dB gain: %.2f\n", scan -> album_gain);
-				printf("Max amplitude: %.6f\n", scan -> album_peak * 32768.0);
-				printf("Max global gain: %d\n", 0);
-				printf("Min global gain: %d\n\n", 0);
+				printf(" MP3 gain: %d\n", 0);
+				printf(" dB gain: %.2f\n", scan -> album_gain);
+				printf(" Max amplitude: %.6f\n", scan -> album_peak * 32768.0);
+				printf(" Max global gain: %d\n", 0);
+				printf(" Min global gain: %d\n\n", 0);
 			}
 		} else if (tab_output_new) {
 			// output new style list: File;Loudness;Range;Gain;Reference;Peak;Peak dBTP;Clipping;Clip-prevent
 			printf(did_write? "Track: %s --> %s\n": "\nTrack: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
-			printf("Loudness: %.2f LUFS\n", scan -> track_loudness);
-			printf("Range: %.2f %s\n", scan -> track_loudness_range, unit);
-			printf("True peak: %.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
-			printf("Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
-			if (warn_clip) printf("Will clip: %s\n", will_clip ? "Y" : "N");
-			if (warn_clip) printf("Clip prevent: %s\n", tclip ? "Y" : "N");
-			printf("Gain: %.2f %s\n", scan -> track_gain, unit);
-			printf("New peak: %.6f (%.2f dBTP)\n\n", tnew, 20.0 * log10(tnew));
+			printf(" Loudness: %.2f LUFS\n", scan -> track_loudness);
+			printf(" Range: %.2f %s\n", scan -> track_loudness_range, unit);
+			printf(" True peak: %.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
+			printf(" Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
+			if (warn_clip) printf(" Will clip: %s\n", will_clip ? "Y" : "N");
+			if (warn_clip) printf(" Clip prevent: %s\n", tclip ? "Y" : "N");
+			printf(" Gain: %.2f %s\n", scan -> track_gain, unit);
+			printf(" New peak: %.6f (%.2f dBTP)\n\n", tnew, 20.0 * log10(tnew));
 
 			if ((i == (nb_files - 1)) && do_album) {
 				printf("Album:\n");
-				printf("Loudness: %.2f LUFS\n", scan -> album_loudness);
-				printf("Range: %.2f %s\n", scan -> album_loudness_range, unit);
-				printf("True peak: %.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
-				printf("Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
-				if (warn_clip) printf("Will clip: %s\n", (!aclip && (again > apeak)) ? "Y" : "N");
-				if (warn_clip) printf("Clip prevent: %s\n", aclip ? "Y" : "N");
-				printf("Gain: %.2f %s\n", scan -> album_gain, unit);
-				printf("New peak: %.6f (%.2f dBTP)\n\n", anew, 20.0 * log10(anew));
+				printf(" Loudness: %.2f LUFS\n", scan -> album_loudness);
+				printf(" Range: %.2f %s\n", scan -> album_loudness_range, unit);
+				printf(" True peak: %.6f (%.2f dBTP)\n", scan -> album_peak, 20.0 * log10(scan -> album_peak));
+				printf(" Loudness reference: %.2f LUFS\n", scan -> loudness_reference);
+				if (warn_clip) printf(" Will clip: %s\n", (!aclip && (again > apeak)) ? "Y" : "N");
+				if (warn_clip) printf(" Clip prevent: %s\n", aclip ? "Y" : "N");
+				printf(" Gain: %.2f %s\n", scan -> album_gain, unit);
+				printf(" New peak: %.6f (%.2f dBTP)\n\n", anew, 20.0 * log10(anew));
 			}
 		} else {
 			// output something human-readable
 			printf(did_write? "Track: %s --> %s\n": "Track: %s\n", no_dir(scan -> file), no_dir(scan->outfile));
 
 			printf(" Loudness:  %8.2f LUFS\n", scan -> track_loudness);
+			printf(" Reference: %8.2f LUFS\n", scan -> loudness_reference);
 			printf(" Range:     %8.2f %s\n", scan -> track_loudness_range, unit);
 			printf(" Peak:      %8.6f (%.2f dBTP)\n", scan -> track_peak, 20.0 * log10(scan -> track_peak));
 			if (scan -> codec_id == AV_CODEC_ID_OPUS) {

@@ -185,7 +185,7 @@ int scan_file(const char *file, unsigned index) {
   // only show bits/sample where it makes sense
   infotext[0] = '\0';
   if (ctx->bits_per_raw_sample > 0 || ctx->bits_per_coded_sample > 0) {
-    snprintf(infotext, sizeof(infotext), "%d bit ",
+    snprintf(infotext, sizeof(infotext), "%dbit ",
       ctx->bits_per_raw_sample > 0 ? ctx->bits_per_raw_sample : ctx->bits_per_coded_sample);
   }
   av_get_channel_layout_string(infobuf, sizeof(infobuf), -1, ctx->channel_layout);
