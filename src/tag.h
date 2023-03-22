@@ -35,7 +35,7 @@ extern "C" {
 extern bool did_write;
 
 bool tag_write_mp3(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase, bool strip, int id3v2version);
+                   bool lowercase, bool strip, int id3v2version);
 bool tag_clear_mp3(scan_result *scan, bool strip, int id3v2version);
 
 bool tag_write_flac(scan_result *scan, bool do_album, char mode, char *unit);
@@ -54,27 +54,27 @@ bool tag_write_ogg_opus(scan_result *scan, bool do_album, char mode, char *unit)
 bool tag_clear_ogg_opus(scan_result *scan);
 
 bool tag_write_mp4(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase);
+                   bool lowercase);
 bool tag_clear_mp4(scan_result *scan);
 
 bool tag_write_asf(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase);
+                   bool lowercase);
 bool tag_clear_asf(scan_result *scan);
 
 bool tag_write_wav(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase, bool strip, int id3v2version);
+                   bool lowercase, bool strip, int id3v2version);
 bool tag_clear_wav(scan_result *scan, bool strip, int id3v2version);
 
 bool tag_write_aiff(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase, bool strip, int id3v2version);
+                    bool lowercase, bool strip, int id3v2version);
 bool tag_clear_aiff(scan_result *scan, bool strip, int id3v2version);
 
 bool tag_write_wavpack(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase, bool strip);
+                       bool lowercase, bool strip);
 bool tag_clear_wavpack(scan_result *scan, bool strip);
 
 bool tag_write_ape(scan_result *scan, bool do_album, char mode, char *unit,
-  bool lowercase, bool strip);
+                   bool lowercase, bool strip);
 bool tag_clear_ape(scan_result *scan, bool strip);
 
 int gain_to_q78num(double gain);

@@ -36,22 +36,22 @@
 #define _close_ __attribute__((cleanup(closep)))
 
 static inline void freep(void *p) {
-	if (p == NULL)
-		return;
+    if (p == NULL)
+        return;
 
-	free(*(void **) p);
+    free(*(void **) p);
 
-	*(void **)p = NULL;
+    *(void **)p = NULL;
 }
 
 static inline void closep(int *p) {
-	int rc;
+    int rc;
 
-	if (*p == -1)
-		return;
+    if (*p == -1)
+        return;
 
-	rc = close(*p);
-	if (rc < 0) sysf_printf("close()");
+    rc = close(*p);
+    if (rc < 0) sysf_printf("close()");
 
-	*p = -1;
+    *p = -1;
 }
