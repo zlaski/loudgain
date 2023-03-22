@@ -33,23 +33,23 @@ extern "C" {
 #endif
 
 typedef struct {
-	char *file, *outfile;
-	char *container;
-	int   codec_id;
+    char *file, *outfile;
+    char *container;
+    int   codec_id;
 
-	double track_gain;
-	double track_peak;
+    double track_gain;
+    double track_peak;
 
-	double track_loudness;
-	double track_loudness_range;
+    double track_loudness;
+    double track_loudness_range;
 
-	double album_gain;
-	double album_peak;
+    double album_gain;
+    double album_peak;
 
-	double album_loudness;
-	double album_loudness_range;
+    double album_loudness;
+    double album_loudness_range;
 
-	double loudness_reference;
+    double loudness_reference;
 } scan_result;
 
 int scan_init(unsigned nb_files);
