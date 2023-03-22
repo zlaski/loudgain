@@ -9,6 +9,7 @@ DATESTAMP=$(date +'%Y%m%d-%H%M%S')
     
     SCRIPT=`basename $0 .sh`
     SCRIPT_DIR=$(realpath $(dirname $0))
+    BUILD_BRANCH=$(git symbolic-ref --short HEAD)
     
     pushd $SCRIPT_DIR
 
@@ -26,14 +27,27 @@ DATESTAMP=$(date +'%Y%m%d-%H%M%S')
     export LDFLAGS="-L$CMAKE_INSTALL_PREFIX/lib"
     export BUILD_SHARED_LIBS=OFF
 
-    chmod 770 ../cppunit/build-cygwin.sh
-    ../cppunit/build-cygwin.sh || exit 1
-    chmod 770 ../libebur128/build-cygwin.sh
-    ../libebur128/build-cygwin.sh || exit 1
-    chmod 770 ../taglib/build-cygwin.sh
-    ../taglib/build-cygwin.sh || exit 1
-    chmod 770 ../ffmpeg/build-cygwin.sh
-    ../ffmpeg/build-cygwin.sh || exit 1
+    cd ../cppunit
+    git switch $BUILD_BRANCH || exit 1
+    chmod 770 build-cygwin.sh
+    ./build-cygwin.sh || exit 1
+    
+    cd ../libebur128
+    git switch $BUILD_BRANCH || exit 1
+    chmod 770 build-cygwin.sh
+    ./build-cygwin.sh || exit 1
+    
+    cd ../taglib
+    git switch $BUILD_BRANCH || exit 1
+    chmod 770 build-cygwin.sh
+    ./build-cygwin.sh || exit 1
+    
+    cd ../ffmpeg
+    git switch $BUILD_BRANCH || exit 1
+    chmod 770 build-cygwin.sh
+    ./build-cygwin.sh || exit 1
+    
+    cd ../loudgain
 
     echo "################### BUILDING $0 ####################"
     
