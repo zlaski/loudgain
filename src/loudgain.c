@@ -378,6 +378,7 @@ int main(int argc, char *argv[]) {
 			// 	tgain, tpeak, again, apeak, will_clip ? "Yes" : "No");
 		}
 
+#if 0
 		switch (mode) {
 			case 'c': /* check tags */
 				break;
@@ -562,6 +563,7 @@ int main(int argc, char *argv[]) {
 				err_printf("Invalid tag mode");
 				break;
 		}
+#endif
 
 		if (tab_output) {
 			// output old-style mp3gain-compatible list

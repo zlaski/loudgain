@@ -252,9 +252,10 @@ int scan_file(const char *file, unsigned index) {
 
       av_frame_unref(frame);
     }
-
 		av_packet_unref(&packet);
 	}
+    
+    avformat_close_input(&container);
 
   // complete progress bar for very short files (only cosmetic)
   progress_bar(1, len, len, 0);
