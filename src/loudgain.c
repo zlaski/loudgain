@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
 
             if (!rest ||
                     (rest == optarg) ||
-                    !isfinite(pre_gain))
+                    !isfinite(max_true_peak_level))
                 fail_printf("Invalid max. true peak level (dBTP)");
             break;
         }
